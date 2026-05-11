@@ -1,0 +1,299 @@
+{% extends "public/_base.html" %}
+{% block title %}Penerimaan Mahasiswa Baru — Universitas Yarsi Pratama{% endblock %}
+
+{% block content %}
+{# ─── Hero PMB ────────────────────────────────────────────────────── #}
+<section class="uyp-pmb-hero">
+    <div class="uyp-hero-shapes">
+        <span class="uyp-hero-shape s1"></span>
+        <span class="uyp-hero-shape s2"></span>
+        <span class="uyp-hero-shape s3"></span>
+    </div>
+    <div class="uyp-container" style="position:relative;">
+        <div class="uyp-reveal" style="text-align:center;">
+            <div class="uyp-hero-badge">🚀 PMB 2025/2026 Dibuka!</div>
+            <h1>Mulai Karier Cemerlang <span>di Yarsi Pratama</span></h1>
+            <p>
+                Bergabunglah bersama ribuan mahasiswa di kampus modern
+                dengan kurikulum industri, dosen praktisi, dan beasiswa
+                hingga 100% UKT untuk calon mahasiswa berprestasi.
+            </p>
+            <div class="uyp-pmb-hero-cta">
+                <a href="#daftar" class="uyp-btn uyp-btn-white uyp-btn-lg">Daftar Sekarang →</a>
+                <a href="#beasiswa" class="uyp-btn uyp-btn-on-dark uyp-btn-lg">🎁 Info Beasiswa</a>
+                <a href="#alur" class="uyp-btn uyp-btn-on-dark uyp-btn-lg">📋 Lihat Alur</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ─── Keunggulan ──────────────────────────────────────────────────── #}
+<section class="uyp-section">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Kenapa Yarsi Pratama?</span>
+            <h2>Keunggulan <em>Kuliah</em> di UYP</h2>
+            <p>Fasilitas modern, kurikulum industri, dan komunitas yang suportif.</p>
+        </div>
+        <div class="uyp-feature-grid">
+            <div class="uyp-feature uyp-reveal">
+                <div class="uyp-feature-ico">🎓</div>
+                <h3>Akreditasi Resmi</h3>
+                <p>Kampus terakreditasi dengan {{ stats.prodi }} program studi yang siap mengantarkan Anda ke dunia karier profesional.</p>
+            </div>
+            <div class="uyp-feature uyp-reveal delay-1">
+                <div class="uyp-feature-ico">💼</div>
+                <h3>Dosen Praktisi</h3>
+                <p>{{ stats.dosen }}+ dosen berpengalaman akademik & industri membimbing langsung pengembangan kompetensi Anda.</p>
+            </div>
+            <div class="uyp-feature uyp-reveal delay-2">
+                <div class="uyp-feature-ico">🔬</div>
+                <h3>Lab &amp; Praktik</h3>
+                <p>Laboratorium modern, simulasi nyata, dan kerja sama industri yang mempersiapkan lulusan siap pakai.</p>
+            </div>
+            <div class="uyp-feature uyp-reveal delay-3">
+                <div class="uyp-feature-ico">🌍</div>
+                <h3>Karier Global</h3>
+                <p>Jaringan alumni dan mitra industri di berbagai sektor membantu Anda menembus dunia kerja nasional &amp; global.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ─── Beasiswa ────────────────────────────────────────────────────── #}
+<section class="uyp-section" style="background: var(--uyp-grey-50);" id="beasiswa">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Beasiswa</span>
+            <h2>Wujudkan Mimpimu, <em>Tanpa Khawatir Biaya</em></h2>
+            <p>Berbagai pilihan beasiswa tersedia untuk calon mahasiswa berprestasi dan kurang mampu.</p>
+        </div>
+        <div class="uyp-beasiswa-grid">
+            <div class="uyp-beasiswa uyp-reveal">
+                <span class="tag">Berprestasi</span>
+                <h4>Beasiswa Akademik</h4>
+                <p>Untuk siswa SMA/SMK/MA dengan nilai rapor rata-rata minimal 85.</p>
+                <div class="amount">100% <small>UKT</small></div>
+            </div>
+            <div class="uyp-beasiswa uyp-reveal delay-1">
+                <span class="tag">Hafizh</span>
+                <h4>Beasiswa Tahfizh</h4>
+                <p>Untuk penghafal Al-Qur'an minimal 5 juz dengan sertifikat resmi.</p>
+                <div class="amount">75% <small>UKT</small></div>
+            </div>
+            <div class="uyp-beasiswa uyp-reveal delay-2">
+                <span class="tag">Non-akademik</span>
+                <h4>Beasiswa Olahraga &amp; Seni</h4>
+                <p>Juara tingkat provinsi/nasional di bidang olahraga, seni, atau riset.</p>
+                <div class="amount">50% <small>UKT</small></div>
+            </div>
+            <div class="uyp-beasiswa uyp-reveal delay-3">
+                <span class="tag">Ekonomi</span>
+                <h4>Beasiswa Kurang Mampu</h4>
+                <p>Untuk siswa berprestasi dari keluarga prasejahtera (dilengkapi SKTM).</p>
+                <div class="amount">50–100% <small>UKT</small></div>
+            </div>
+            <div class="uyp-beasiswa uyp-reveal">
+                <span class="tag">Yatim</span>
+                <h4>Beasiswa Yatim Piatu</h4>
+                <p>Calon mahasiswa yatim/piatu yang memiliki motivasi belajar tinggi.</p>
+                <div class="amount">75% <small>UKT</small></div>
+            </div>
+            <div class="uyp-beasiswa uyp-reveal delay-1">
+                <span class="tag">KIP</span>
+                <h4>KIP-Kuliah</h4>
+                <p>Program pemerintah untuk mahasiswa kurang mampu secara ekonomi.</p>
+                <div class="amount">100% <small>UKT + UMP</small></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ─── Brosur / Alur ───────────────────────────────────────────────── #}
+<section class="uyp-section" id="alur">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Brosur &amp; Alur</span>
+            <h2>5 Langkah <em>Menjadi Mahasiswa</em></h2>
+            <p>Alur pendaftaran yang mudah, transparan, dan dapat diselesaikan secara online.</p>
+        </div>
+        <div class="uyp-alur-grid">
+            <div class="uyp-alur uyp-reveal">
+                <span class="step">1</span>
+                <div class="ico">📝</div>
+                <h4>Isi Formulir Online</h4>
+                <p>Lengkapi data diri dan pilih program studi yang diinginkan.</p>
+            </div>
+            <div class="uyp-alur uyp-reveal delay-1">
+                <span class="step">2</span>
+                <div class="ico">💳</div>
+                <h4>Bayar Pendaftaran</h4>
+                <p>Lakukan pembayaran biaya pendaftaran Rp 250.000 (gratis utk berbeasiswa).</p>
+            </div>
+            <div class="uyp-alur uyp-reveal delay-2">
+                <span class="step">3</span>
+                <div class="ico">🧠</div>
+                <h4>Tes Masuk Online</h4>
+                <p>Tes potensi akademik &amp; wawancara online dalam 1 hari kerja.</p>
+            </div>
+            <div class="uyp-alur uyp-reveal delay-3">
+                <span class="step">4</span>
+                <div class="ico">📩</div>
+                <h4>Pengumuman</h4>
+                <p>Hasil seleksi dikirim ke email maksimal 3 hari setelah tes.</p>
+            </div>
+            <div class="uyp-alur uyp-reveal delay-4">
+                <span class="step">5</span>
+                <div class="ico">🎓</div>
+                <h4>Daftar Ulang</h4>
+                <p>Lunasi UKT semester 1 dan terima KTM mahasiswa baru.</p>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:36px;">
+            <a href="#daftar" class="uyp-btn uyp-btn-primary uyp-btn-lg">Mulai Pendaftaran →</a>
+        </div>
+    </div>
+</section>
+
+{# ─── Syarat ──────────────────────────────────────────────────────── #}
+<section class="uyp-section" style="background: var(--uyp-grey-50);" id="syarat">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Persyaratan</span>
+            <h2>Syarat <em>Pendaftaran</em></h2>
+            <p>Persyaratan administratif yang perlu disiapkan calon mahasiswa baru.</p>
+        </div>
+        <div class="uyp-syarat-grid">
+            <div class="uyp-syarat uyp-reveal"><div class="num">1</div><div><h4>Ijazah / SKHU</h4><p>Lulusan SMA/SMK/MA sederajat tahun 2022–2025.</p></div></div>
+            <div class="uyp-syarat uyp-reveal"><div class="num">2</div><div><h4>Akta Kelahiran</h4><p>Salinan akta kelahiran yang masih berlaku.</p></div></div>
+            <div class="uyp-syarat uyp-reveal"><div class="num">3</div><div><h4>KTP / KK</h4><p>Kartu identitas calon mahasiswa &amp; orang tua / wali.</p></div></div>
+            <div class="uyp-syarat uyp-reveal"><div class="num">4</div><div><h4>Pas Foto 3x4</h4><p>Foto formal berwarna terbaru (background merah / biru).</p></div></div>
+            <div class="uyp-syarat uyp-reveal"><div class="num">5</div><div><h4>Surat Sehat</h4><p>Surat keterangan sehat &amp; bebas narkoba dari Puskesmas.</p></div></div>
+            <div class="uyp-syarat uyp-reveal"><div class="num">6</div><div><h4>Berkas Khusus</h4><p>Sertifikat prestasi / SKTM jika mendaftar jalur beasiswa.</p></div></div>
+        </div>
+    </div>
+</section>
+
+{# ─── Formulir pendaftaran ────────────────────────────────────────── #}
+<section class="uyp-section" id="daftar">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Daftar Sekarang</span>
+            <h2>Mulai <em>Perjalananmu</em> di Sini</h2>
+            <p>Isi formulir berikut. Tim PMB akan menghubungi Anda dalam 1×24 jam kerja.</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for cat, msg in messages %}
+                <div style="max-width:760px; margin:0 auto 18px;">
+                    <div class="uyp-alert {{ cat }}">{{ msg }}</div>
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <div class="uyp-pmb-form uyp-reveal">
+            {% if submitted %}
+                <div style="text-align:center; padding: 24px 12px;">
+                    <div style="font-size:64px; margin-bottom:14px;">🎉</div>
+                    <h3>Pendaftaran terkirim!</h3>
+                    <p class="sub">Terima kasih telah mendaftar. Tim PMB Yarsi Pratama akan menghubungi Anda segera via email/WhatsApp.</p>
+                    <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+                        <a href="{{ url_for('auth.register_mahasiswa') }}" class="uyp-btn uyp-btn-primary">Buat Akun Mahasiswa →</a>
+                        <a href="{{ url_for('public.home') }}" class="uyp-btn uyp-btn-ghost">Kembali ke Beranda</a>
+                    </div>
+                </div>
+            {% else %}
+                <h3>Formulir Pendaftaran Online</h3>
+                <p class="sub">Semua field bertanda * wajib diisi.</p>
+                <form method="post" novalidate>
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="uyp-form-row">
+                        <div class="uyp-field">
+                            <label>Nama Lengkap *</label>
+                            <input type="text" name="nama_lengkap" required value="{{ request.form.nama_lengkap or '' }}">
+                        </div>
+                        <div class="uyp-field">
+                            <label>Email Aktif *</label>
+                            <input type="email" name="email" required value="{{ request.form.email or '' }}">
+                        </div>
+                    </div>
+                    <div class="uyp-form-row">
+                        <div class="uyp-field">
+                            <label>No. WhatsApp *</label>
+                            <input type="tel" name="no_telp" required placeholder="08xx-xxxx-xxxx" value="{{ request.form.no_telp or '' }}">
+                        </div>
+                        <div class="uyp-field">
+                            <label>Asal Sekolah</label>
+                            <input type="text" name="asal_sekolah" placeholder="Nama SMA/SMK/MA" value="{{ request.form.asal_sekolah or '' }}">
+                        </div>
+                    </div>
+                    <div class="uyp-form-row">
+                        <div class="uyp-field">
+                            <label>Pilihan Program Studi *</label>
+                            <select name="prodi_id" required>
+                                <option value="">— Pilih Program Studi —</option>
+                                {% for fak, plist in fakultas_map.items() %}
+                                    <optgroup label="{{ fak }}">
+                                        {% for p in plist %}<option value="{{ p.id }}">{{ p.nama }}</option>{% endfor %}
+                                    </optgroup>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="uyp-field">
+                            <label>Jalur Pendaftaran</label>
+                            <select name="jalur">
+                                <option>Reguler</option>
+                                <option>Beasiswa Akademik</option>
+                                <option>Beasiswa Tahfizh</option>
+                                <option>Beasiswa Olahraga &amp; Seni</option>
+                                <option>Beasiswa Kurang Mampu</option>
+                                <option>KIP-Kuliah</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="uyp-field">
+                        <label>Catatan / Pertanyaan</label>
+                        <textarea name="catatan" placeholder="Tuliskan jika ada pertanyaan tambahan…">{{ request.form.catatan or '' }}</textarea>
+                    </div>
+                    <div style="display:flex; gap:12px; justify-content:flex-end; flex-wrap:wrap; margin-top:8px;">
+                        <a href="{{ url_for('public.home') }}" class="uyp-btn uyp-btn-ghost">Batal</a>
+                        <button type="submit" class="uyp-btn uyp-btn-primary">Kirim Pendaftaran →</button>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{# ─── FAQ singkat ─────────────────────────────────────────────────── #}
+<section class="uyp-section" style="background: var(--uyp-grey-50);">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">FAQ</span>
+            <h2>Pertanyaan <em>Sering Ditanyakan</em></h2>
+        </div>
+        <div class="uyp-feature-grid">
+            <div class="uyp-feature uyp-reveal">
+                <div class="uyp-feature-ico">❓</div>
+                <h3>Apakah pendaftaran online?</h3>
+                <p>Ya. Seluruh proses pendaftaran, tes masuk, dan pengumuman dilakukan secara online.</p>
+            </div>
+            <div class="uyp-feature uyp-reveal delay-1">
+                <div class="uyp-feature-ico">💰</div>
+                <h3>Berapa biaya pendaftaran?</h3>
+                <p>Rp 250.000 untuk jalur reguler. Calon mahasiswa berbeasiswa tidak dikenakan biaya pendaftaran.</p>
+            </div>
+            <div class="uyp-feature uyp-reveal delay-2">
+                <div class="uyp-feature-ico">📅</div>
+                <h3>Kapan tahun ajaran dimulai?</h3>
+                <p>Tahun akademik 2025/2026 dimulai September 2025. Daftar ulang paling lambat Juli 2025.</p>
+            </div>
+            <div class="uyp-feature uyp-reveal delay-3">
+                <div class="uyp-feature-ico">📞</div>
+                <h3>Bagaimana jika butuh bantuan?</h3>
+                <p>Tim PMB siap membantu Anda. Hubungi <b>(0251) 000-0000</b> atau email <b>pmb@yarsipratama.ac.id</b>.</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

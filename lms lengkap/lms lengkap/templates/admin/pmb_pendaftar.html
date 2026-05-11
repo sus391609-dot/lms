@@ -1,0 +1,64 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Pendaftar PMB{% endblock %}
+{% block content %}
+<div class="welcome-banner">
+    <div>
+        <div class="welcome-hi">🎓 Pendaftar PMB</div>
+        <div class="welcome-sub">Lead pendaftar dari halaman PMB publik.</div>
+    </div>
+</div>
+
+<div class="card">
+    <form method="get" style="display:flex; gap:8px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+        <select name="status" onchange="this.form.submit()" style="padding:8px 12px; border:1px solid var(--grey-200); border-radius:8px;">
+            <option value="">Semua status</option>
+            {% for s in ['baru', 'diproses', 'diterima', 'ditolak'] %}
+                <option value="{{ s }}" {% if status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+    {% if rows %}
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead>
+            <tr><th>Tanggal</th><th>Nama</th><th>Kontak</th><th>Prodi</th><th>Jalur</th><th>Status</th><th>Aksi</th></tr>
+        </thead>
+        <tbody>
+            {% for r in rows %}
+            <tr>
+                <td style="font-size:12px;">{{ r.created_at.strftime('%d %b %Y, %H:%M') }}</td>
+                <td><b>{{ r.nama_lengkap }}</b>{% if r.asal_sekolah %}<br><span style="font-size:12px; color:var(--grey-600);">{{ r.asal_sekolah }}</span>{% endif %}</td>
+                <td style="font-size:12px;">📧 {{ r.email }}<br>📱 {{ r.no_telp }}</td>
+                <td style="font-size:12px;">{{ r.prodi.nama if r.prodi else '—' }}</td>
+                <td><span class="badge badge-orange">{{ r.jalur }}</span></td>
+                <td>
+                    {% if r.status == 'baru' %}<span class="badge">🆕 Baru</span>
+                    {% elif r.status == 'diproses' %}<span class="badge badge-orange">⏳ Diproses</span>
+                    {% elif r.status == 'diterima' %}<span class="badge badge-green">✅ Diterima</span>
+                    {% elif r.status == 'ditolak' %}<span class="badge" style="background:var(--red-l); color:var(--red);">❌ Ditolak</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form action="{{ url_for('admin.pmb_pendaftar_status', pid=r.id) }}" method="post" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <select name="status" onchange="this.form.submit()" style="padding:4px 8px; border-radius:6px; border:1px solid var(--grey-200);">
+                            {% for s in ['baru', 'diproses', 'diterima', 'ditolak'] %}
+                                <option value="{{ s }}" {% if r.status == s %}selected{% endif %}>{{ s|capitalize }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div style="text-align:center; padding:40px 16px; color:var(--grey-600);">
+        <div style="font-size:48px; margin-bottom:10px;">📭</div>
+        <p>Belum ada pendaftar PMB dengan filter tersebut.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

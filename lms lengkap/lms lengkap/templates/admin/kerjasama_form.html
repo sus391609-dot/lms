@@ -1,0 +1,87 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}{% if ks %}Edit Kerja Sama{% else %}Upload Kerja Sama Baru{% endif %}{% endblock %}
+{% block content %}
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="grid-2" style="grid-template-columns: 1.4fr 1fr; gap:16px;">
+            <div class="field">
+                <label>Judul Kerja Sama *</label>
+                <input type="text" name="judul" required maxlength="200"
+                       value="{{ ks.judul if ks else '' }}"
+                       placeholder="Contoh: MoU Magang &amp; Riset Bersama">
+            </div>
+            <div class="field">
+                <label>Mitra *</label>
+                <input type="text" name="mitra" required maxlength="160"
+                       value="{{ ks.mitra if ks else '' }}"
+                       placeholder="Nama perusahaan/institusi mitra">
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Ringkasan (opsional)</label>
+            <textarea name="ringkasan" rows="2" maxlength="300"
+                      placeholder="Ringkasan singkat untuk kartu kerja sama…">{{ ks.ringkasan if ks else '' }}</textarea>
+        </div>
+
+        <div class="grid-2" style="grid-template-columns: 1fr 1fr 1fr; gap:16px;">
+            <div class="field">
+                <label>Kategori</label>
+                <input type="text" name="kategori" maxlength="60"
+                       value="{{ ks.kategori if ks else 'Industri' }}" list="kat-ks">
+                <datalist id="kat-ks">
+                    <option>Industri</option>
+                    <option>Pemerintah</option>
+                    <option>Akademik</option>
+                    <option>Riset</option>
+                    <option>Internasional</option>
+                </datalist>
+            </div>
+            <div class="field">
+                <label>Tanggal MoU</label>
+                <input type="date" name="tanggal_mou"
+                       value="{{ ks.tanggal_mou.strftime('%Y-%m-%d') if ks and ks.tanggal_mou else '' }}">
+            </div>
+            <div class="field">
+                <label>Masa Berlaku</label>
+                <input type="text" name="masa_berlaku" maxlength="60"
+                       value="{{ ks.masa_berlaku if ks else '' }}"
+                       placeholder="Contoh: 3 tahun / 2025-2028">
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Status</label>
+            <select name="status">
+                <option value="published" {% if not ks or ks.status == 'published' %}selected{% endif %}>📢 Publish</option>
+                <option value="draft" {% if ks and ks.status == 'draft' %}selected{% endif %}>📝 Draft</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Logo Mitra (PNG / JPG)</label>
+            {% if ks and ks.logo %}
+            <div style="margin-bottom:8px;">
+                <img src="{{ url_for('static', filename=ks.logo) }}"
+                     style="max-height:120px; border-radius:8px; border:1px solid var(--grey-200); background:var(--orange-l); padding:8px;">
+                <div style="font-size:12px; color:var(--grey-600); margin-top:4px;">Pilih file baru untuk mengganti.</div>
+            </div>
+            {% endif %}
+            <input type="file" name="logo" accept="image/png,image/jpeg">
+        </div>
+
+        <div class="field">
+            <label>Detail Kerja Sama *</label>
+            <textarea name="isi" required rows="12"
+                      placeholder="Tulis detail kerja sama: ruang lingkup, manfaat, kegiatan, dst.">{{ ks.isi if ks else '' }}</textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+            <a href="{{ url_for('admin.kerjasama_list') }}" class="btn btn-secondary">Batal</a>
+            <button class="btn btn-primary" type="submit">💾 Simpan Kerja Sama</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

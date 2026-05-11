@@ -1,0 +1,84 @@
+{% extends "public/_base.html" %}
+{% block title %}{{ kegiatan.judul }} — Kegiatan UYP{% endblock %}
+{% block meta_desc %}{{ kegiatan.ringkasan or kegiatan.isi[:160] }}{% endblock %}
+
+{% block content %}
+<section class="uyp-article-hero">
+    <div class="uyp-container">
+        <nav class="uyp-breadcrumb uyp-reveal">
+            <a href="{{ url_for('public.home') }}">Beranda</a>
+            <span class="sep">/</span>
+            <a href="{{ url_for('public.kegiatan_list') }}">Kegiatan</a>
+            <span class="sep">/</span>
+            <span>{{ kegiatan.judul[:40] }}{% if kegiatan.judul|length > 40 %}…{% endif %}</span>
+        </nav>
+
+        <div class="uyp-reveal delay-1" style="max-width: 880px;">
+            <span style="display:inline-block; background:var(--uyp-gradient); color:white; padding:6px 14px; border-radius:999px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:1px; margin-bottom:18px;">Kegiatan</span>
+            <h1 class="uyp-article-title">{{ kegiatan.judul }}</h1>
+            <div class="uyp-article-meta">
+                {% if kegiatan.tanggal_mulai %}
+                <span>📅 {{ kegiatan.tanggal_mulai.strftime('%d %B %Y') }}{% if kegiatan.tanggal_selesai %} – {{ kegiatan.tanggal_selesai.strftime('%d %B %Y') }}{% endif %}</span>
+                {% endif %}
+                {% if kegiatan.lokasi %}<span>📍 {{ kegiatan.lokasi }}</span>{% endif %}
+                {% if kegiatan.penyelenggara %}<span>🎓 {{ kegiatan.penyelenggara }}</span>{% endif %}
+                <span>👁 {{ kegiatan.views }} dilihat</span>
+            </div>
+        </div>
+
+        <div class="uyp-article-media uyp-reveal delay-2">
+            {% if kegiatan.gambar %}
+                <img src="{{ url_for('static', filename=kegiatan.gambar) }}" alt="{{ kegiatan.judul }}">
+            {% else %}
+                <div class="placeholder">🎉</div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<article class="uyp-article-body">
+    <div class="uyp-container" style="max-width: 800px;">
+        {% if kegiatan.ringkasan %}
+        <p style="font-size: 19px; font-weight: 500; color: var(--uyp-dark);">{{ kegiatan.ringkasan }}</p>
+        {% endif %}
+        {% for paragraph in kegiatan.isi.split('\n\n') %}
+            {% if paragraph.strip() %}<p>{{ paragraph|replace('\n', '<br>')|safe }}</p>{% endif %}
+        {% endfor %}
+    </div>
+</article>
+
+{% if terkait %}
+<section class="uyp-section" style="background: var(--uyp-grey-50);">
+    <div class="uyp-container">
+        <div class="uyp-section-head split">
+            <div>
+                <span class="eyebrow">Kegiatan Terkait</span>
+                <h2>Kegiatan <em>Lainnya</em></h2>
+            </div>
+            <a href="{{ url_for('public.kegiatan_list') }}" class="uyp-btn uyp-btn-outline">Semua Kegiatan →</a>
+        </div>
+        <div class="uyp-card-grid">
+            {% for k in terkait %}
+            <article class="uyp-card uyp-reveal">
+                <div class="uyp-card-media">
+                    {% if k.gambar %}
+                        <img src="{{ url_for('static', filename=k.gambar) }}" alt="{{ k.judul }}">
+                    {% else %}
+                        <div class="placeholder">🎉</div>
+                    {% endif %}
+                </div>
+                <div class="uyp-card-body">
+                    <div class="uyp-card-meta">
+                        {% if k.tanggal_mulai %}<span>📅 {{ k.tanggal_mulai.strftime('%d %b %Y') }}</span>{% endif %}
+                    </div>
+                    <h3>{{ k.judul }}</h3>
+                    <p>{{ k.ringkasan or k.isi[:120] }}</p>
+                    <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" class="uyp-card-link">Selengkapnya</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}

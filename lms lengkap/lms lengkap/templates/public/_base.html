@@ -1,0 +1,157 @@
+{# =====================================================================
+   templates/public/_base.html
+   Base layout untuk halaman publik (kampus website).
+   ===================================================================== #}
+<!doctype html>
+<html lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#e94424" />
+    <meta name="description" content="{% block meta_desc %}Universitas Yarsi Pratama — kampus modern dengan program studi kesehatan, hukum, manajemen, teknik informatika, dan komunikasi.{% endblock %}" />
+    <title>{% block title %}Universitas Yarsi Pratama{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/public.css') }}" />
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="uyp-public">
+
+{# ─── Navbar ───────────────────────────────────────────────────────── #}
+<header class="uyp-nav" id="uyp-nav">
+    <div class="uyp-container uyp-nav-inner">
+        <a href="{{ url_for('public.home') }}" class="uyp-brand">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo UYP">
+            <span class="uyp-brand-text">
+                <b>Universitas Yarsi Pratama</b>
+                <span>Inspiring, Innovating, Impacting</span>
+            </span>
+        </a>
+
+        <nav class="uyp-nav-links">
+            {% set ep = request.endpoint or '' %}
+            <a href="{{ url_for('public.home') }}" class="{% if ep == 'public.home' %}active{% endif %}">Beranda</a>
+            <a href="{{ url_for('public.tentang') }}" class="{% if ep == 'public.tentang' %}active{% endif %}">Tentang</a>
+            <a href="{{ url_for('public.berita_list') }}" class="{% if ep.startswith('public.berita') %}active{% endif %}">Berita</a>
+            <a href="{{ url_for('public.kegiatan_list') }}" class="{% if ep.startswith('public.kegiatan') %}active{% endif %}">Kegiatan</a>
+            <a href="{{ url_for('public.kerjasama_list') }}" class="{% if ep.startswith('public.kerjasama') %}active{% endif %}">Kerja Sama</a>
+            <a href="{{ url_for('public.pmb') }}" class="{% if ep == 'public.pmb' %}active{% endif %}">PMB</a>
+        </nav>
+
+        <div class="uyp-nav-cta">
+            <a href="{{ url_for('auth.landing') }}" class="uyp-btn uyp-btn-ghost uyp-btn-sm">Login</a>
+            <a href="{{ url_for('public.pmb') }}" class="uyp-btn uyp-btn-primary uyp-btn-sm">Daftar Sekarang</a>
+        </div>
+
+        <button class="uyp-hamburger" id="uyp-hamburger" aria-label="Buka menu">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                <line x1="4" y1="7"  x2="20" y2="7"></line>
+                <line x1="4" y1="12" x2="20" y2="12"></line>
+                <line x1="4" y1="17" x2="20" y2="17"></line>
+            </svg>
+        </button>
+    </div>
+</header>
+
+{# ─── Mobile drawer ────────────────────────────────────────────────── #}
+<div class="uyp-drawer" id="uyp-drawer">
+    <div class="uyp-drawer-panel">
+        <div class="uyp-drawer-head">
+            <a href="{{ url_for('public.home') }}" class="uyp-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="">
+                <span class="uyp-brand-text"><b>Yarsi Pratama</b><span>Universitas</span></span>
+            </a>
+            <button class="uyp-drawer-close" id="uyp-drawer-close" aria-label="Tutup">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                    <line x1="6" y1="6"  x2="18" y2="18"></line>
+                    <line x1="6" y1="18" x2="18" y2="6"></line>
+                </svg>
+            </button>
+        </div>
+        {% set ep = request.endpoint or '' %}
+        <a href="{{ url_for('public.home') }}" class="{% if ep == 'public.home' %}active{% endif %}">🏠 Beranda</a>
+        <a href="{{ url_for('public.tentang') }}" class="{% if ep == 'public.tentang' %}active{% endif %}">🏛️ Tentang</a>
+        <a href="{{ url_for('public.berita_list') }}" class="{% if ep.startswith('public.berita') %}active{% endif %}">📰 Berita</a>
+        <a href="{{ url_for('public.kegiatan_list') }}" class="{% if ep.startswith('public.kegiatan') %}active{% endif %}">🎉 Kegiatan</a>
+        <a href="{{ url_for('public.kerjasama_list') }}" class="{% if ep.startswith('public.kerjasama') %}active{% endif %}">🤝 Kerja Sama</a>
+        <a href="{{ url_for('public.pmb') }}" class="{% if ep == 'public.pmb' %}active{% endif %}">🎓 PMB</a>
+        <div class="uyp-drawer-cta">
+            <a href="{{ url_for('auth.landing') }}" class="uyp-btn uyp-btn-ghost">Login Admin / LMS</a>
+            <a href="{{ url_for('public.pmb') }}" class="uyp-btn uyp-btn-primary">Daftar Sekarang →</a>
+        </div>
+    </div>
+</div>
+
+{# ─── Konten ───────────────────────────────────────────────────────── #}
+{% block content %}{% endblock %}
+
+{# ─── Footer ───────────────────────────────────────────────────────── #}
+<footer class="uyp-footer">
+    <div class="uyp-container">
+        <div class="uyp-footer-grid">
+            <div class="uyp-footer-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo UYP">
+                <h3>Universitas Yarsi Pratama</h3>
+                <p>
+                    Kampus modern berbasis riset & kompetensi.
+                    Membentuk generasi unggul di bidang kesehatan,
+                    teknologi, hukum, manajemen, dan komunikasi.
+                </p>
+                <div class="uyp-socials">
+                    <a href="https://www.yarsipratama.ac.id/" target="_blank" rel="noopener" aria-label="Website">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+                    </a>
+                    <a href="https://instagram.com/universitasyarsipratama" target="_blank" rel="noopener" aria-label="Instagram">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+                    </a>
+                    <a href="#" aria-label="YouTube">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="3"/><polygon points="10,9 16,12 10,15" fill="currentColor" stroke="none"/></svg>
+                    </a>
+                    <a href="#" aria-label="Facebook">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V6a2 2 0 0 1 2-2h2v4h-2c-.6 0-1 .4-1 1v2h3l-1 4h-2v7h-4v-7H8v-4h3V9z"/></svg>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <h4>Akademik</h4>
+                <ul>
+                    <li><a href="{{ url_for('public.tentang') }}">Tentang Kampus</a></li>
+                    <li><a href="{{ url_for('public.tentang') }}#prodi">Program Studi</a></li>
+                    <li><a href="{{ url_for('public.pmb') }}">Pendaftaran Mahasiswa</a></li>
+                    <li><a href="{{ url_for('public.pmb') }}#beasiswa">Beasiswa</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Informasi</h4>
+                <ul>
+                    <li><a href="{{ url_for('public.berita_list') }}">Berita</a></li>
+                    <li><a href="{{ url_for('public.kegiatan_list') }}">Kegiatan</a></li>
+                    <li><a href="{{ url_for('public.kerjasama_list') }}">Kerja Sama</a></li>
+                    <li><a href="{{ url_for('auth.landing') }}">LMS / Login</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4>Kontak</h4>
+                <ul>
+                    <li>📍 Bogor, Jawa Barat</li>
+                    <li>📧 info@yarsipratama.ac.id</li>
+                    <li>📞 (0251) 000-0000</li>
+                    <li>🕘 Senin – Jumat, 08.00 – 16.00</li>
+                </ul>
+            </div>
+        </div>
+        <div class="uyp-footer-bottom">
+            <span>© {{ now.year if now else 2025 }} Universitas Yarsi Pratama. Seluruh hak cipta dilindungi.</span>
+            <span>Akreditasi B · NPSN 045123 · SK Mendikbud 2014</span>
+        </div>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/public.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

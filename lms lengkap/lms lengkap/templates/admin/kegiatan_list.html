@@ -1,0 +1,96 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Kelola Kegiatan{% endblock %}
+{% block content %}
+<div class="welcome-banner">
+    <div>
+        <div class="welcome-hi">🎉 Kelola Kegiatan Kampus</div>
+        <div class="welcome-sub">
+            Upload, edit, dan hapus kegiatan/event yang tampil di website publik.
+            Total: <b>{{ total }}</b> kegiatan.
+        </div>
+    </div>
+    <a href="{{ url_for('admin.kegiatan_form') }}" class="btn btn-primary welcome-cta">
+        + Upload Kegiatan Baru
+    </a>
+</div>
+
+<div class="card">
+    <form method="get" style="display:flex; gap:8px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+        <input type="text" name="q" placeholder="Cari kegiatan…" value="{{ q }}"
+               style="flex:1; min-width:220px; padding:9px 12px; border:1px solid var(--grey-200); border-radius:8px; font-size:14px;">
+        <button class="btn btn-secondary btn-sm" type="submit">🔍 Cari</button>
+        {% if q %}<a href="{{ url_for('admin.kegiatan_list') }}" class="btn btn-link btn-sm">Reset</a>{% endif %}
+    </form>
+
+    {% if rows %}
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead>
+            <tr>
+                <th style="width:80px;">Gambar</th>
+                <th>Judul</th>
+                <th>Tanggal</th>
+                <th>Lokasi</th>
+                <th>Status</th>
+                <th style="width:180px;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for k in rows %}
+            <tr>
+                <td>
+                    {% if k.gambar %}
+                        <img src="{{ url_for('static', filename=k.gambar) }}"
+                             alt="" style="width:64px; height:42px; object-fit:cover; border-radius:6px;">
+                    {% else %}
+                        <div style="width:64px; height:42px; background:var(--orange-l); border-radius:6px;
+                                    display:flex; align-items:center; justify-content:center; color:var(--orange);">🎉</div>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" target="_blank"
+                       style="color:var(--black); font-weight:600;">{{ k.judul }}</a>
+                    {% if k.penyelenggara %}<div style="font-size:12px; color:var(--grey-600); margin-top:2px;">🎓 {{ k.penyelenggara }}</div>{% endif %}
+                </td>
+                <td style="font-size:12px;">
+                    {% if k.tanggal_mulai %}{{ k.tanggal_mulai.strftime('%d %b %Y') }}{% else %}—{% endif %}
+                    {% if k.tanggal_selesai %}<br><span style="color:var(--grey-600);">s/d {{ k.tanggal_selesai.strftime('%d %b %Y') }}</span>{% endif %}
+                </td>
+                <td style="font-size:12px;">{{ k.lokasi or '—' }}</td>
+                <td>
+                    {% if k.status == 'published' %}
+                        <span class="badge badge-green">📢 Publish</span>
+                    {% else %}
+                        <span class="badge">📝 Draft</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('admin.kegiatan_form', kid=k.id) }}" class="btn btn-secondary btn-sm">✏️ Edit</a>
+                    <form action="{{ url_for('admin.kegiatan_delete', kid=k.id) }}" method="post" style="display:inline;"
+                          onsubmit="return confirm('Hapus kegiatan ini secara permanen?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-danger btn-sm" type="submit">🗑️ Hapus</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {% if pages > 1 %}
+    <div style="display:flex; gap:4px; justify-content:center; margin-top:14px;">
+        {% for p in range(1, pages + 1) %}
+            {% if p == page %}<span class="btn btn-primary btn-sm" style="pointer-events:none;">{{ p }}</span>
+            {% else %}<a href="{{ url_for('admin.kegiatan_list', page=p, q=q) }}" class="btn btn-secondary btn-sm">{{ p }}</a>{% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    <div style="text-align:center; padding:40px 16px; color:var(--grey-600);">
+        <div style="font-size:48px; margin-bottom:10px;">🎉</div>
+        <p>Belum ada kegiatan. <a href="{{ url_for('admin.kegiatan_form') }}">Upload kegiatan pertama →</a></p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

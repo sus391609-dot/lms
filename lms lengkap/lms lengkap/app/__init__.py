@@ -42,6 +42,9 @@ def create_app(config_class=Config):
         return User.query.get(int(uid))
 
     # ── Register blueprints ────────────────────────────────────────────
+    from app.public.routes import bp as public_bp
+    app.register_blueprint(public_bp)
+
     from app.auth.routes import bp as auth_bp
     app.register_blueprint(auth_bp)
 
@@ -75,6 +78,9 @@ def create_app(config_class=Config):
             return None
         if request.endpoint in ("auth.landing", "auth.logout", "static"):
             return None
+        # Public website tetap dapat diakses meski sistem dikunci.
+        if request.endpoint and request.endpoint.startswith("public."):
+            return None
         return render_template(
             "errors/error.html",
             code="locked",
@@ -85,7 +91,11 @@ def create_app(config_class=Config):
     # ── Context processor ──────────────────────────────────────────────
     @app.context_processor
     def inject_globals():
-        return {"app_name": "LMS Universitas Yarsi Pratama"}
+        from datetime import datetime
+        return {
+            "app_name": "LMS Universitas Yarsi Pratama",
+            "now": datetime.utcnow(),
+        }
 
     # ── Error handlers ─────────────────────────────────────────────────
     @app.errorhandler(400)
