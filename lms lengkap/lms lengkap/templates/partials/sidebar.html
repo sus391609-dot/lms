@@ -33,14 +33,21 @@
         <a href="{{ url_for('admin.leaderboard') }}" {% if request.endpoint=='admin.leaderboard' %}class="active"{% endif %}>&#127941; Top 10 Mahasiswa</a>
         <a href="{{ url_for('admin.poin_dosen') }}" {% if request.endpoint and 'poin' in request.endpoint %}class="active"{% endif %}>&#11088; Poin Dosen</a>
         <a href="{{ url_for('admin.pembayaran') }}" {% if request.endpoint=='admin.pembayaran' %}class="active"{% endif %}>&#128181; Pembayaran</a>
-        <div class="group-title">Konten Publik</div>
-        <a href="{{ url_for('admin.berita_list') }}" {% if request.endpoint and 'berita' in request.endpoint %}class="active"{% endif %}>&#128240; Berita</a>
-        <a href="{{ url_for('admin.kegiatan_list') }}" {% if request.endpoint and 'kegiatan' in request.endpoint %}class="active"{% endif %}>&#127881; Kegiatan</a>
-        <a href="{{ url_for('admin.kerjasama_list') }}" {% if request.endpoint and 'kerjasama' in request.endpoint %}class="active"{% endif %}>&#129309; Kerja Sama</a>
-        <a href="{{ url_for('admin.pmb_pendaftar') }}" {% if request.endpoint and 'pmb_pendaftar' in request.endpoint %}class="active"{% endif %}>&#127891; Pendaftar PMB</a>
         <div class="group-title">Sistem</div>
         <a href="{{ url_for('admin.settings') }}" {% if request.endpoint=='admin.settings' %}class="active"{% endif %}>&#9881;&#65039; Pengaturan</a>
         <a href="{{ url_for('admin.audit') }}" {% if request.endpoint=='admin.audit' %}class="active"{% endif %}>&#128221; Audit Log</a>
+
+    {# ── ADMIN SOSMED ───────────────────────────────────────────────── #}
+    {% elif current_user.role == 'admin_sosmed' %}
+        <a href="{{ url_for('admin_sosmed.dashboard') }}" {% if request.endpoint=='admin_sosmed.dashboard' %}class="active"{% endif %}>&#127968; Dashboard</a>
+        <div class="group-title">Konten Publik</div>
+        <a href="{{ url_for('admin_sosmed.berita_list') }}" {% if request.endpoint and 'admin_sosmed.berita' in request.endpoint %}class="active"{% endif %}>&#128240; Berita</a>
+        <a href="{{ url_for('admin_sosmed.kegiatan_list') }}" {% if request.endpoint and 'admin_sosmed.kegiatan' in request.endpoint %}class="active"{% endif %}>&#127881; Kegiatan</a>
+        <a href="{{ url_for('admin_sosmed.kerjasama_list') }}" {% if request.endpoint and 'admin_sosmed.kerjasama' in request.endpoint %}class="active"{% endif %}>&#129309; Kerja Sama</a>
+        <div class="group-title">PMB</div>
+        <a href="{{ url_for('admin_sosmed.pmb_pendaftar') }}" {% if request.endpoint and 'pmb_pendaftar' in request.endpoint %}class="active"{% endif %}>&#127891; Pendaftar PMB</a>
+        <div class="group-title">Akses</div>
+        <a href="{{ url_for('public.home') }}" target="_blank">&#127760; Buka Website Publik</a>
 
     {# ── DOSEN ──────────────────────────────────────────────────────── #}
     {% elif current_user.role == 'dosen' %}

@@ -861,3 +861,268 @@
     .uyp-footer-brand { grid-column: span 1; }
     .uyp-pmb-hero { padding: 56px 0 72px; }
 }
+
+/* =====================================================================
+   Pilar Keunggulan
+   ===================================================================== */
+.uyp-pillar-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-top: 36px;
+}
+.uyp-pillar {
+    background: #fff;
+    border: 1px solid var(--uyp-grey-100);
+    border-radius: 18px;
+    padding: 28px 22px;
+    text-align: left;
+    transition: transform .35s, box-shadow .35s, border-color .35s;
+    position: relative;
+    overflow: hidden;
+}
+.uyp-pillar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,87,34,.06), transparent 60%);
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+}
+.uyp-pillar:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 16px 36px rgba(255,87,34,.18);
+    border-color: rgba(255,87,34,.35);
+}
+.uyp-pillar:hover::before { opacity: 1; }
+.uyp-pillar-ico {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #ff5722, #c0392b);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    margin-bottom: 16px;
+    box-shadow: 0 8px 20px rgba(255,87,34,.35);
+}
+.uyp-pillar h4 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    color: var(--uyp-grey-900);
+}
+.uyp-pillar p {
+    color: var(--uyp-grey-600);
+    line-height: 1.6;
+    font-size: 14.5px;
+    margin: 0;
+}
+
+/* =====================================================================
+   Prestasi & Akreditasi (dark hero section)
+   ===================================================================== */
+.uyp-prestasi-section {
+    background:
+        radial-gradient(circle at 80% 0%, rgba(255,87,34,.35), transparent 50%),
+        radial-gradient(circle at 0% 100%, rgba(233,68,36,.35), transparent 55%),
+        linear-gradient(135deg, #1f1f23 0%, #2b1a14 100%);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+.uyp-prestasi-section h2 { color: #fff; }
+.uyp-prestasi-section h2 em { color: #ff7e4a; }
+.uyp-prestasi-section .uyp-section-head p { color: rgba(255,255,255,.78); }
+.uyp-prestasi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 22px;
+    margin-top: 36px;
+}
+.uyp-prestasi-card {
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 18px;
+    padding: 28px 20px;
+    text-align: center;
+    backdrop-filter: blur(8px);
+    transition: transform .35s, background .35s, border-color .35s;
+}
+.uyp-prestasi-card:hover {
+    transform: translateY(-6px);
+    background: rgba(255,255,255,.1);
+    border-color: rgba(255,87,34,.5);
+}
+.uyp-prestasi-card .ico {
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+.uyp-prestasi-card .v {
+    font-size: 44px;
+    font-weight: 800;
+    background: linear-gradient(120deg, #ffb27a, #ff5722);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1.05;
+    margin-bottom: 6px;
+}
+.uyp-prestasi-card .l {
+    font-weight: 600;
+    color: rgba(255,255,255,.85);
+    font-size: 14px;
+    line-height: 1.4;
+}
+.uyp-prestasi-card .l small {
+    color: rgba(255,255,255,.55);
+    font-weight: 400;
+    font-size: 12px;
+}
+
+/* =====================================================================
+   Fasilitas Kampus
+   ===================================================================== */
+.uyp-fasilitas-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-top: 36px;
+}
+.uyp-fasilitas-card {
+    background: #fff;
+    border: 1px solid var(--uyp-grey-100);
+    border-radius: 18px;
+    padding: 26px 24px;
+    transition: transform .35s, box-shadow .35s, border-color .35s;
+    position: relative;
+}
+.uyp-fasilitas-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(0,0,0,.08);
+    border-color: rgba(255,87,34,.35);
+}
+.uyp-fasilitas-card .ico {
+    width: 50px; height: 50px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #fff1ec, #ffe1d4);
+    color: #c0392b;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    margin-bottom: 14px;
+}
+.uyp-fasilitas-card h4 {
+    font-size: 17px; font-weight: 700; margin: 0 0 6px;
+    color: var(--uyp-grey-900);
+}
+.uyp-fasilitas-card p {
+    color: var(--uyp-grey-600);
+    line-height: 1.55;
+    font-size: 14px;
+    margin: 0;
+}
+
+/* =====================================================================
+   Testimoni Alumni
+   ===================================================================== */
+.uyp-testi-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 22px;
+    margin-top: 36px;
+}
+.uyp-testi-card {
+    background: #fff;
+    border: 1px solid var(--uyp-grey-100);
+    border-radius: 18px;
+    padding: 26px 24px;
+    position: relative;
+    transition: transform .35s, box-shadow .35s;
+}
+.uyp-testi-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 18px 40px rgba(0,0,0,.08);
+}
+.uyp-testi-card .quote {
+    font-family: Georgia, serif;
+    font-size: 60px;
+    line-height: 1;
+    color: #ff5722;
+    opacity: .25;
+    position: absolute;
+    top: 10px; right: 20px;
+}
+.uyp-testi-card > p {
+    color: var(--uyp-grey-700, #374151);
+    font-style: italic;
+    line-height: 1.7;
+    font-size: 14.5px;
+    margin: 0 0 22px;
+}
+.uyp-testi-card .testi-author {
+    display: flex; align-items: center; gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--uyp-grey-100);
+}
+.uyp-testi-card .testi-author .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 17px;
+}
+.uyp-testi-card .testi-author b {
+    display: block;
+    color: var(--uyp-grey-900);
+    font-size: 14.5px;
+}
+.uyp-testi-card .testi-author span {
+    color: var(--uyp-grey-600);
+    font-size: 12.5px;
+}
+
+/* =====================================================================
+   Animasi tambahan (hero floating, fade-in stagger, gradient shift)
+   ===================================================================== */
+@keyframes uyp-float-soft {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+.uyp-hero-card { animation: uyp-float-soft 4.5s ease-in-out infinite; }
+.uyp-hero-card.c2 { animation-delay: -1.5s; }
+.uyp-hero-card.c3 { animation-delay: -3s; }
+
+@keyframes uyp-gradient-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+.uyp-hero {
+    background-size: 200% 200%;
+    animation: uyp-gradient-shift 12s ease infinite;
+}
+
+/* Reveal delays */
+.uyp-reveal.delay-1 { transition-delay: .05s; }
+.uyp-reveal.delay-2 { transition-delay: .15s; }
+.uyp-reveal.delay-3 { transition-delay: .25s; }
+.uyp-reveal.delay-4 { transition-delay: .35s; }
+.uyp-reveal.delay-5 { transition-delay: .45s; }
+.uyp-reveal.delay-6 { transition-delay: .55s; }
+
+/* =====================================================================
+   Responsive overrides untuk section tambahan
+   ===================================================================== */
+@media (max-width: 1024px) {
+    .uyp-pillar-grid,
+    .uyp-prestasi-grid { grid-template-columns: repeat(2, 1fr); }
+    .uyp-fasilitas-grid,
+    .uyp-testi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+    .uyp-pillar-grid,
+    .uyp-prestasi-grid,
+    .uyp-fasilitas-grid,
+    .uyp-testi-grid { grid-template-columns: 1fr; }
+    .uyp-prestasi-card .v { font-size: 38px; }
+}
