@@ -1,0 +1,265 @@
+{% extends "public/_base.html" %}
+{% block title %}Universitas Yarsi Pratama — Inspiring, Innovating, Impacting{% endblock %}
+
+{% block content %}
+
+{# ─── Hero ────────────────────────────────────────────────────────── #}
+<section class="uyp-hero">
+    <div class="uyp-hero-shapes">
+        <span class="uyp-hero-shape s1"></span>
+        <span class="uyp-hero-shape s2"></span>
+        <span class="uyp-hero-shape s3"></span>
+    </div>
+    <div class="uyp-container uyp-hero-inner">
+        <div class="uyp-reveal">
+            <div class="uyp-hero-badge">✨ Penerimaan Mahasiswa Baru 2025 / 2026</div>
+            <h1>Wujudkan Masa Depan <span>Bersama Yarsi Pratama</span></h1>
+            <p class="lead">
+                Kampus modern berbasis riset & kompetensi dengan
+                kurikulum industri, dosen praktisi, dan fasilitas
+                belajar yang nyaman. Bergabunglah dan tumbuh bersama
+                ratusan calon pemimpin masa depan.
+            </p>
+            <div class="uyp-hero-cta">
+                <a href="{{ url_for('public.pmb') }}" class="uyp-btn uyp-btn-white uyp-btn-lg">Daftar Sekarang →</a>
+                <a href="{{ url_for('public.tentang') }}" class="uyp-btn uyp-btn-on-dark uyp-btn-lg">Jelajahi Kampus</a>
+            </div>
+        </div>
+        <div class="uyp-hero-art uyp-reveal delay-2">
+            <div class="uyp-hero-orb"></div>
+            <div class="uyp-hero-card c1">
+                <div class="ico">🎓</div>
+                <div><b data-counter="{{ stats.mahasiswa }}">{{ stats.mahasiswa }}</b><span>Mahasiswa Aktif</span></div>
+            </div>
+            <div class="uyp-hero-card c2">
+                <div class="ico">👨‍🏫</div>
+                <div><b data-counter="{{ stats.dosen }}">{{ stats.dosen }}</b><span>Dosen &amp; Praktisi</span></div>
+            </div>
+            <div class="uyp-hero-card c3">
+                <div class="ico">🏛️</div>
+                <div><b data-counter="{{ stats.prodi }}">{{ stats.prodi }}</b><span>Program Studi</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ─── Stats bar ───────────────────────────────────────────────────── #}
+<div class="uyp-container uyp-stats">
+    <div class="uyp-stats-grid uyp-reveal">
+        <div class="uyp-stat">
+            <div class="uyp-stat-ico">🎓</div>
+            <div class="uyp-stat-v" data-counter="{{ stats.mahasiswa }}">{{ stats.mahasiswa }}</div>
+            <div class="uyp-stat-l">Mahasiswa Aktif</div>
+        </div>
+        <div class="uyp-stat">
+            <div class="uyp-stat-ico">👨‍🏫</div>
+            <div class="uyp-stat-v" data-counter="{{ stats.dosen }}">{{ stats.dosen }}</div>
+            <div class="uyp-stat-l">Dosen Berkualitas</div>
+        </div>
+        <div class="uyp-stat">
+            <div class="uyp-stat-ico">🏛️</div>
+            <div class="uyp-stat-v" data-counter="{{ stats.prodi }}">{{ stats.prodi }}</div>
+            <div class="uyp-stat-l">Program Studi</div>
+        </div>
+        <div class="uyp-stat">
+            <div class="uyp-stat-ico">🏫</div>
+            <div class="uyp-stat-v" data-counter="{{ stats.fakultas }}">{{ stats.fakultas }}</div>
+            <div class="uyp-stat-l">Fakultas</div>
+        </div>
+    </div>
+</div>
+
+{# ─── Tentang ─────────────────────────────────────────────────────── #}
+<section class="uyp-section">
+    <div class="uyp-container uyp-about">
+        <div class="uyp-about-img uyp-reveal">
+            <div class="badge">📍 Kampus Bogor</div>
+        </div>
+        <div class="uyp-reveal delay-1">
+            <span class="uyp-section-head" style="display:block; text-align:left;">
+                <span class="eyebrow">Tentang Kampus</span>
+            </span>
+            <h2>Kampus Berkarakter,<br>Lulusan Berdaya Saing Global</h2>
+            <p>
+                Universitas Yarsi Pratama hadir sebagai kampus modern
+                yang memadukan nilai-nilai keilmuan, riset terapan,
+                dan pengalaman industri. Kami percaya pendidikan
+                terbaik bukan hanya tentang ilmu, tetapi juga membentuk
+                karakter dan kepedulian sosial.
+            </p>
+            <ul class="uyp-about-list">
+                <li>Kurikulum berbasis kompetensi (KKNI)</li>
+                <li>Dosen praktisi & akademisi senior</li>
+                <li>Laboratorium modern lengkap</li>
+                <li>Beasiswa hingga 100% UKT</li>
+                <li>Jaringan industri 50+ mitra</li>
+                <li>Sertifikasi profesi nasional</li>
+            </ul>
+            <div style="margin-top: 28px;">
+                <a href="{{ url_for('public.tentang') }}" class="uyp-btn uyp-btn-primary">Pelajari Lebih Lanjut →</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ─── Program Studi ───────────────────────────────────────────────── #}
+<section class="uyp-section" style="background: var(--uyp-grey-50);" id="prodi">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Program Studi</span>
+            <h2>Pilih Jalur <em>Karier Impian</em> Anda</h2>
+            <p>Delapan program studi unggulan dari dua fakultas, dirancang untuk membentuk profesional siap kerja.</p>
+        </div>
+
+        {% for fak, prodi_list in fakultas_map.items() %}
+        <div class="uyp-fakultas uyp-reveal">
+            <div class="uyp-fakultas-name">{{ fak }}</div>
+            <div class="uyp-prodi-grid">
+                {% for p in prodi_list %}
+                <div class="uyp-prodi-card">
+                    <div class="ico">
+                        {% if 'Kebidanan' in p.nama %}🤰
+                        {% elif 'Radiologi' in p.nama %}🩻
+                        {% elif 'Gizi' in p.nama %}🥗
+                        {% elif 'Kesehatan' in p.nama %}🏥
+                        {% elif 'Manajemen' in p.nama %}📊
+                        {% elif 'Hukum' in p.nama %}⚖️
+                        {% elif 'Informatika' in p.nama %}💻
+                        {% elif 'Komunikasi' in p.nama %}📡
+                        {% else %}🎓{% endif %}
+                    </div>
+                    <h4>{{ p.nama }}</h4>
+                    <p>{{ p.deskripsi or 'Program studi unggulan dengan kurikulum berbasis kompetensi.' }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+
+{# ─── Berita terbaru ──────────────────────────────────────────────── #}
+{% if berita_terbaru %}
+<section class="uyp-section">
+    <div class="uyp-container">
+        <div class="uyp-section-head split uyp-reveal">
+            <div>
+                <span class="eyebrow">Berita Kampus</span>
+                <h2>Info <em>Terbaru</em> dari Yarsi Pratama</h2>
+            </div>
+            <a href="{{ url_for('public.berita_list') }}" class="uyp-btn uyp-btn-outline">Lihat Semua Berita →</a>
+        </div>
+        <div class="uyp-card-grid">
+            {% for b in berita_terbaru %}
+            <article class="uyp-card uyp-reveal delay-{{ loop.index }}">
+                <div class="uyp-card-media">
+                    {% if b.gambar %}
+                        <img src="{{ url_for('static', filename=b.gambar) }}" alt="{{ b.judul }}">
+                    {% else %}
+                        <div class="placeholder">📰</div>
+                    {% endif %}
+                    {% if b.kategori %}<span class="badge">{{ b.kategori }}</span>{% endif %}
+                </div>
+                <div class="uyp-card-body">
+                    <div class="uyp-card-meta">
+                        <span>📅 {{ b.published_at.strftime('%d %b %Y') }}</span>
+                        <span>👁 {{ b.views }} dilihat</span>
+                    </div>
+                    <h3>{{ b.judul }}</h3>
+                    <p>{{ b.ringkasan or b.isi[:140] }}</p>
+                    <a href="{{ url_for('public.berita_detail', bid=b.id) }}" class="uyp-card-link">Selengkapnya</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# ─── Kegiatan ────────────────────────────────────────────────────── #}
+{% if kegiatan_terbaru %}
+<section class="uyp-section" style="background: var(--uyp-grey-50);">
+    <div class="uyp-container">
+        <div class="uyp-section-head split uyp-reveal">
+            <div>
+                <span class="eyebrow">Kegiatan Kampus</span>
+                <h2><em>Event</em> &amp; Kegiatan Mahasiswa</h2>
+            </div>
+            <a href="{{ url_for('public.kegiatan_list') }}" class="uyp-btn uyp-btn-outline">Lihat Semua Kegiatan →</a>
+        </div>
+        <div class="uyp-card-grid">
+            {% for k in kegiatan_terbaru %}
+            <article class="uyp-card uyp-reveal delay-{{ loop.index }}">
+                <div class="uyp-card-media">
+                    {% if k.gambar %}
+                        <img src="{{ url_for('static', filename=k.gambar) }}" alt="{{ k.judul }}">
+                    {% else %}
+                        <div class="placeholder">🎉</div>
+                    {% endif %}
+                    <span class="badge">Kegiatan</span>
+                </div>
+                <div class="uyp-card-body">
+                    <div class="uyp-card-meta">
+                        {% if k.tanggal_mulai %}<span>📅 {{ k.tanggal_mulai.strftime('%d %b %Y') }}</span>{% endif %}
+                        {% if k.lokasi %}<span>📍 {{ k.lokasi }}</span>{% endif %}
+                    </div>
+                    <h3>{{ k.judul }}</h3>
+                    <p>{{ k.ringkasan or k.isi[:140] }}</p>
+                    <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" class="uyp-card-link">Selengkapnya</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# ─── Kerja sama ──────────────────────────────────────────────────── #}
+{% if kerjasama_unggulan %}
+<section class="uyp-section">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Mitra Strategis</span>
+            <h2>Tumbuh Bersama <em>Industri Terbaik</em></h2>
+            <p>Kerja sama strategis dengan industri, pemerintah, dan institusi pendidikan untuk mempersiapkan lulusan siap kerja.</p>
+        </div>
+        <div class="uyp-mitra-grid">
+            {% for ks in kerjasama_unggulan %}
+            <div class="uyp-mitra-card uyp-reveal">
+                <div class="uyp-mitra-logo">
+                    {% if ks.logo %}
+                        <img src="{{ url_for('static', filename=ks.logo) }}" alt="{{ ks.mitra }}">
+                    {% else %}
+                        {{ ks.mitra[0]|upper }}
+                    {% endif %}
+                </div>
+                <h4>{{ ks.mitra }}</h4>
+                {% if ks.kategori %}<span class="kategori">{{ ks.kategori }}</span>{% endif %}
+                <p><a href="{{ url_for('public.kerjasama_detail', kid=ks.id) }}" class="uyp-card-link" style="padding-top:8px;">Detail</a></p>
+            </div>
+            {% endfor %}
+        </div>
+        <div style="text-align:center; margin-top: 36px;">
+            <a href="{{ url_for('public.kerjasama_list') }}" class="uyp-btn uyp-btn-outline">Lihat Semua Mitra →</a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# ─── CTA banner ──────────────────────────────────────────────────── #}
+<section class="uyp-section-tight">
+    <div class="uyp-container">
+        <div class="uyp-cta-banner uyp-reveal">
+            <div>
+                <h3>Ingin bergabung dengan Yarsi Pratama?</h3>
+                <p>Pendaftaran mahasiswa baru tahun akademik 2025/2026 telah dibuka. Tersedia beasiswa hingga 100% UKT untuk calon mahasiswa berprestasi.</p>
+            </div>
+            <div class="uyp-cta-banner-cta">
+                <a href="{{ url_for('public.pmb') }}" class="uyp-btn uyp-btn-white uyp-btn-lg">Daftar Sekarang</a>
+                <a href="{{ url_for('public.pmb') }}#beasiswa" class="uyp-btn uyp-btn-on-dark uyp-btn-lg">Info Beasiswa</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

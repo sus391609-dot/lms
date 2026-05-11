@@ -1,0 +1,65 @@
+{% extends "public/_base.html" %}
+{% block title %}Kegiatan — Universitas Yarsi Pratama{% endblock %}
+
+{% block content %}
+<section class="uyp-pmb-hero" style="padding: 80px 0;">
+    <div class="uyp-container" style="text-align:center; position:relative;">
+        <h1 class="uyp-reveal">Kegiatan <span>Kampus</span></h1>
+        <p class="uyp-reveal delay-1">Event, seminar, workshop, dan kegiatan mahasiswa terbaru di Yarsi Pratama.</p>
+    </div>
+</section>
+
+<section class="uyp-section">
+    <div class="uyp-container">
+        <form class="uyp-filter uyp-reveal" method="get">
+            <input type="text" name="q" placeholder="Cari kegiatan…" value="{{ q }}">
+            <button type="submit">Cari</button>
+        </form>
+
+        {% if kegiatan_list %}
+        <div class="uyp-card-grid">
+            {% for k in kegiatan_list %}
+            <article class="uyp-card uyp-reveal">
+                <div class="uyp-card-media">
+                    {% if k.gambar %}
+                        <img src="{{ url_for('static', filename=k.gambar) }}" alt="{{ k.judul }}">
+                    {% else %}
+                        <div class="placeholder">🎉</div>
+                    {% endif %}
+                    <span class="badge">Kegiatan</span>
+                </div>
+                <div class="uyp-card-body">
+                    <div class="uyp-card-meta">
+                        {% if k.tanggal_mulai %}<span>📅 {{ k.tanggal_mulai.strftime('%d %b %Y') }}</span>{% endif %}
+                        {% if k.lokasi %}<span>📍 {{ k.lokasi }}</span>{% endif %}
+                    </div>
+                    <h3>{{ k.judul }}</h3>
+                    <p>{{ k.ringkasan or k.isi[:140] }}</p>
+                    <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" class="uyp-card-link">Selengkapnya</a>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+
+        {% if pages > 1 %}
+        <nav class="uyp-pagination">
+            {% if page > 1 %}<a href="{{ url_for('public.kegiatan_list', page=page-1, q=q) }}">‹ Sebelumnya</a>
+            {% else %}<span class="disabled">‹ Sebelumnya</span>{% endif %}
+            {% for p in range(1, pages + 1) %}
+                {% if p == page %}<span class="active">{{ p }}</span>
+                {% else %}<a href="{{ url_for('public.kegiatan_list', page=p, q=q) }}">{{ p }}</a>{% endif %}
+            {% endfor %}
+            {% if page < pages %}<a href="{{ url_for('public.kegiatan_list', page=page+1, q=q) }}">Berikutnya ›</a>
+            {% else %}<span class="disabled">Berikutnya ›</span>{% endif %}
+        </nav>
+        {% endif %}
+        {% else %}
+        <div style="text-align:center; padding: 80px 24px; color: var(--uyp-muted);">
+            <div style="font-size:64px; margin-bottom:14px;">📅</div>
+            <h3 style="font-size:20px;">Belum ada kegiatan</h3>
+            <p style="margin-top:8px;">Pantau terus halaman ini untuk informasi kegiatan terbaru.</p>
+        </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

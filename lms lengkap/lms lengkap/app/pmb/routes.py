@@ -1,17 +1,15 @@
 """
 app/pmb/routes.py
 =================
-Halaman Penerimaan Mahasiswa Baru (PMB) untuk guest. Tidak butuh login.
-Berisi info prodi yang dibuka & link ke pendaftaran mahasiswa.
+Halaman PMB lama (kompatibilitas mundur). Sekarang redirect ke
+``public.pmb`` yang berisi tampilan modern lengkap (beasiswa, brosur,
+syarat pendaftaran, formulir daftar sekarang).
 """
-from flask import Blueprint, render_template
-
-from app.models import ProgramStudi
+from flask import Blueprint, redirect, url_for
 
 bp = Blueprint("pmb", __name__)
 
 
 @bp.route("/")
 def index():
-    prodi_list = ProgramStudi.query.all()
-    return render_template("pmb/index.html", prodi_list=prodi_list)
+    return redirect(url_for("public.pmb"))

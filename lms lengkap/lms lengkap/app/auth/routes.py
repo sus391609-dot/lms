@@ -41,7 +41,6 @@ def _login_stats() -> dict:
     }
 
 
-@bp.route("/", methods=["GET", "POST"])
 @bp.route("/login", methods=["GET", "POST"])
 def landing():
     if current_user.is_authenticated:

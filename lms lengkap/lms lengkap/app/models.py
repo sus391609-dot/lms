@@ -565,3 +565,97 @@ class LoginActivity(db.Model):
     role = db.Column(db.String(20), nullable=False)
     prodi_id = db.Column(db.Integer, db.ForeignKey("program_studi.id"), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+
+# =====================================================================
+# KONTEN PUBLIK (Berita, Kegiatan, Kerja Sama)
+# =====================================================================
+class Berita(db.Model):
+    """Berita kampus untuk halaman publik."""
+
+    __tablename__ = "berita"
+    id = db.Column(db.Integer, primary_key=True)
+    judul = db.Column(db.String(200), nullable=False)
+    ringkasan = db.Column(db.String(300), nullable=True)
+    isi = db.Column(db.Text, nullable=False)
+    gambar = db.Column(db.String(255), nullable=True)
+    kategori = db.Column(db.String(60), nullable=True, default="Umum")
+    penulis_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    published_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    status = db.Column(db.String(20), default="published")  # published | draft
+    views = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    penulis = db.relationship("User", foreign_keys=[penulis_id])
+
+
+class Kegiatan(db.Model):
+    """Kegiatan / event kampus."""
+
+    __tablename__ = "kegiatan"
+    id = db.Column(db.Integer, primary_key=True)
+    judul = db.Column(db.String(200), nullable=False)
+    ringkasan = db.Column(db.String(300), nullable=True)
+    isi = db.Column(db.Text, nullable=False)
+    gambar = db.Column(db.String(255), nullable=True)
+    lokasi = db.Column(db.String(200), nullable=True)
+    tanggal_mulai = db.Column(db.DateTime, nullable=True)
+    tanggal_selesai = db.Column(db.DateTime, nullable=True)
+    penyelenggara = db.Column(db.String(120), nullable=True)
+    penulis_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    status = db.Column(db.String(20), default="published")
+    views = db.Column(db.Integer, default=0, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    penulis = db.relationship("User", foreign_keys=[penulis_id])
+
+
+class KerjaSama(db.Model):
+    """Mitra kerja sama kampus (MoU / industri / pemerintah)."""
+
+    __tablename__ = "kerjasama"
+    id = db.Column(db.Integer, primary_key=True)
+    judul = db.Column(db.String(200), nullable=False)
+    mitra = db.Column(db.String(160), nullable=False)
+    ringkasan = db.Column(db.String(300), nullable=True)
+    isi = db.Column(db.Text, nullable=False)
+    logo = db.Column(db.String(255), nullable=True)  # logo mitra / banner
+    kategori = db.Column(db.String(60), nullable=True, default="Industri")
+    tanggal_mou = db.Column(db.Date, nullable=True)
+    masa_berlaku = db.Column(db.String(60), nullable=True)
+    penulis_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    status = db.Column(db.String(20), default="published")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
+    )
+
+    penulis = db.relationship("User", foreign_keys=[penulis_id])
+
+
+class PendaftaranPMB(db.Model):
+    """Form pendaftar PMB (lead) — tidak otomatis membuat akun.
+
+    Digunakan untuk menampung pendaftar PMB dari halaman publik supaya
+    admin dapat melakukan follow-up sebelum akun mahasiswa dibuat resmi.
+    """
+
+    __tablename__ = "pendaftaran_pmb"
+    id = db.Column(db.Integer, primary_key=True)
+    nama_lengkap = db.Column(db.String(160), nullable=False)
+    email = db.Column(db.String(160), nullable=False, index=True)
+    no_telp = db.Column(db.String(30), nullable=False)
+    asal_sekolah = db.Column(db.String(160), nullable=True)
+    prodi_id = db.Column(db.Integer, db.ForeignKey("program_studi.id"), nullable=False)
+    jalur = db.Column(db.String(60), nullable=True, default="Reguler")
+    catatan = db.Column(db.Text, nullable=True)
+    status = db.Column(db.String(30), default="baru")  # baru | diproses | diterima | ditolak
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    prodi = db.relationship("ProgramStudi")

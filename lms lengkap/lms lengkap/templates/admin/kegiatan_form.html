@@ -1,0 +1,81 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}{% if k %}Edit Kegiatan{% else %}Upload Kegiatan Baru{% endif %}{% endblock %}
+{% block content %}
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="field">
+            <label>Judul Kegiatan *</label>
+            <input type="text" name="judul" required maxlength="200"
+                   value="{{ k.judul if k else '' }}"
+                   placeholder="Contoh: Seminar Nasional Teknologi 2025">
+        </div>
+
+        <div class="field">
+            <label>Ringkasan (opsional)</label>
+            <textarea name="ringkasan" rows="2" maxlength="300"
+                      placeholder="Ringkasan singkat yang tampil di kartu kegiatan…">{{ k.ringkasan if k else '' }}</textarea>
+        </div>
+
+        <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px;">
+            <div class="field">
+                <label>Tanggal Mulai</label>
+                <input type="datetime-local" name="tanggal_mulai"
+                       value="{{ k.tanggal_mulai.strftime('%Y-%m-%dT%H:%M') if k and k.tanggal_mulai else '' }}">
+            </div>
+            <div class="field">
+                <label>Tanggal Selesai</label>
+                <input type="datetime-local" name="tanggal_selesai"
+                       value="{{ k.tanggal_selesai.strftime('%Y-%m-%dT%H:%M') if k and k.tanggal_selesai else '' }}">
+            </div>
+        </div>
+
+        <div class="grid-2" style="grid-template-columns: 1fr 1fr; gap:16px;">
+            <div class="field">
+                <label>Lokasi</label>
+                <input type="text" name="lokasi" maxlength="200"
+                       value="{{ k.lokasi if k else '' }}"
+                       placeholder="Auditorium Kampus / Online / dst.">
+            </div>
+            <div class="field">
+                <label>Penyelenggara</label>
+                <input type="text" name="penyelenggara" maxlength="120"
+                       value="{{ k.penyelenggara if k else '' }}"
+                       placeholder="BEM / Prodi / Fakultas / Eksternal">
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Status</label>
+            <select name="status">
+                <option value="published" {% if not k or k.status == 'published' %}selected{% endif %}>📢 Publish</option>
+                <option value="draft" {% if k and k.status == 'draft' %}selected{% endif %}>📝 Draft</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label>Gambar / Poster (PNG / JPG)</label>
+            {% if k and k.gambar %}
+            <div style="margin-bottom:8px;">
+                <img src="{{ url_for('static', filename=k.gambar) }}"
+                     style="max-height:160px; border-radius:8px; border:1px solid var(--grey-200);">
+                <div style="font-size:12px; color:var(--grey-600); margin-top:4px;">Pilih file baru untuk mengganti.</div>
+            </div>
+            {% endif %}
+            <input type="file" name="gambar" accept="image/png,image/jpeg">
+        </div>
+
+        <div class="field">
+            <label>Deskripsi Kegiatan *</label>
+            <textarea name="isi" required rows="14"
+                      placeholder="Jelaskan detail kegiatan: latar belakang, agenda, pembicara, dst.">{{ k.isi if k else '' }}</textarea>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap;">
+            <a href="{{ url_for('admin.kegiatan_list') }}" class="btn btn-secondary">Batal</a>
+            <button class="btn btn-primary" type="submit">💾 Simpan Kegiatan</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
