@@ -1,0 +1,128 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Poin Dosen{% endblock %}
+{% block content %}
+
+{# Summary banner #}
+<div class="poin-banner">
+    <div class="poin-banner-inner">
+        <div class="poin-banner-icon">â­</div>
+        <div class="poin-banner-info">
+            <div class="poin-banner-title">Poin Evaluasi Dosen</div>
+            <div class="poin-banner-sub">Berikan penilaian untuk dosen pengajar Anda semester ini</div>
+        </div>
+    </div>
+    <div class="poin-stats">
+        <div class="poin-stat-item">
+            <div class="poin-stat-val">{{ total }}</div>
+            <div class="poin-stat-label">Total Kuota</div>
+        </div>
+        <div class="poin-stat-item">
+            <div class="poin-stat-val" style="color:var(--green);">{{ total - sisa }}</div>
+            <div class="poin-stat-label">Terpakai</div>
+        </div>
+        <div class="poin-stat-item">
+            <div class="poin-stat-val" style="color:var(--orange);">{{ sisa }}</div>
+            <div class="poin-stat-label">Sisa</div>
+        </div>
+    </div>
+</div>
+
+{# Dosen list #}
+{% if dosen_list %}
+<div class="poin-dosen-grid">
+    {% for d in dosen_list %}
+    {% set p = map_poin.get(d.id) %}
+    <div class="poin-dosen-card">
+        <div class="poin-dosen-header">
+            <div class="poin-dosen-avatar">
+                {% if d.foto %}
+                <img src="{{ url_for('static', filename=d.foto) }}" alt="">
+                {% else %}
+                <div class="poin-dosen-avatar-ph">{{ d.nama[0]|upper }}</div>
+                {% endif %}
+            </div>
+            <div class="poin-dosen-info">
+                <div class="poin-dosen-name">{{ d.nama }}</div>
+                <div class="poin-dosen-meta">
+                    {% if d.profil_dosen %}NIDN: {{ d.profil_dosen.nidn }}{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="poin-dosen-score">
+            <div class="poin-score-circle {% if p and p.nilai_poin > 0 %}active{% endif %}">
+                {{ p.nilai_poin if p else 0 }}
+            </div>
+            <span class="poin-score-label">Poin saat ini</span>
+        </div>
+
+        {% if p %}
+        {# âœ… Poin sudah diberikan â€” tampilkan status terkunci #}
+        <div style="background:#f0fdf4; border:1.5px solid #86efac; border-radius:10px; padding:14px; text-align:center;">
+            <div style="font-size:22px; margin-bottom:6px;">ðŸ”’</div>
+            <div style="font-weight:700; color:#16a34a; font-size:14px;">Poin Terkunci</div>
+            <div style="color:var(--grey-600); font-size:12px; margin-top:4px;">
+                Anda telah memberikan <b>{{ p.nilai_poin }} poin</b> kepada dosen ini.
+            </div>
+            {% if p.catatan %}
+            <div style="color:var(--grey-500); font-size:12px; margin-top:4px; font-style:italic;">
+                "{{ p.catatan }}"
+            </div>
+            {% endif %}
+            <span class="badge badge-green" style="margin-top:8px; display:inline-block;">Sudah Dikirim</span>
+        </div>
+        {% else %}
+        {# Form input poin #}
+        <form method="post" class="poin-dosen-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="dosen_id" value="{{ d.id }}">
+            <div class="field" style="margin-bottom:10px;">
+                <label>Beri Poin (0 - {{ total }})</label>
+                <input type="number" name="nilai" min="0" max="{{ total }}" value="0"
+                       placeholder="0" style="text-align:center; font-size:16px; font-weight:700;">
+            </div>
+            <div class="field" style="margin-bottom:10px;">
+                <label>Catatan (opsional)</label>
+                <input type="text" name="catatan" placeholder="Tuliskan komentar...">
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">ðŸ’¾ Kirim Poin</button>
+            <p style="font-size:11px; color:var(--grey-500); text-align:center; margin-top:6px;">
+                âš ï¸ Poin yang sudah dikirim <b>tidak dapat diubah</b>.
+            </p>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card">
+    <p style="color:var(--grey-600); text-align:center; padding:20px;">
+        â­ Belum ada dosen pengajar untuk semester ini.
+    </p>
+</div>
+{% endif %}
+
+{%- if view == 'dosen_list' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div style="font-weight:700; font-size:15px;">Dosen Pengajar Saya</div>
+    <a href="{{ url_for('mahasiswa.poin') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+</div>
+<div class="grid-3">
+    {% for d in dosen_list %}
+    <div class="card" style="margin-bottom:0; text-align:center;">
+        {% if d.foto %}
+            <img src="{{ url_for('static', filename=d.foto) }}" style="width:80px; height:80px; border-radius:50%; object-fit:cover; margin:0 auto;">
+        {% else %}
+            <div style="width:80px; height:80px; border-radius:50%; margin:0 auto; background:var(--orange-l); color:var(--orange); display:flex; align-items:center; justify-content:center; font-size:30px; font-weight:800;">{{ d.nama[0]|upper }}</div>
+        {% endif %}
+        <h3 style="margin-top:10px; font-size:16px;">{{ d.nama }}</h3>
+        <p style="font-size:12px; color:var(--grey-600);">{{ d.email }}</p>
+        {% if d.profil_dosen %}
+            <p style="font-size:12px; color:var(--grey-600);">NIDN: {{ d.profil_dosen.nidn }}</p>
+            <p style="font-size:12px;">{{ d.profil_dosen.jabatan or '-' }}</p>
+        {% endif %}
+    </div>
+    {% else %}
+    <p style="color:var(--grey-600);">Belum ada dosen.</p>
+    {% endfor %}
+{%- endif %}
+{% endblock %}

@@ -1,0 +1,57 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Profil Saya{% endblock %}
+{% block content %}
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div style="display:flex; gap:14px; align-items:center; margin-bottom:18px;">
+            {% if current_user.foto %}
+                <img src="{{ url_for('static', filename=current_user.foto) }}" style="width:90px; height:90px; border-radius:12px; object-fit:cover;">
+            {% else %}
+                <div style="width:90px; height:90px; border-radius:12px; background:var(--orange-l); color:var(--orange); display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:800;">{{ current_user.nama[0]|upper }}</div>
+            {% endif %}
+            <div>
+                <div style="font-weight:700; font-size:18px;">{{ current_user.nama }}</div>
+                <div style="color:var(--grey-600); font-size:13px;">NIM: {{ profil.nim }} - {{ profil.prodi.nama }}
+                    {% if profil.jenis_kelas == 'nonreguler' %}
+                        <span class="badge badge-orange">Non-Reguler</span>
+                    {% else %}
+                        <span class="badge badge-green">Reguler</span>
+                    {% endif %}
+                </div>
+                <input type="file" name="foto" accept=".png,.jpg,.jpeg" style="margin-top:8px; font-size:12px;">
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="field"><label>Nama</label><input type="text" name="nama" value="{{ current_user.nama }}"></div>
+            <div class="field"><label>Email</label><input type="email" value="{{ current_user.email }}" disabled></div>
+            <div class="field"><label>NIM</label><input type="text" value="{{ profil.nim }}" disabled></div>
+            <div class="field"><label>Prodi</label><input type="text" value="{{ profil.prodi.nama }}" disabled></div>
+            <div class="field"><label>Semester</label><input type="number" value="{{ profil.semester }}" disabled></div>
+            <div class="field"><label>Angkatan</label><input type="number" value="{{ profil.angkatan }}" disabled></div>
+            <div class="field">
+                <label>Status Kelas</label>
+                <div style="display:flex; align-items:center; gap:8px; padding:8px 0;">
+                    {% if profil.jenis_kelas == 'nonreguler' %}
+                        <span class="badge badge-orange" style="font-size:14px; padding:6px 14px;">ðŸ« Non-Reguler</span>
+                    {% else %}
+                        <span class="badge badge-green" style="font-size:14px; padding:6px 14px;">ðŸŽ“ Reguler</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="field"><label>No Telp</label><input type="text" name="no_telp" value="{{ current_user.no_telp or '' }}"></div>
+            <div class="field"><label>Alamat</label><input type="text" name="alamat" value="{{ current_user.alamat or '' }}"></div>
+            <div class="field"><label>Password Baru (opsional)</label><input type="password" name="password" placeholder="Kosongkan jika tidak ganti"></div>
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+    </form>
+</div>
+
+{%- if view == 'organisasi' %}
+<div class="card">
+    <div class="card-title">Keaktifan Organisasi Anda</div>
+    <p style="color:var(--grey-600); font-size:13px;">Data ini diinput oleh admin akademik berdasarkan partisipasi Anda di organisasi kampus.</p>
+    <div style="white-space:pre-wrap; padding:14px; background:var(--orange-l); border-radius:10px; min-height:160px;">{{ profil.organisasi or '(Belum ada data organisasi)' }}</div>
+{%- endif %}
+{% endblock %}

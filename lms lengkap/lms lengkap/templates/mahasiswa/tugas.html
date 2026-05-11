@@ -1,0 +1,74 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}{{ 'Tugas: ' + t.judul if view == 'detail' else 'Tugas' }}{% endblock %}
+{% block content %}
+
+{% if view == 'detail' %}
+<a href="{{ url_for('mahasiswa.tugas_list') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">&#8592; Kembali</a>
+<div class="card">
+    <div class="card-title">{{ t.judul }} <span class="badge badge-blue">{{ t.jenis|upper }}</span></div>
+    <p style="color:var(--grey-600);">Mata Kuliah: <b>{{ t.kelas.matkul.nama }}</b></p>
+    <p>Deadline: <b>{{ t.deadline|tgl_id if t.deadline else 'Tidak ada' }}</b> | Bobot: <b>{{ t.bobot }}%</b></p>
+    <div style="margin-top:12px; white-space:pre-wrap;">{{ t.deskripsi or '-' }}</div>
+    {% if t.file_path %}
+    <p style="margin-top:8px;"><a class="btn btn-secondary btn-sm" href="{{ url_for('static', filename=t.file_path) }}" target="_blank">&#128190; Unduh File Tugas</a></p>
+    {% endif %}
+</div>
+<div class="card">
+    <div class="card-title">Kirim Jawaban</div>
+    {% if jawaban and jawaban.nilai is not none %}
+    <div class="alert alert-success">Sudah dinilai: <b>{{ jawaban.nilai }}</b><br>Feedback: {{ jawaban.feedback or '-' }}</div>
+    {% endif %}
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label>Jawaban (teks)</label><textarea name="teks" rows="6" placeholder="Tulis jawaban Anda...">{{ jawaban.teks if jawaban else '' }}</textarea></div>
+        <div class="field">
+            <label>Upload File (PDF/DOCX/PPTX/JPG/PNG, max 20 MB)</label>
+            <input type="file" name="file" accept=".pdf,.docx,.doc,.pptx,.ppt,.png,.jpg,.jpeg">
+            {% if jawaban and jawaban.file_path %}<small>File saat ini: <a href="{{ url_for('static', filename=jawaban.file_path) }}" target="_blank">Lihat</a></small>{% endif %}
+        </div>
+        <button class="btn btn-primary" type="submit">Kirim</button>
+    </form>
+</div>
+
+{% else %}
+<div class="card">
+    <div class="card-title">&#128221; Daftar Tugas</div>
+    <div class="table-wrap hide-mobile">
+    <table class="tbl">
+        <thead><tr><th>Judul</th><th>Mata Kuliah</th><th>Jenis</th><th>Deadline</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for t in tugas %}
+            {% set j = jawaban_map.get(t.id) %}
+            <tr>
+                <td>{{ t.judul }}</td>
+                <td>{{ t.kelas.matkul.nama }}</td>
+                <td><span class="badge badge-blue">{{ t.jenis|upper }}</span></td>
+                <td>{{ t.deadline|tgl_id if t.deadline else '-' }}</td>
+                <td>{% if j and j.nilai is not none %}<span class="badge badge-green">Dinilai: {{ j.nilai }}</span>{% elif j %}<span class="badge badge-orange">Dikirim</span>{% else %}<span class="badge badge-grey">Belum kirim</span>{% endif %}</td>
+                <td><a class="btn btn-outline btn-sm" href="{{ url_for('mahasiswa.tugas_detail', tid=t.id) }}">Buka</a></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" style="text-align:center; color:var(--grey-600);">Belum ada tugas.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <div class="show-mobile">
+        {% for t in tugas %}
+        {% set j = jawaban_map.get(t.id) %}
+        <a href="{{ url_for('mahasiswa.tugas_detail', tid=t.id) }}" class="mobile-card-link">
+            <div class="mobile-card-body">
+                <div style="display:flex; justify-content:space-between; align-items:start; gap:8px;">
+                    <div class="mobile-card-title">{{ t.judul }}</div>
+                    <span class="badge badge-blue" style="flex-shrink:0;">{{ t.jenis|upper }}</span>
+                </div>
+                <div class="mobile-card-meta"><span>&#128218; {{ t.kelas.matkul.nama }}</span></div>
+                <div class="mobile-card-meta"><span>&#128197; {{ t.deadline|tgl_id if t.deadline else 'Tanpa deadline' }}</span></div>
+                <div style="margin-top:6px;">{% if j and j.nilai is not none %}<span class="badge badge-green">Dinilai: {{ j.nilai }}</span>{% elif j %}<span class="badge badge-orange">Dikirim</span>{% else %}<span class="badge badge-grey">Belum kirim</span>{% endif %}</div>
+            </div>
+        </a>
+        {% else %}<p style="text-align:center; color:var(--grey-600); padding:20px;">Belum ada tugas.</p>{% endfor %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,132 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}
+  {% if view == 'chat' %}Chat · {{ th.dosen.nama }}
+  {% elif view == 'history' %}History Konseling
+  {% else %}Konseling{% endif %}
+{% endblock %}
+{% block content %}
+
+{% if not view or view == 'list' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div>
+        <div style="font-weight:700; font-size:15px;">Tiket Konseling</div>
+        <div class="muted-sm">Kirim tiket, tunggu dosen meng-ACC, lalu percakapan aktif. Tiket yang diakhiri tersimpan di <a href="{{ url_for('mahasiswa.konseling_history') }}">History</a>.</div>
+    </div>
+    <a href="{{ url_for('mahasiswa.konseling_history') }}" class="btn btn-outline">&#128230; History</a>
+</div>
+<div class="grid-2">
+    <div>
+        <div class="card">
+            <div class="card-title">Menunggu Dosen ACC ({{ pending|length }})</div>
+            {% if pending %}
+                {% for th in pending %}
+                <a href="{{ url_for('mahasiswa.konseling_chat', tid=th.id) }}" class="list-row" style="color:inherit; text-decoration:none;">
+                    <div><b>{{ th.dosen.nama }}</b>{% if th.topik %}<div class="muted-sm">{{ th.topik }}</div>{% endif %}<div class="muted-sm">Dikirim {{ th.created_at|tgl_id }}</div></div>
+                    <span class="badge warning">Menunggu ACC</span>
+                </a>
+                {% endfor %}
+            {% else %}<p class="muted">Tidak ada tiket yang menunggu.</p>{% endif %}
+        </div>
+        <div class="card">
+            <div class="card-title">Percakapan Aktif ({{ active|length }})</div>
+            {% if active %}
+                {% for th in active %}
+                <a href="{{ url_for('mahasiswa.konseling_chat', tid=th.id) }}" class="list-row" style="color:inherit; text-decoration:none;">
+                    <div><b>{{ th.dosen.nama }}</b>{% if th.topik %}<div class="muted-sm">{{ th.topik }}</div>{% endif %}<div class="muted-sm">Update {{ th.last_message_at|tgl_id }}</div></div>
+                    <span class="badge success">Aktif</span>
+                </a>
+                {% endfor %}
+            {% else %}<p class="muted">Belum ada percakapan aktif.</p>{% endif %}
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">Mulai Konseling Baru</div>
+        <p class="muted-sm">Mahasiswa dapat konseling ke seluruh dosen kampus (lintas prodi).</p>
+        <form method="post" action="{{ url_for('mahasiswa.konseling_start') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field"><label>Pilih Dosen</label>
+                <select name="dosen_id" required><option value="">-- Pilih dosen --</option>
+                    {% for d in semua_dosen %}<option value="{{ d.id }}">{{ d.nama }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="field"><label>Topik (opsional)</label><input type="text" name="topik" maxlength="160" placeholder="contoh: Konsultasi tugas akhir"></div>
+            <button class="btn btn-primary btn-block" type="submit">Kirim Tiket</button>
+        </form>
+    </div>
+</div>
+
+{% elif view == 'chat' %}
+<div class="card">
+    <div class="flex-between" style="align-items:flex-start; gap:12px; flex-wrap:wrap;">
+        <div>
+            <div class="card-title" style="margin:0;">{{ th.dosen.nama }}</div>
+            <div class="muted-sm">
+                {% if th.topik %}{{ th.topik }} · {% endif %}
+                {% if th.status == "pending" %}<span class="badge warning">Menunggu ACC Dosen</span>
+                {% elif th.status == "active" %}<span class="badge success">Aktif</span>
+                {% else %}<span class="badge grey">Ditutup</span>{% endif %}
+                {% if th.accepted_at %} · ACC {{ th.accepted_at|tgl_id }}{% endif %}
+            </div>
+        </div>
+        {% if th.status in ("pending", "active") %}
+        <form method="post" action="{{ url_for('mahasiswa.konseling_end', tid=th.id) }}"
+              onsubmit="return confirm('Akhiri tiket konseling ini? Riwayat tersimpan tapi tidak bisa balas lagi.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-outline btn-sm" type="submit">Akhiri Tiket</button>
+        </form>
+        {% endif %}
+    </div>
+    <div class="chat-box">
+    {% for p in pesan %}
+        <div class="chat-line{% if p.sender_id == current_user.id %} me{% endif %}">
+            <div class="chat-bubble{% if p.sender_id == current_user.id %} me{% endif %}">
+                <div class="chat-meta">{{ p.sender.nama }} · {{ p.created_at.strftime('%H:%M %d/%m') }}</div>
+                <div>{{ p.isi }}</div>
+            </div>
+        </div>
+    {% else %}<p class="muted" style="text-align:center;">Belum ada pesan.</p>{% endfor %}
+    </div>
+    {% if th.status == "active" %}
+    <form method="post" style="display:flex; gap:8px; margin-top:10px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="text" name="isi" required placeholder="Ketik pesan..." style="flex:1; padding:10px 12px; border:1px solid var(--grey-200); border-radius:10px;">
+        <button class="btn btn-primary" type="submit">Kirim</button>
+    </form>
+    {% elif th.status == "pending" %}
+    <div class="alert alert-warning" style="margin-top:10px;">Tiket ini sedang menunggu ACC dari dosen. Anda dapat mengirim pesan setelah dosen meng-ACC.</div>
+    {% else %}
+    <div class="alert alert-info" style="margin-top:10px;">Tiket sudah diakhiri oleh {{ th.ended_by or "salah satu pihak" }} pada {{ th.ended_at|tgl_id }}.</div>
+    {% endif %}
+</div>
+
+{% elif view == 'history' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div><div style="font-weight:700; font-size:15px;">Riwayat Konseling</div><div class="muted-sm">Hanya Anda yang bisa menghapus riwayat di sisi Anda. Dosen tetap menyimpan salinannya.</div></div>
+    <a href="{{ url_for('mahasiswa.konseling_list') }}" class="btn btn-outline">&#8592; Kembali</a>
+</div>
+<div class="card">
+    {% if threads %}
+    <table class="tbl">
+        <thead><tr><th>Dosen</th><th>Topik</th><th>Ditutup</th><th>Aksi</th></tr></thead>
+        <tbody>
+        {% for th in threads %}
+        <tr>
+            <td><b>{{ th.dosen.nama }}</b></td>
+            <td>{{ th.topik or "-" }}</td>
+            <td>{{ th.ended_at|tgl_id if th.ended_at else "-" }}{% if th.ended_by %}<div class="muted-sm">oleh {{ th.ended_by }}</div>{% endif %}</td>
+            <td style="display:flex; gap:6px;">
+                <a class="btn btn-outline btn-sm" href="{{ url_for('mahasiswa.konseling_chat', tid=th.id) }}">Lihat</a>
+                <form method="post" action="{{ url_for('mahasiswa.konseling_delete', tid=th.id) }}"
+                      onsubmit="return confirm('Sembunyikan riwayat ini dari sisi Anda? Dosen tetap dapat melihatnya.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline btn-sm" type="submit">Hapus di saya</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}<p class="muted">Belum ada riwayat tiket.</p>{% endif %}
+</div>
+{% endif %}
+{% endblock %}

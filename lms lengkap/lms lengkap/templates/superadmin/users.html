@@ -1,0 +1,48 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Manage Users{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Status</th><th>Ubah Role</th><th>Ubah Status</th></tr></thead>
+        <tbody>
+        {% for u in users %}
+            <tr>
+                <td>{{ u.nama }}</td>
+                <td>{{ u.email }}</td>
+                <td><span class="badge badge-blue">{{ u.role }}</span></td>
+                <td>
+                    {% if u.status=='aktif' %}<span class="badge badge-green">Aktif</span>
+                    {% elif u.status=='pending' %}<span class="badge badge-orange">Pending</span>
+                    {% elif u.status=='nonaktif' %}<span class="badge badge-grey">Nonaktif</span>
+                    {% else %}<span class="badge badge-red">{{ u.status }}</span>{% endif %}
+                </td>
+                <td>
+                    <form method="post" action="{{ url_for('superadmin.change_role', uid=u.id) }}" style="display:flex; gap:4px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <select name="role">
+                            {% for r in ['mahasiswa','dosen','admin','superadmin'] %}
+                                <option value="{{ r }}" {% if r==u.role %}selected{% endif %}>{{ r }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-primary btn-sm">Set</button>
+                    </form>
+                </td>
+                <td>
+                    <form method="post" action="{{ url_for('superadmin.change_status', uid=u.id) }}" style="display:flex; gap:4px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <select name="status">
+                            {% for s in ['aktif','nonaktif','pending','ditolak'] %}
+                                <option value="{{ s }}" {% if s==u.status %}selected{% endif %}>{{ s }}</option>
+                            {% endfor %}
+                        </select>
+                        <button class="btn btn-primary btn-sm">Set</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

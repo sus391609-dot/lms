@@ -1,0 +1,102 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Kelas & Plotting Dosen{% endblock %}
+{% block content %}
+<div style="display:flex; gap:8px; align-items:center; margin-bottom:14px; flex-wrap:wrap;">
+    <a class="btn btn-primary" href="{{ url_for('admin.kelas_form') }}">+ Tambah Kelas</a>
+    <a class="btn btn-secondary btn-sm {% if not jk_filter %}btn-primary{% endif %}" href="{{ url_for('admin.kelas') }}">Semua</a>
+    <a class="btn btn-secondary btn-sm {% if jk_filter=='reguler' %}btn-primary{% endif %}" href="?jenis_kelas=reguler">Reguler</a>
+    <a class="btn btn-secondary btn-sm {% if jk_filter=='nonreguler' %}btn-primary{% endif %}" href="?jenis_kelas=nonreguler">Non-Reguler</a>
+</div>
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Daftar Kelas</div>
+        <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Mata Kuliah</th><th>Kode</th><th>Jenis</th><th>Dosen</th><th>Kuota</th><th>TA</th><th></th></tr></thead>
+            <tbody>
+            {% for k in kelas_list %}
+                <tr>
+                    <td>{{ k.matkul.nama }}</td>
+                    <td>{{ k.kode_kelas }}</td>
+                    <td>
+                        {% if k.jenis_kelas == 'nonreguler' %}
+                            <span class="badge badge-orange">NR</span>
+                        {% else %}
+                            <span class="badge badge-green">R</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ k.dosen.nama }}</td>
+                    <td>{{ k.kuota }}</td>
+                    <td>{{ k.tahun_ajaran }}</td>
+                    <td>
+                        <a class="btn btn-outline btn-sm" href="{{ url_for('admin.kelas_form', kid=k.id) }}">Edit</a>
+                        <form method="post" action="{{ url_for('admin.kelas_delete', kid=k.id) }}" style="display:inline;" onsubmit="return confirm('Hapus kelas?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-danger btn-sm">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">Beban Kerja Dosen (Total SKS)</div>
+        <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Dosen</th><th>Total SKS</th></tr></thead>
+            <tbody>
+            {% for d, sks in beban_rows %}
+                <tr><td>{{ d.nama }}</td><td>
+                    <b>{{ sks }}</b>
+                    {% if sks > 18 %}<span class="badge badge-red">Overload!</span>{% endif %}
+                </td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+{# ── FORM SECTION (show_form=True) ──────────────────────────────── #}
+{% if show_form %}
+<a href="{{ url_for('admin.kelas') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">← Kembali ke Daftar Kelas</a>
+<div class="card-title" style="margin-bottom:12px;">{{ 'Edit Kelas' if k and k.id else 'Tambah Kelas Baru' }}</div>
+<div class="card">
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid-2">
+            <div class="field">
+                <label>Mata Kuliah</label>
+                <select name="matkul_id" required>
+                    {% for m in matkul_list %}
+                        <option value="{{ m.id }}" {% if k and k.matkul_id==m.id %}selected{% endif %}>{{ m.kode }} - {{ m.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Dosen Pengampu</label>
+                <select name="dosen_id" required>
+                    {% for d in dosen_list %}
+                        <option value="{{ d.id }}" {% if k and k.dosen_id==d.id %}selected{% endif %}>{{ d.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field"><label>Kode Kelas (A/B/C..)</label><input type="text" name="kode_kelas" value="{{ k.kode_kelas if k else 'A' }}"></div>
+            <div class="field"><label>Kuota</label><input type="number" name="kuota" value="{{ k.kuota if k else 40 }}"></div>
+            <div class="field"><label>Semester</label><input type="number" name="semester_aktif" value="{{ k.semester_aktif if k else 1 }}"></div>
+            <div class="field"><label>Tahun Ajaran</label><input type="text" name="tahun_ajaran" value="{{ k.tahun_ajaran if k else '2024/2025-Ganjil' }}"></div>
+            <div class="field">
+                <label>Jenis Kelas</label>
+                <select name="jenis_kelas">
+                    <option value="reguler" {% if k and k.jenis_kelas=='reguler' %}selected{% endif %}>Reguler</option>
+                    <option value="nonreguler" {% if k and k.jenis_kelas=='nonreguler' %}selected{% endif %}>Non-Reguler</option>
+                </select>
+            </div>
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.kelas') }}">Batal</a>
+    </form>
+{% endif %}
+{% endblock %}

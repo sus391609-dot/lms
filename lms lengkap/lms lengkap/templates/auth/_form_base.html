@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{% block page_title %}LMS{% endblock %} - {{ app_name }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}" />
+{% endblock %}
+{% block body %}
+<div class="auth-layout">
+    <div class="auth-side">
+        <div class="auth-logo">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="height:48px;" onerror="this.style.display='none'">
+            <span>{{ app_name }}</span>
+        </div>
+        <div class="auth-side-title">{% block side_title %}LMS{% endblock %}</div>
+        <div class="auth-side-text">{% block side_text %}Sistem Manajemen Pembelajaran{% endblock %}</div>
+    </div>
+    <div class="auth-form-wrap">
+        <div class="auth-form">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for cat, msg in messages %}
+            <div class="alert alert-{{ cat }}" style="margin-bottom:14px;">{{ msg }}</div>
+            {% endfor %}
+            {% endwith %}
+            {% block form %}{% endblock %}
+        </div>
+    </div>
+</div>
+{% endblock %}

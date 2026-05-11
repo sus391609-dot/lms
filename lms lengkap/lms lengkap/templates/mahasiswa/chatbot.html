@@ -1,0 +1,108 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Chatbot Asisten{% endblock %}
+{% block content %}
+<div class="card chatbot-card">
+    <div class="card-title">
+        <span style="font-size:22px;">&#129302;</span>
+        Asisten LMS Yarsi Pratama
+    </div>
+    <p style="color:var(--grey-600); margin-bottom:14px;">
+        Tanyakan apa pun seputar nilai, tugas, jadwal, KRS, pembayaran,
+        konseling, poin dosen, organisasi, atau profil kamu.
+    </p>
+
+    <div id="chat-window" class="chat-window" aria-live="polite">
+        <div class="chat-msg bot">
+            <div class="bubble">
+                Halo! Saya asisten kamu. Coba tanya:
+                <em>"berapa nilai saya"</em>, <em>"tugas terdekat"</em>,
+                atau <em>"status KRS"</em>.
+            </div>
+        </div>
+    </div>
+
+    <form id="chat-form" class="chat-form" autocomplete="off">
+        <input id="chat-input" type="text" placeholder="Ketik pertanyaan..." required>
+        <button type="submit" class="btn btn-primary">Kirim</button>
+    </form>
+
+    <div class="chat-suggest">
+        <span>Saran cepat:</span>
+        <button type="button" class="btn-chip" data-q="berapa nilai saya">Nilai</button>
+        <button type="button" class="btn-chip" data-q="tugas terdekat saya">Tugas</button>
+        <button type="button" class="btn-chip" data-q="jadwal kuliah">Jadwal</button>
+        <button type="button" class="btn-chip" data-q="status krs">KRS</button>
+        <button type="button" class="btn-chip" data-q="pembayaran">Pembayaran</button>
+        <button type="button" class="btn-chip" data-q="konseling">Konseling</button>
+    </div>
+</div>
+
+<script>
+(function () {
+    const win = document.getElementById("chat-window");
+    const form = document.getElementById("chat-form");
+    const input = document.getElementById("chat-input");
+    const askUrl = "{{ url_for('mahasiswa.chatbot_ask') }}";
+
+    function escapeHTML(s) {
+        return String(s).replace(/[&<>"']/g, c =>
+            ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+    }
+    function addMsg(text, who, links) {
+        const wrap = document.createElement("div");
+        wrap.className = "chat-msg " + who;
+        const bubble = document.createElement("div");
+        bubble.className = "bubble";
+        bubble.innerHTML = escapeHTML(text).replace(/\n/g, "<br>");
+        wrap.appendChild(bubble);
+        if (links && links.length) {
+            const lwrap = document.createElement("div");
+            lwrap.className = "chat-links";
+            links.forEach(function (l) {
+                const a = document.createElement("a");
+                a.href = l.href;
+                a.className = "btn btn-sm btn-outline";
+                a.textContent = l.label;
+                lwrap.appendChild(a);
+            });
+            wrap.appendChild(lwrap);
+        }
+        win.appendChild(wrap);
+        win.scrollTop = win.scrollHeight;
+    }
+
+    async function send(msg) {
+        addMsg(msg, "user", []);
+        const typing = document.createElement("div");
+        typing.className = "chat-msg bot";
+        typing.innerHTML = '<div class="bubble typing"><span></span><span></span><span></span></div>';
+        win.appendChild(typing);
+        win.scrollTop = win.scrollHeight;
+        try {
+            const res = await fetch(askUrl, {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({message: msg}),
+            });
+            const data = await res.json();
+            typing.remove();
+            addMsg(data.reply || "(kosong)", "bot", data.links || []);
+        } catch (e) {
+            typing.remove();
+            addMsg("Gagal menghubungi server. Coba lagi.", "bot", []);
+        }
+    }
+
+    form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const v = input.value.trim();
+        if (!v) return;
+        input.value = "";
+        send(v);
+    });
+    document.querySelectorAll(".btn-chip").forEach(function (b) {
+        b.addEventListener("click", function () { send(b.dataset.q); });
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Data Mahasiswa{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <span>Seluruh Mahasiswa Universitas</span>
+        <input type="search" id="mhs-filter" placeholder="Cari nama / NIM / prodi / email..."
+               style="max-width:320px; padding:8px 12px; border:1px solid var(--grey-200); border-radius:10px; font-size:13px;">
+    </div>
+    <p style="color:var(--grey-600); font-size:13px; margin-bottom:12px;">
+        Setiap dosen dapat melihat data lengkap semua mahasiswa &mdash; nama, NIM,
+        prodi, semester, email, nomor telepon, organisasi, dan nilai per semester.
+        Badge oranye menandai mata kuliah yang Anda ampu untuk mahasiswa tsb.
+    </p>
+    <div class="table-wrap">
+    <table class="tbl" id="mhs-table">
+        <thead><tr>
+            <th>Nama</th><th>NIM</th><th>Prodi</th><th>Jenis</th><th>Sem</th>
+            <th>Email</th><th>No. Telp</th><th>Mata Kuliah Saya</th><th>Aksi</th>
+        </tr></thead>
+        <tbody>
+        {% for m, mks in mhs_list %}
+            <tr>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        {% if m.foto %}
+                            <img src="{{ url_for('static', filename=m.foto) }}" alt=""
+                                 style="width:34px; height:34px; border-radius:50%; object-fit:cover;">
+                        {% else %}
+                            <div style="width:34px; height:34px; border-radius:50%; background:var(--orange-l); color:var(--orange); display:flex; align-items:center; justify-content:center; font-weight:700;">{{ m.nama[0]|upper }}</div>
+                        {% endif %}
+                        <b>{{ m.nama }}</b>
+                    </div>
+                </td>
+                <td>{{ m.profil_mahasiswa.nim if m.profil_mahasiswa else '-' }}</td>
+                <td>{{ m.profil_mahasiswa.prodi.nama if m.profil_mahasiswa and m.profil_mahasiswa.prodi else '-' }}</td>
+                <td>
+                    {% if m.profil_mahasiswa and m.profil_mahasiswa.jenis_kelas == 'nonreguler' %}
+                        <span class="badge badge-orange">NR</span>
+                    {% else %}
+                        <span class="badge badge-green">R</span>
+                    {% endif %}
+                </td>
+                <td>{{ m.profil_mahasiswa.semester if m.profil_mahasiswa else '-' }}</td>
+                <td>{{ m.email }}</td>
+                <td>{{ m.no_telp or '-' }}</td>
+                <td>
+                    {% for x in mks %}<span class="badge badge-orange" style="margin:2px;">{{ x }}</span>{% endfor %}
+                    {% if not mks %}<span style="color:var(--grey-400); font-size:12px;">bukan kelas Anda</span>{% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('dosen.mahasiswa_detail', uid=m.id) }}"
+                       class="btn btn-sm btn-outline">Detail</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="9" style="text-align:center; color:var(--grey-600);">Belum ada mahasiswa terdaftar.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+<script>
+(function(){
+    const q = document.getElementById('mhs-filter');
+    const tbody = document.querySelector('#mhs-table tbody');
+    if (!q || !tbody) return;
+    q.addEventListener('input', () => {
+        const v = q.value.toLowerCase();
+        tbody.querySelectorAll('tr').forEach(tr => {
+            tr.style.display = tr.textContent.toLowerCase().includes(v) ? '' : 'none';
+        });
+    });
+})();
+</script>
+{% endblock %}

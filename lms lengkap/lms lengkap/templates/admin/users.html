@@ -1,0 +1,172 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Manajemen Users{% endblock %}
+{% block content %}
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <div class="actions-row">
+            <a class="btn btn-secondary btn-sm {% if not selected_role %}btn-primary{% endif %}" href="{{ url_for('admin.users') }}">Semua</a>
+            <a class="btn btn-secondary btn-sm {% if selected_role=='mahasiswa' %}btn-primary{% endif %}" href="?role=mahasiswa">Mahasiswa</a>
+            <a class="btn btn-secondary btn-sm {% if selected_role=='dosen' %}btn-primary{% endif %}" href="?role=dosen">Dosen</a>
+            <a class="btn btn-secondary btn-sm {% if selected_role=='admin' %}btn-primary{% endif %}" href="?role=admin">Admin</a>
+        </div>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('admin.user_baru') }}">+ Tambah User</a>
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+        <label>ðŸ” Cari berdasarkan Nama, Email, NIM, atau NIDN</label>
+        <input type="text" id="searchUser" placeholder="Ketik untuk mencari..." autocomplete="off" oninput="filterUserTable()">
+    </div>
+    <div class="table-wrap">
+    <table class="tbl" id="userTable">
+        <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Jenis</th><th>Status</th><th>Detail</th><th></th></tr></thead>
+        <tbody>
+        {% for u in users %}
+            <tr data-search="{{ u.nama|lower }} {{ u.email|lower }} {% if u.profil_mahasiswa %}{{ u.profil_mahasiswa.nim|lower }}{% endif %} {% if u.profil_dosen %}{{ u.profil_dosen.nidn|lower }}{% endif %}">
+                <td>{{ u.nama }}</td>
+                <td style="word-break:break-all;">{{ u.email }}</td>
+                <td><span class="badge badge-blue">{{ u.role }}</span></td>
+                <td>
+                    {% if u.profil_mahasiswa %}
+                        {% if u.profil_mahasiswa.jenis_kelas == 'nonreguler' %}
+                            <span class="badge badge-orange">Non-Reguler</span>
+                        {% else %}
+                            <span class="badge badge-green">Reguler</span>
+                        {% endif %}
+                    {% else %}-{% endif %}
+                </td>
+                <td>
+                    {% if u.status == 'aktif' %}<span class="badge badge-green">Aktif</span>
+                    {% elif u.status == 'pending' %}<span class="badge badge-orange">Pending</span>
+                    {% elif u.status == 'nonaktif' %}<span class="badge badge-grey">Nonaktif</span>
+                    {% else %}<span class="badge badge-red">{{ u.status }}</span>{% endif %}
+                </td>
+                <td style="font-size:12px;">
+                    {% if u.profil_mahasiswa %}NIM {{ u.profil_mahasiswa.nim }} - Sem {{ u.profil_mahasiswa.semester }}{% endif %}
+                    {% if u.profil_dosen %}NIDN {{ u.profil_dosen.nidn }}{% endif %}
+                </td>
+                <td>
+                    <div class="actions-row">
+                        <a class="btn btn-outline btn-sm" href="{{ url_for('admin.user_edit', uid=u.id) }}">Edit</a>
+                        <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.user_toggle', uid=u.id) }}">Toggle</a>
+                        <form method="post" action="{{ url_for('admin.user_delete', uid=u.id) }}" style="display:inline;" onsubmit="return confirm('Hapus user ini?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-danger btn-sm" type="submit">Hapus</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<script>
+function filterUserTable() {
+    const q = document.getElementById('searchUser').value.toLowerCase().trim();
+    const rows = document.querySelectorAll('#userTable tbody tr');
+    rows.forEach(row => {
+        const data = row.dataset.search || '';
+        row.style.display = (!q || data.includes(q)) ? '' : 'none';
+    });
+}
+</script>
+
+{% if show_form %}
+<a href="{{ url_for('admin.users') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">← Kembali ke Daftar User</a>
+<div class="card-title" style="margin-bottom:12px;">{{ 'Edit User: ' + user.nama if user else 'Tambah User Baru' }}</div>
+<div class="card">
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid-2">
+            <div class="field">
+                <label>Nama</label>
+                <input type="text" name="nama" required value="{{ user.nama if user else '' }}">
+            </div>
+            <div class="field">
+                <label>Email</label>
+                <input type="email" name="email" required value="{{ user.email if user else '' }}">
+            </div>
+            <div class="field">
+                <label>Role</label>
+                <select name="role" id="role-select" onchange="toggleRole()">
+                    <option value="mahasiswa" {% if user and user.role=='mahasiswa' %}selected{% endif %}>Mahasiswa</option>
+                    <option value="dosen" {% if user and user.role=='dosen' %}selected{% endif %}>Dosen</option>
+                    <option value="admin" {% if user and user.role=='admin' %}selected{% endif %}>Admin</option>
+                    {# Hanya Super Admin yang boleh menampilkan & memilih role Super Admin. #}
+                    {% if current_user.role == 'superadmin' %}
+                    <option value="superadmin" {% if user and user.role=='superadmin' %}selected{% endif %}>Super Admin</option>
+                    {% endif %}
+                </select>
+                {% if current_user.role != 'superadmin' %}
+                <small style="color:var(--grey-600);">Role <b>Super Admin</b> hanya dapat dibuat oleh Super Admin.</small>
+                {% endif %}
+            </div>
+            <div class="field">
+                <label>Status</label>
+                <select name="status">
+                    {% for s in ['aktif','pending','nonaktif','ditolak'] %}
+                        <option value="{{ s }}" {% if user and user.status==s %}selected{% endif %}>{{ s|capitalize }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field"><label>No Telp</label><input type="text" name="no_telp" value="{{ user.no_telp if user else '' }}"></div>
+            <div class="field"><label>Alamat</label><input type="text" name="alamat" value="{{ user.alamat if user else '' }}"></div>
+        </div>
+
+        <div id="profil-mhs" {% if user and user.role!='mahasiswa' %}style="display:none;"{% endif %}>
+            <h3 style="margin: 14px 0 8px;">Profil Mahasiswa</h3>
+            <div class="grid-2">
+                <div class="field"><label>NIM</label><input type="text" name="nim" value="{{ user.profil_mahasiswa.nim if user and user.profil_mahasiswa else '' }}"></div>
+                <div class="field">
+                    <label>Prodi</label>
+                    <select name="prodi_id">
+                        {% for p in prodi_list %}
+                        <option value="{{ p.id }}" {% if user and user.profil_mahasiswa and user.profil_mahasiswa.prodi_id==p.id %}selected{% endif %}>{{ p.nama }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="field"><label>Semester</label><input type="number" name="semester" value="{{ user.profil_mahasiswa.semester if user and user.profil_mahasiswa else 1 }}"></div>
+                <div class="field"><label>Angkatan</label><input type="number" name="angkatan" value="{{ user.profil_mahasiswa.angkatan if user and user.profil_mahasiswa else 2024 }}"></div>
+                <div class="field">
+                    <label>Jenis Kelas</label>
+                    <select name="jenis_kelas">
+                        <option value="reguler" {% if user and user.profil_mahasiswa and user.profil_mahasiswa.jenis_kelas=='reguler' %}selected{% endif %}>Reguler</option>
+                        <option value="nonreguler" {% if user and user.profil_mahasiswa and user.profil_mahasiswa.jenis_kelas=='nonreguler' %}selected{% endif %}>Non-Reguler</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div id="profil-dsn" {% if not user or user.role!='dosen' %}style="display:none;"{% endif %}>
+            <h3 style="margin: 14px 0 8px;">Profil Dosen</h3>
+            <div class="grid-2">
+                <div class="field"><label>NIDN</label><input type="text" name="nidn" value="{{ user.profil_dosen.nidn if user and user.profil_dosen else '' }}"></div>
+                <div class="field"><label>Jabatan</label><input type="text" name="jabatan" value="{{ user.profil_dosen.jabatan if user and user.profil_dosen else '' }}"></div>
+            </div>
+            <div class="field">
+                <label>Prodi yang Diampu (max 10)</label>
+                <div class="checkbox-group">
+                    {% set selected_ids = (user.profil_dosen.prodi_list|map(attribute='id')|list) if (user and user.profil_dosen) else [] %}
+                    {% for p in prodi_list %}
+                    <label><input type="checkbox" name="prodi_ids" value="{{ p.id }}" {% if p.id in selected_ids %}checked{% endif %}> {{ p.nama }}</label>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <div class="field">
+            <label>Password {% if user %}(kosongkan jika tidak ganti){% endif %}</label>
+            <input type="password" name="password" {% if not user %}required{% endif %}>
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.users') }}">Batal</a>
+    </form>
+</div>
+<script>
+function toggleRole() {
+    const r = document.getElementById('role-select').value;
+    document.getElementById('profil-mhs').style.display = r === 'mahasiswa' ? '' : 'none';
+    document.getElementById('profil-dsn').style.display = r === 'dosen' ? '' : 'none';
+}
+{% endif %}
+{% endblock %}

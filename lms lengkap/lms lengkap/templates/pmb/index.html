@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}PMB - {{ app_name }}{% endblock %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+{% endblock %}
+{% block body %}
+<div style="background:linear-gradient(135deg, var(--orange) 0%, #ff8a3d 100%); color:white; padding:60px 24px; text-align:center;">
+    <h1 style="font-size:34px; font-weight:800;">Penerimaan Mahasiswa Baru</h1>
+    <p style="margin-top:8px; opacity:.9;">Universitas Yarsi Pratama 2024/2025</p>
+    <div style="margin-top:18px;">
+        <a class="btn" style="background:white; color:var(--orange);" href="{{ url_for('auth.register_mahasiswa') }}">Daftar Sekarang</a>
+        <a class="btn btn-outline" style="border-color:white; color:white; margin-left:6px;" href="{{ url_for('auth.landing') }}">Login</a>
+    </div>
+</div>
+<div style="max-width: 1100px; margin: 0 auto; padding: 32px 24px;">
+    <h2 style="font-weight:800; margin-bottom: 16px;">Program Studi Tersedia</h2>
+    <div class="grid-3">
+        {% for p in prodi_list %}
+        <div class="card" style="margin-bottom:0;">
+            <div class="badge badge-orange">{{ p.fakultas }}</div>
+            <h3 style="margin-top:8px; font-size:16px;">{{ p.nama }}</h3>
+            <p style="color: var(--grey-600); font-size: 13px; margin-top:6px;">
+                {{ p.deskripsi or 'Program studi unggulan dengan kurikulum berbasis kompetensi.' }}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+<footer style="background:var(--grey-100); padding:18px; text-align:center; color:var(--grey-600); font-size:13px;">
+    &copy; {{ now.year }} Universitas Yarsi Pratama
+</footer>
+{% endblock %}

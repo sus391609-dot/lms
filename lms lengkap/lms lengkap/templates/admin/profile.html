@@ -1,0 +1,32 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Profil Admin{% endblock %}
+{% block content %}
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div style="display:flex; gap:14px; align-items:center; margin-bottom:18px;">
+            {% if current_user.foto %}
+                <img src="{{ url_for('static', filename=current_user.foto) }}"
+                     style="width:96px; height:96px; border-radius:16px; object-fit:cover;">
+            {% else %}
+                <div style="width:96px; height:96px; border-radius:16px; background:var(--orange-l); color:var(--orange); display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:800;">{{ current_user.nama[0]|upper }}</div>
+            {% endif %}
+            <div>
+                <div style="font-weight:700; font-size:18px;">{{ current_user.nama }}</div>
+                <div style="color:var(--grey-600); font-size:13px;">{{ current_user.email }} &middot; Admin</div>
+                <input type="file" name="foto" accept=".png,.jpg,.jpeg" style="margin-top:8px; font-size:12px;">
+                <div style="color:var(--grey-400); font-size:11px;">PNG/JPG, max 20 MB.</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="field"><label>Nama</label><input type="text" name="nama" value="{{ current_user.nama }}"></div>
+            <div class="field"><label>Email</label><input type="email" value="{{ current_user.email }}" disabled></div>
+            <div class="field"><label>No Telp</label><input type="text" name="no_telp" value="{{ current_user.no_telp or '' }}"></div>
+            <div class="field"><label>Alamat</label><input type="text" name="alamat" value="{{ current_user.alamat or '' }}"></div>
+            <div class="field"><label>Password Baru (opsional)</label><input type="password" name="password" placeholder="Kosongkan jika tidak ganti"></div>
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+    </form>
+</div>
+{% endblock %}

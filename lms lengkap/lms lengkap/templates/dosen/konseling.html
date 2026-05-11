@@ -1,0 +1,182 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}
+  {% if view == 'chat' %}Chat · {{ th.mahasiswa.nama }}
+  {% elif view == 'history' %}History Konseling
+  {% else %}Konseling{% endif %}
+{% endblock %}
+{% block content %}
+
+{# ── VIEW: LIST (default) ─────────────────────────────────────── #}
+{% if not view or view == 'list' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div>
+        <div style="font-weight:700; font-size:15px;">Tiket Konseling</div>
+        <div style="font-size:13px; color:var(--grey-600);">
+            Mahasiswa mengirim tiket → Anda meng-ACC → percakapan aktif. Tiket
+            yang diakhiri tersimpan di <a href="{{ url_for('dosen.konseling_history') }}">History</a>.
+        </div>
+    </div>
+    <a href="{{ url_for('dosen.konseling_history') }}" class="btn btn-outline">&#128230; History</a>
+</div>
+
+<div class="grid-2">
+    <div>
+        <div class="card">
+            <div class="card-title">Tiket Menunggu ACC ({{ pending|length }})</div>
+            {% if pending %}
+                {% for th in pending %}
+                <div class="list-row">
+                    <div>
+                        <b>{{ th.mahasiswa.nama }}</b>
+                        {% if th.topik %}<div class="muted-sm">Topik: {{ th.topik }}</div>{% endif %}
+                        <div class="muted-sm">Dibuka {{ th.created_at|tgl_id }}</div>
+                    </div>
+                    <div style="display:flex; gap:6px;">
+                        <form method="post" action="{{ url_for('dosen.konseling_accept', tid=th.id) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button class="btn btn-primary btn-sm" type="submit">ACC</button>
+                        </form>
+                        <a class="btn btn-outline btn-sm" href="{{ url_for('dosen.konseling_chat', tid=th.id) }}">Buka</a>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}<p class="muted">Belum ada tiket menunggu.</p>{% endif %}
+        </div>
+
+        <div class="card">
+            <div class="card-title">Percakapan Aktif ({{ active|length }})</div>
+            {% if active %}
+                {% for th in active %}
+                <a href="{{ url_for('dosen.konseling_chat', tid=th.id) }}" class="list-row" style="color:inherit; text-decoration:none;">
+                    <div>
+                        <b>{{ th.mahasiswa.nama }}</b>
+                        {% if th.topik %}<div class="muted-sm">{{ th.topik }}</div>{% endif %}
+                        <div class="muted-sm">Update {{ th.last_message_at|tgl_id }}</div>
+                    </div>
+                    <span class="badge success">Aktif</span>
+                </a>
+                {% endfor %}
+            {% else %}<p class="muted">Belum ada percakapan aktif.</p>{% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Mulai Konseling Baru</div>
+        <p class="muted-sm">Mulai konseling dengan mahasiswa yang Anda ajar di kelas Anda.</p>
+        <form method="post" action="{{ url_for('dosen.konseling_start') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field">
+                <label>Pilih Mahasiswa</label>
+                <select name="mahasiswa_id" required>
+                    <option value="">-- Pilih --</option>
+                    {% for m in mahasiswa %}
+                        <option value="{{ m.id }}">{{ m.nama }}{% if m.profil_mahasiswa %} — {{ m.profil_mahasiswa.nim }}{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Topik (opsional)</label>
+                <input type="text" name="topik" maxlength="160" placeholder="mis. Bimbingan Proposal Skripsi">
+            </div>
+            <button class="btn btn-primary btn-block" type="submit">Mulai Chat</button>
+        </form>
+    </div>
+</div>
+
+{# ── VIEW: CHAT ───────────────────────────────────────────────── #}
+{% elif view == 'chat' %}
+<div class="card">
+    <div class="flex-between" style="align-items:flex-start; gap:12px; flex-wrap:wrap;">
+        <div>
+            <div class="card-title" style="margin:0;">{{ th.mahasiswa.nama }}</div>
+            <div class="muted-sm">
+                {% if th.topik %}{{ th.topik }} · {% endif %}
+                {% if th.status == "pending" %}<span class="badge warning">Menunggu ACC</span>
+                {% elif th.status == "active" %}<span class="badge success">Aktif</span>
+                {% else %}<span class="badge grey">Ditutup</span>{% endif %}
+                {% if th.accepted_at %} · ACC {{ th.accepted_at|tgl_id }}{% endif %}
+            </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+            {% if th.status == "pending" %}
+            <form method="post" action="{{ url_for('dosen.konseling_accept', tid=th.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-primary btn-sm" type="submit">ACC Tiket</button>
+            </form>
+            {% endif %}
+            {% if th.status in ("pending", "active") %}
+            <form method="post" action="{{ url_for('dosen.konseling_end', tid=th.id) }}"
+                  onsubmit="return confirm('Akhiri tiket konseling ini? Riwayat chat akan tersimpan tapi tidak dapat membalas lagi.');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-outline btn-sm" type="submit">Akhiri Tiket</button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="chat-box">
+    {% for p in pesan %}
+        <div class="chat-line{% if p.sender_id == current_user.id %} me{% endif %}">
+            <div class="chat-bubble{% if p.sender_id == current_user.id %} me{% endif %}">
+                <div class="chat-meta">{{ p.sender.nama }} · {{ p.created_at.strftime('%H:%M %d/%m') }}</div>
+                <div>{{ p.isi }}</div>
+            </div>
+        </div>
+    {% else %}
+        <p class="muted" style="text-align:center;">Belum ada pesan.</p>
+    {% endfor %}
+    </div>
+
+    {% if th.status == "active" %}
+    <form method="post" style="display:flex; gap:8px; margin-top:10px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="text" name="isi" required placeholder="Ketik pesan..."
+               style="flex:1; padding:10px 12px; border:1px solid var(--grey-200); border-radius:10px;">
+        <button class="btn btn-primary" type="submit">Kirim</button>
+    </form>
+    {% elif th.status == "pending" %}
+    <div class="alert alert-warning" style="margin-top:10px;">Tiket belum di-ACC. Klik <b>ACC Tiket</b> untuk memulai percakapan.</div>
+    {% else %}
+    <div class="alert alert-info" style="margin-top:10px;">Tiket sudah diakhiri oleh {{ th.ended_by or "salah satu pihak" }} pada {{ th.ended_at|tgl_id }}.</div>
+    {% endif %}
+</div>
+
+{# ── VIEW: HISTORY ────────────────────────────────────────────── #}
+{% elif view == 'history' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div>
+        <div style="font-weight:700; font-size:15px;">Riwayat Konseling</div>
+        <div class="muted-sm">Tiket yang sudah diakhiri tersimpan di sini. Anda hanya dapat menyembunyikan riwayat di sisi Anda — mahasiswa tetap menyimpan salinannya sendiri.</div>
+    </div>
+    <a href="{{ url_for('dosen.konseling_list') }}" class="btn btn-outline">← Kembali ke Tiket Aktif</a>
+</div>
+<div class="card">
+    {% if threads %}
+    <table class="tbl">
+        <thead><tr><th>Mahasiswa</th><th>Topik</th><th>Status</th><th>Diakhiri</th><th>Aksi</th></tr></thead>
+        <tbody>
+        {% for th in threads %}
+        <tr>
+            <td><b>{{ th.mahasiswa.nama }}</b>{% if th.mahasiswa.profil_mahasiswa %}<div class="muted-sm">{{ th.mahasiswa.profil_mahasiswa.nim }}</div>{% endif %}</td>
+            <td>{{ th.topik or "-" }}</td>
+            <td><span class="badge grey">Ditutup</span></td>
+            <td>{{ th.ended_at|tgl_id if th.ended_at else "-" }}{% if th.ended_by %}<div class="muted-sm">oleh {{ th.ended_by }}</div>{% endif %}</td>
+            <td style="display:flex; gap:6px;">
+                <a class="btn btn-outline btn-sm" href="{{ url_for('dosen.konseling_chat', tid=th.id) }}">Lihat</a>
+                <form method="post" action="{{ url_for('dosen.konseling_delete', tid=th.id) }}"
+                      onsubmit="return confirm('Sembunyikan riwayat ini dari sisi Anda? Mahasiswa tetap dapat melihatnya.');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="btn btn-outline btn-sm" type="submit">Hapus di saya</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p class="muted">Belum ada riwayat tiket yang diakhiri.</p>
+    {% endif %}
+</div>
+{% endif %}
+
+{% endblock %}

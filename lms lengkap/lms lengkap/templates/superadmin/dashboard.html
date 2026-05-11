@@ -1,0 +1,52 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Dashboard Super Admin{% endblock %}
+{% block content %}
+{% if locked %}<div class="alert alert-danger">SISTEM SEDANG TERKUNCI - hanya super admin yang dapat akses.</div>{% endif %}
+
+<div class="welcome-banner">
+    <div>
+        <div class="welcome-hi">Selamat datang, {{ current_user.nama.split(' ')[0] }} &#128272;</div>
+        <div class="welcome-sub">
+            Kontrol penuh sistem &middot; {{ counts.users }} user &middot;
+            {{ counts.admin }} admin &middot; akses semua fitur admin + backup + export
+        </div>
+    </div>
+    <div class="actions-row">
+        <a href="{{ url_for('superadmin.backup') }}" class="btn btn-secondary btn-sm welcome-cta">
+            &#128190; Backup DB
+        </a>
+        <a href="{{ url_for('superadmin.export_all_zip') }}" class="btn btn-secondary btn-sm welcome-cta">
+            &#128230; Export Semua
+        </a>
+    </div>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="icon">&#128101;</div><div><div class="v">{{ counts.users }}</div><div class="l">Total User</div></div></div>
+    <div class="stat-card"><div class="icon">&#127891;</div><div><div class="v">{{ counts.mahasiswa }}</div><div class="l">Mahasiswa</div></div></div>
+    <div class="stat-card"><div class="icon">&#128104;&#8205;&#127979;</div><div><div class="v">{{ counts.dosen }}</div><div class="l">Dosen</div></div></div>
+    <div class="stat-card"><div class="icon">&#128737;&#65039;</div><div><div class="v">{{ counts.admin }}</div><div class="l">Admin</div></div></div>
+    <div class="stat-card"><div class="icon">&#127979;</div><div><div class="v">{{ counts.prodi }}</div><div class="l">Prodi</div></div></div>
+    <div class="stat-card"><div class="icon">&#128274;</div><div><div class="v">{{ counts.login_total }}</div><div class="l">Total Login</div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-title">Audit Terbaru</div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Target</th><th>Detail</th></tr></thead>
+        <tbody>
+        {% for l in audits %}
+            <tr>
+                <td>{{ l.created_at.strftime('%d/%m %H:%M') }}</td>
+                <td>{{ l.user.nama if l.user else '-' }}</td>
+                <td><span class="badge badge-blue">{{ l.aksi }}</span></td>
+                <td>{{ l.target or '-' }}</td>
+                <td style="font-size:12px;">{{ l.detail or '-' }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

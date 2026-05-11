@@ -1,0 +1,100 @@
+{# =====================================================================
+   templates/partials/sidebar.html
+   Template sidebar tunggal untuk semua role.
+   Ditentukan oleh current_user.role.
+   ===================================================================== #}
+<aside class="sidebar" id="sidebar">
+    <div class="logo">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo UYP">
+        <div>Learning Management System<br>
+            <span style="font-size:11px; color:var(--grey-600,rgba(255,255,255,0.82)); font-weight:500;">
+                {{ current_user.role|capitalize }}
+            </span>
+        </div>
+    </div>
+    <nav>
+
+    {# ── ADMIN ──────────────────────────────────────────────────────── #}
+    {% if current_user.role == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint=='admin.dashboard' %}class="active"{% endif %}>&#127968; Dashboard</a>
+        <a href="{{ url_for('admin.approval') }}" {% if request.endpoint=='admin.approval' %}class="active"{% endif %}>&#9989; Approval</a>
+        <div class="group-title">Master Data</div>
+        <a href="{{ url_for('admin.users') }}" {% if request.endpoint and ('users' in request.endpoint or request.endpoint=='admin.user_baru') %}class="active"{% endif %}>&#128101; Users</a>
+        <a href="{{ url_for('admin.prodi') }}" {% if request.endpoint=='admin.prodi' %}class="active"{% endif %}>&#127979; Program Studi</a>
+        <a href="{{ url_for('admin.matkul') }}" {% if request.endpoint and 'matkul' in request.endpoint %}class="active"{% endif %}>&#128214; Mata Kuliah</a>
+        <a href="{{ url_for('admin.kelas') }}" {% if request.endpoint and 'kelas' in request.endpoint %}class="active"{% endif %}>&#127979; Kelas &amp; Plotting</a>
+        <a href="{{ url_for('admin.jadwal') }}" {% if request.endpoint=='admin.jadwal' %}class="active"{% endif %}>&#128197; Jadwal</a>
+        <div class="group-title">Akademik</div>
+        <a href="{{ url_for('admin.krs') }}" {% if request.endpoint=='admin.krs' %}class="active"{% endif %}>&#128221; KRS Distribusi</a>
+        <a href="{{ url_for('admin.nilai') }}" {% if request.endpoint and request.endpoint.startswith('admin.nilai') %}class="active"{% endif %}>&#127942; Nilai</a>
+        <a href="{{ url_for('admin.absensi') }}" {% if request.endpoint and 'absensi' in request.endpoint %}class="active"{% endif %}>&#128197; Rekap Absensi</a>
+        <a href="{{ url_for('admin.organisasi') }}" {% if request.endpoint=='admin.organisasi' %}class="active"{% endif %}>&#127942; Organisasi</a>
+        <a href="{{ url_for('admin.portfolio') }}" {% if request.endpoint and 'portfolio' in request.endpoint %}class="active"{% endif %}>&#128188; Portfolio</a>
+        <a href="{{ url_for('admin.leaderboard') }}" {% if request.endpoint=='admin.leaderboard' %}class="active"{% endif %}>&#127941; Top 10 Mahasiswa</a>
+        <a href="{{ url_for('admin.poin_dosen') }}" {% if request.endpoint and 'poin' in request.endpoint %}class="active"{% endif %}>&#11088; Poin Dosen</a>
+        <a href="{{ url_for('admin.pembayaran') }}" {% if request.endpoint=='admin.pembayaran' %}class="active"{% endif %}>&#128181; Pembayaran</a>
+        <div class="group-title">Sistem</div>
+        <a href="{{ url_for('admin.settings') }}" {% if request.endpoint=='admin.settings' %}class="active"{% endif %}>&#9881;&#65039; Pengaturan</a>
+        <a href="{{ url_for('admin.audit') }}" {% if request.endpoint=='admin.audit' %}class="active"{% endif %}>&#128221; Audit Log</a>
+
+    {# ── DOSEN ──────────────────────────────────────────────────────── #}
+    {% elif current_user.role == 'dosen' %}
+        <a href="{{ url_for('dosen.dashboard') }}" {% if request.endpoint=='dosen.dashboard' %}class="active"{% endif %}>&#127968; Dashboard</a>
+        <a href="{{ url_for('dosen.matkul') }}" {% if request.endpoint=='dosen.matkul' %}class="active"{% endif %}>&#128214; Matkul Diampu</a>
+        <a href="{{ url_for('dosen.materi_list') }}" {% if request.endpoint and 'materi' in request.endpoint and 'dosen' in request.endpoint %}class="active"{% endif %}>&#127909; Materi &amp; Video</a>
+        <a href="{{ url_for('dosen.tugas_list') }}" {% if request.endpoint and 'tugas' in request.endpoint and 'dosen' in request.endpoint %}class="active"{% endif %}>&#128218; Tugas</a>
+        <a href="{{ url_for('dosen.absensi') }}" {% if request.endpoint and 'absensi' in request.endpoint and 'dosen' in request.endpoint %}class="active"{% endif %}>&#9989; Absensi</a>
+        <a href="{{ url_for('dosen.nilai') }}" {% if request.endpoint=='dosen.nilai' %}class="active"{% endif %}>&#127942; Input Nilai</a>
+        <a href="{{ url_for('dosen.leaderboard') }}" {% if request.endpoint=='dosen.leaderboard' %}class="active"{% endif %}>&#127941; Top 10 Mahasiswa</a>
+        <div class="group-title">Komunikasi</div>
+        <a href="{{ url_for('dosen.konseling_list') }}" {% if request.endpoint and 'konseling' in request.endpoint %}class="active"{% endif %}>&#128172; Konseling</a>
+        <a href="{{ url_for('dosen.list_mahasiswa') }}" {% if request.endpoint=='dosen.list_mahasiswa' %}class="active"{% endif %}>&#127891; Data Mahasiswa</a>
+        <div class="group-title">Akun</div>
+        <a href="{{ url_for('dosen.profile') }}" {% if request.endpoint=='dosen.profile' %}class="active"{% endif %}>&#128100; Profil</a>
+
+    {# ── MAHASISWA ──────────────────────────────────────────────────── #}
+    {% elif current_user.role == 'mahasiswa' %}
+        <a href="{{ url_for('mahasiswa.dashboard') }}" {% if request.endpoint=='mahasiswa.dashboard' %}class="active"{% endif %}>&#127968; Dashboard</a>
+        <a href="{{ url_for('mahasiswa.jadwal') }}" {% if request.endpoint=='mahasiswa.jadwal' %}class="active"{% endif %}>&#128197; Jadwal Kuliah</a>
+        <a href="{{ url_for('mahasiswa.krs') }}" {% if request.endpoint=='mahasiswa.krs' %}class="active"{% endif %}>&#128221; KRS</a>
+        <a href="{{ url_for('mahasiswa.materi_list') }}" {% if request.endpoint and 'materi' in request.endpoint and 'mahasiswa' in request.endpoint %}class="active"{% endif %}>&#127909; Materi &amp; Video</a>
+        <a href="{{ url_for('mahasiswa.tugas_list') }}" {% if request.endpoint and 'tugas' in request.endpoint and 'mahasiswa' in request.endpoint %}class="active"{% endif %}>&#128218; Tugas</a>
+        <a href="{{ url_for('mahasiswa.nilai') }}" {% if request.endpoint=='mahasiswa.nilai' %}class="active"{% endif %}>&#127942; Nilai</a>
+        <a href="{{ url_for('mahasiswa.leaderboard') }}" {% if request.endpoint=='mahasiswa.leaderboard' %}class="active"{% endif %}>&#127941; Top 10</a>
+        <div class="group-title">Komunikasi</div>
+        <a href="{{ url_for('mahasiswa.konseling_list') }}" {% if request.endpoint and 'konseling' in request.endpoint %}class="active"{% endif %}>&#128172; Konseling</a>
+        <a href="{{ url_for('mahasiswa.chatbot') }}" {% if request.endpoint and 'chatbot' in request.endpoint %}class="active"{% endif %}>&#129302; Chatbot Asisten</a>
+        <a href="{{ url_for('mahasiswa.list_dosen') }}" {% if request.endpoint=='mahasiswa.list_dosen' %}class="active"{% endif %}>&#128104; Dosen Pengajar</a>
+        <a href="{{ url_for('mahasiswa.poin') }}" {% if request.endpoint=='mahasiswa.poin' %}class="active"{% endif %}>&#11088; Poin Dosen</a>
+        <a href="{{ url_for('mahasiswa.pembayaran') }}" {% if request.endpoint and 'pembayaran' in request.endpoint %}class="active"{% endif %}>&#128181; Pembayaran</a>
+        <a href="{{ url_for('mahasiswa.organisasi') }}" {% if request.endpoint=='mahasiswa.organisasi' %}class="active"{% endif %}>&#127942; Organisasi</a>
+        <a href="{{ url_for('mahasiswa.profile') }}" {% if request.endpoint=='mahasiswa.profile' %}class="active"{% endif %}>&#128100; Profil</a>
+
+    {# ── SUPERADMIN ─────────────────────────────────────────────────── #}
+    {% elif current_user.role == 'superadmin' %}
+        <a href="{{ url_for('superadmin.dashboard') }}" {% if request.endpoint=='superadmin.dashboard' %}class="active"{% endif %}>&#127968; Dashboard</a>
+        <div class="group-title">Kontrol Sistem</div>
+        <a href="{{ url_for('superadmin.users') }}" {% if request.endpoint=='superadmin.users' %}class="active"{% endif %}>&#128101; Manage Users</a>
+        <a href="{{ url_for('superadmin.system') }}" {% if request.endpoint=='superadmin.system' %}class="active"{% endif %}>&#128272; System Lock</a>
+        <a href="{{ url_for('superadmin.export') }}" {% if request.endpoint=='superadmin.export' %}class="active"{% endif %}>&#128230; Export Data</a>
+        <a href="{{ url_for('superadmin.backup') }}">&#128190; Backup DB (.db)</a>
+        <a href="{{ url_for('superadmin.audit') }}" {% if request.endpoint=='superadmin.audit' %}class="active"{% endif %}>&#128221; Audit Log</a>
+        <div class="group-title">Operasional (Admin+)</div>
+        <a href="{{ url_for('admin.dashboard') }}" {% if request.endpoint=='admin.dashboard' %}class="active"{% endif %}>&#128202; Statistik Admin</a>
+        <a href="{{ url_for('admin.approval') }}" {% if request.endpoint=='admin.approval' %}class="active"{% endif %}>&#9989; Approval Pendaftaran</a>
+        <a href="{{ url_for('admin.prodi') }}" {% if request.endpoint=='admin.prodi' %}class="active"{% endif %}>&#127979; Program Studi</a>
+        <a href="{{ url_for('admin.matkul') }}" {% if request.endpoint and 'matkul' in request.endpoint %}class="active"{% endif %}>&#128214; Mata Kuliah</a>
+        <a href="{{ url_for('admin.kelas') }}" {% if request.endpoint and 'kelas' in request.endpoint %}class="active"{% endif %}>&#127979; Kelas &amp; Plotting</a>
+        <a href="{{ url_for('admin.jadwal') }}" {% if request.endpoint=='admin.jadwal' %}class="active"{% endif %}>&#128197; Jadwal</a>
+        <a href="{{ url_for('admin.krs') }}" {% if request.endpoint=='admin.krs' %}class="active"{% endif %}>&#128221; KRS Distribusi</a>
+        <a href="{{ url_for('admin.nilai') }}" {% if request.endpoint and request.endpoint.startswith('admin.nilai') %}class="active"{% endif %}>&#127942; Nilai (Override)</a>
+        <a href="{{ url_for('admin.organisasi') }}" {% if request.endpoint=='admin.organisasi' %}class="active"{% endif %}>&#127942; Organisasi</a>
+        <a href="{{ url_for('admin.poin_dosen') }}" {% if request.endpoint and 'poin' in request.endpoint %}class="active"{% endif %}>&#11088; Poin Dosen</a>
+        <a href="{{ url_for('admin.pembayaran') }}" {% if request.endpoint=='admin.pembayaran' %}class="active"{% endif %}>&#128181; Pembayaran</a>
+        <a href="{{ url_for('admin.settings') }}" {% if request.endpoint=='admin.settings' %}class="active"{% endif %}>&#9881;&#65039; Gatekeeping</a>
+        <div class="group-title">Akun</div>
+        <a href="{{ url_for('superadmin.profile') }}" {% if request.endpoint=='superadmin.profile' %}class="active"{% endif %}>&#128100; Profil</a>
+    {% endif %}
+
+    </nav>
+</aside>

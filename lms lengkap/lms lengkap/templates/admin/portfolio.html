@@ -1,0 +1,209 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Portfolio Mahasiswa{% endblock %}
+{% block content %}
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+        <div>
+            <div style="font-weight:700; font-size:16px;">ðŸ“ Portfolio Mahasiswa</div>
+            <div style="color:var(--grey-600); font-size:13px;">
+                Kelola prestasi, karya, dan sertifikasi mahasiswa. Hanya admin yang dapat menambah/mengubah/menghapus.
+            </div>
+        </div>
+        <a href="{{ url_for('admin.portfolio_baru') }}" class="btn btn-primary btn-sm">+ Tambah Portfolio</a>
+    </div>
+    <form method="get" style="display:flex; gap:10px; align-items:end; flex-wrap:wrap;">
+        <div class="field" style="flex:1; min-width:220px; margin:0;">
+            <label>ðŸ” Cari Mahasiswa (Nama / NIM)</label>
+            <input type="text" name="q" id="searchPortfolio"
+                   value="{{ request.args.get('q', '') }}"
+                   placeholder="Ketik nama atau NIM mahasiswa..."
+                   autocomplete="off"
+                   oninput="filterPortfolioList()">
+        </div>
+        <div class="field" style="flex:1; min-width:220px; margin:0;">
+            <label>Filter Mahasiswa</label>
+            <select name="mahasiswa_id" id="mhsSelect" onchange="this.form.submit()">
+                <option value="">-- Semua Mahasiswa --</option>
+                {% for m in mhs_list %}
+                    <option value="{{ m.id }}" {% if selected_mhs==m.id %}selected{% endif %}
+                            data-nama="{{ m.nama|lower }}"
+                            data-nim="{{ m.profil_mahasiswa.nim|lower if m.profil_mahasiswa else '' }}">
+                        {{ m.nama }} {% if m.profil_mahasiswa %}({{ m.profil_mahasiswa.nim }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+{% if items %}
+<div class="card">
+    {% if mhs %}
+    <div class="card-title">Portfolio: {{ mhs.nama }}</div>
+    {% endif %}
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr>
+            <th>Mahasiswa</th>
+            <th>Judul</th>
+            <th>Kategori</th>
+            <th>Tahun</th>
+            <th>Bukti</th>
+            <th>Aksi</th>
+        </tr></thead>
+        <tbody>
+        {% for item in items %}
+        <tr>
+            <td>
+                <b>{{ item.mahasiswa.nama }}</b><br>
+                <small style="color:var(--grey-600);">
+                    {{ item.mahasiswa.profil_mahasiswa.nim if item.mahasiswa.profil_mahasiswa else '' }}
+                </small>
+            </td>
+            <td>
+                <b>{{ item.judul }}</b>
+                {% if item.deskripsi %}
+                <br><small style="color:var(--grey-600);">{{ item.deskripsi[:80] }}{% if item.deskripsi|length > 80 %}...{% endif %}</small>
+                {% endif %}
+            </td>
+            <td>
+                {% if item.kategori %}
+                <span class="badge {% if item.kategori=='prestasi' %}badge-orange{% elif item.kategori=='karya' %}badge-blue{% elif item.kategori=='sertifikasi' %}badge-green{% else %}badge-grey{% endif %}">
+                    {{ item.kategori|capitalize }}
+                </span>
+                {% else %}-{% endif %}
+            </td>
+            <td>{{ item.tahun or '-' }}</td>
+            <td>
+                {% if item.bukti_path %}
+                <a href="{{ url_for('static', filename=item.bukti_path) }}" target="_blank" class="btn btn-outline btn-sm">ðŸ“Ž Lihat</a>
+                {% else %}-{% endif %}
+            </td>
+            <td>
+                <div class="actions-row">
+                    <a href="{{ url_for('admin.portfolio_edit', pid=item.id) }}" class="btn btn-secondary btn-sm">âœï¸</a>
+                    <form method="post" action="{{ url_for('admin.portfolio_delete', pid=item.id) }}"
+                          onsubmit="return confirm('Hapus portfolio ini?')" style="display:inline;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger btn-sm">ðŸ—‘</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% else %}
+<div class="card">
+    <p style="color:var(--grey-600); text-align:center;">
+        {% if selected_mhs %}Belum ada portfolio untuk mahasiswa ini.{% else %}Belum ada data portfolio.{% endif %}
+        <a href="{{ url_for('admin.portfolio_baru') }}">Tambah portfolio baru</a>
+    </p>
+</div>
+{% endif %}
+
+<script>
+function filterPortfolioList() {
+    const q = document.getElementById('searchPortfolio').value.toLowerCase().trim();
+    const select = document.getElementById('mhsSelect');
+    const options = select.querySelectorAll('option');
+    options.forEach(opt => {
+        if (!opt.value) { opt.style.display = ''; return; }
+        const nama = (opt.dataset.nama || '');
+        const nim = (opt.dataset.nim || '');
+        if (q === '' || nama.includes(q) || nim.includes(q)) {
+            opt.style.display = '';
+        } else {
+            opt.style.display = 'none';
+        }
+    });
+}
+// Run on load
+filterPortfolioList();
+</script>
+
+{% if show_form %}
+<a href="{{ url_for('admin.portfolio') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">← Kembali</a>
+<div class="card-title" style="margin-bottom:12px;">{{ 'Edit Portfolio' if item else 'Tambah Portfolio Baru' }}</div>
+<div class="card" style="max-width:700px;">
+    <div class="card-title">{{ 'Edit Portfolio' if item else 'Tambah Portfolio Baru' }}</div>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if item %}
+        <input type="hidden" name="mahasiswa_id" value="{{ item.mahasiswa_id }}">
+        {% endif %}
+        <div class="field">
+            <label>ðŸ” Cari Mahasiswa (ketik nama atau NIM)</label>
+            <input type="text" id="searchMhs" placeholder="Ketik nama atau NIM untuk filter..."
+                   autocomplete="off" oninput="filterMhsSelect()" {% if item %}disabled{% endif %}>
+        </div>
+        <div class="field">
+            <label>Mahasiswa *</label>
+            <select name="{% if item %}_mhs_display{% else %}mahasiswa_id{% endif %}" id="mhsSelect" required {% if item %}disabled{% endif %}>
+                <option value="">-- Pilih Mahasiswa --</option>
+                {% for m in mhs_list %}
+                    <option value="{{ m.id }}" {% if item and item.mahasiswa_id==m.id %}selected{% endif %}
+                            data-nama="{{ m.nama|lower }}"
+                            data-nim="{{ m.profil_mahasiswa.nim|lower if m.profil_mahasiswa else '' }}">
+                        {{ m.nama }} {% if m.profil_mahasiswa %}({{ m.profil_mahasiswa.nim }}){% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label>Judul Prestasi/Karya *</label>
+            <input type="text" name="judul" value="{{ item.judul if item else '' }}" required
+                   placeholder="Contoh: Juara 1 Lomba Hackathon Nasional">
+        </div>
+        <div class="field">
+            <label>Kategori</label>
+            <select name="kategori">
+                <option value="">-- Pilih kategori --</option>
+                {% set cats = ['prestasi', 'karya', 'sertifikasi', 'lainnya'] %}
+                {% for c in cats %}
+                    <option value="{{ c }}" {% if item and item.kategori==c %}selected{% endif %}>{{ c|capitalize }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field">
+            <label>Deskripsi</label>
+            <textarea name="deskripsi" rows="4" placeholder="Deskripsi detail prestasi/karya...">{{ item.deskripsi if item else '' }}</textarea>
+        </div>
+        <div class="field" style="width:200px;">
+            <label>Tahun</label>
+            <input type="number" name="tahun" value="{{ item.tahun if item else '' }}" min="2000" max="2030" placeholder="2024">
+        </div>
+        <div class="field">
+            <label>ðŸ“Ž Bukti (file, opsional)</label>
+            <input type="file" name="bukti">
+            {% if item and item.bukti_path %}
+            <small>File saat ini: <a href="{{ url_for('static', filename=item.bukti_path) }}" target="_blank">{{ item.bukti_path.split('/')[-1] }}</a></small>
+            {% endif %}
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button type="submit" class="btn btn-primary">ðŸ’¾ Simpan</button>
+            <a href="{{ url_for('admin.portfolio') }}" class="btn btn-secondary">Batal</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function filterMhsSelect() {
+    const q = document.getElementById('searchMhs').value.toLowerCase().trim();
+    const select = document.getElementById('mhsSelect');
+    const options = select.querySelectorAll('option');
+    options.forEach(opt => {
+        if (!opt.value) { opt.style.display = ''; return; }
+        const nama = (opt.dataset.nama || '');
+        const nim = (opt.dataset.nim || '');
+        if (q === '' || nama.includes(q) || nim.includes(q)) {
+            opt.style.display = '';
+        } else {
+            opt.style.display = 'none';
+        }
+    });
+}
+{% endif %}
+{% endblock %}

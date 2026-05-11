@@ -1,0 +1,51 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}KRS - Distribusi Massal{% endblock %}
+{% block content %}
+<div class="card">
+    <form method="get" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="field" style="min-width:240px;">
+            <label>Prodi</label>
+            <select name="prodi_id" onchange="this.form.submit()" required>
+                <option value="">-- Pilih prodi --</option>
+                {% for p in prodi_list %}
+                    <option value="{{ p.id }}" {% if selected_prodi==p.id %}selected{% endif %}>{{ p.nama }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="width:120px;">
+            <label>Semester</label>
+            <input type="number" name="semester" value="{{ selected_sem }}" min="1" onchange="this.form.submit()">
+        </div>
+        <div class="field" style="min-width:160px;">
+            <label>Jenis Kelas</label>
+            <select name="jenis_kelas" onchange="this.form.submit()">
+                <option value="">-- Semua --</option>
+                <option value="reguler" {% if jk_filter=='reguler' %}selected{% endif %}>Reguler</option>
+                <option value="nonreguler" {% if jk_filter=='nonreguler' %}selected{% endif %}>Non-Reguler</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+{% if kelas_list %}
+<div class="card">
+    <div class="card-title">Pilih Kelas untuk Bulk Enrollment {% if jk_filter %}({{ jk_filter|capitalize }}){% endif %}</div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="prodi_id" value="{{ selected_prodi }}">
+        <input type="hidden" name="semester" value="{{ selected_sem }}">
+        <input type="hidden" name="jenis_kelas" value="{{ jk_filter }}">
+        <div class="checkbox-group">
+            {% for k in kelas_list %}
+            <label>
+                <input type="checkbox" name="kelas_ids" value="{{ k.id }}">
+                {{ k.matkul.nama }} ({{ k.kode_kelas }}) - {{ k.dosen.nama }} ({{ k.matkul.sks }} SKS)
+                {% if k.jenis_kelas == 'nonreguler' %}<span class="badge badge-orange">NR</span>{% else %}<span class="badge badge-green">R</span>{% endif %}
+            </label>
+            {% endfor %}
+        </div>
+        <button class="btn btn-primary" type="submit" style="margin-top:14px;" onclick="return confirm('Distribusi ke seluruh mahasiswa prodi+semester ini?')">Distribusi KRS Massal</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

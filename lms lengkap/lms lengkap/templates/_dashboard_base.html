@@ -1,0 +1,49 @@
+{# ===================================================================
+   Layout dashboard untuk semua role yang sudah login.
+   Sidebar di-include dari templates/partials/sidebar_<role>.html.
+   =================================================================== #}
+{% extends "base.html" %}
+
+{% block body %}
+<div class="layout">
+    {% include "partials/sidebar.html" %}
+    <div class="backdrop" id="sb-backdrop"></div>
+
+    <div class="main">
+        <header class="topbar">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <button class="hamburger" id="sb-toggle" aria-label="Menu">&#9776;</button>
+                <div class="page-title">{% block page_title %}Dashboard{% endblock %}</div>
+            </div>
+            <div class="user-menu" id="user-menu">
+                <div class="avatar" onclick="document.getElementById('user-menu').classList.toggle('open')">
+                    {% if current_user.foto %}
+                        <img src="{{ url_for('static', filename=current_user.foto) }}" alt="">
+                    {% else %}
+                        <div class="ph">{{ current_user.nama[0]|upper }}</div>
+                    {% endif %}
+                    <div class="meta">
+                        <b>{{ current_user.nama.split(' ')[0] }}</b><br>
+                        <span>{{ current_user.role|capitalize }}</span>
+                    </div>
+                </div>
+                <div class="dropdown">
+                    <a href="{{ url_for(current_user.role + '.profile') }}">&#128100; Profil Saya</a>
+                    <form action="{{ url_for('auth.logout') }}" method="get">
+                        <button type="submit" style="color:var(--red);">&#128274; Logout</button>
+                    </form>
+                </div>
+            </div>
+        </header>
+
+        <main class="content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% for cat, msg in messages %}
+                    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+                {% endfor %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}

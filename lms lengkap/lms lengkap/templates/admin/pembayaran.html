@@ -1,0 +1,74 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Pembayaran{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">Buat Tagihan Massal</div>
+    <form method="post" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1.2fr 1fr auto; gap:8px; align-items:end;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field" style="margin:0;">
+            <label>Prodi</label>
+            <select name="prodi_id" required>
+                {% for p in prodi_list %}<option value="{{ p.id }}">{{ p.nama }}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0;"><label>Semester</label><input type="number" name="semester" value="1"></div>
+        <div class="field" style="margin:0;"><label>Nominal</label><input type="number" name="nominal" value="5000000"></div>
+        <div class="field" style="margin:0;"><label>Judul</label><input type="text" name="judul" value="UKT Semester"></div>
+        <div class="field" style="margin:0;">
+            <label>Jenis</label>
+            <select name="jenis_kelas">
+                <option value="">Semua</option>
+                <option value="reguler">Reguler</option>
+                <option value="nonreguler">Non-Reguler</option>
+            </select>
+        </div>
+        <button class="btn btn-primary" type="submit">Buat</button>
+    </form>
+</div>
+
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+        <div class="card-title" style="margin:0;">Daftar Pembayaran</div>
+        <div class="actions-row">
+            <a class="btn btn-secondary btn-sm {% if not jk_filter %}btn-primary{% endif %}" href="{{ url_for('admin.pembayaran') }}">Semua</a>
+            <a class="btn btn-secondary btn-sm {% if jk_filter=='reguler' %}btn-primary{% endif %}" href="?jenis_kelas=reguler">Reguler</a>
+            <a class="btn btn-secondary btn-sm {% if jk_filter=='nonreguler' %}btn-primary{% endif %}" href="?jenis_kelas=nonreguler">Non-Reguler</a>
+        </div>
+    </div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Mahasiswa</th><th>Jenis</th><th>Judul</th><th>Sem</th><th>Nominal</th><th>Status</th><th>Bukti</th><th>Aksi</th></tr></thead>
+        <tbody>
+        {% for b in bayar %}
+            <tr>
+                <td>{{ b.mahasiswa.nama }}</td>
+                <td>
+                    {% if b.mahasiswa.profil_mahasiswa and b.mahasiswa.profil_mahasiswa.jenis_kelas == 'nonreguler' %}
+                        <span class="badge badge-orange">NR</span>
+                    {% else %}
+                        <span class="badge badge-green">R</span>
+                    {% endif %}
+                </td>
+                <td>{{ b.judul }}</td>
+                <td>{{ b.semester }}</td>
+                <td>{{ b.nominal|rupiah }}</td>
+                <td>
+                    {% if b.status=='lunas' %}<span class="badge badge-green">Lunas</span>
+                    {% elif b.status=='menunggu' %}<span class="badge badge-orange">Menunggu</span>
+                    {% elif b.status=='ditolak' %}<span class="badge badge-red">Ditolak</span>
+                    {% else %}<span class="badge badge-grey">Belum bayar</span>{% endif %}
+                </td>
+                <td>{% if b.bukti %}<a href="{{ url_for('static', filename=b.bukti) }}" target="_blank">Lihat</a>{% else %}-{% endif %}</td>
+                <td>
+                    {% if b.status == 'menunggu' %}
+                        <a class="btn btn-success btn-sm" href="{{ url_for('admin.pembayaran_aksi', bid=b.id, aksi='verifikasi') }}">Verifikasi</a>
+                        <a class="btn btn-danger btn-sm" href="{{ url_for('admin.pembayaran_aksi', bid=b.id, aksi='tolak') }}">Tolak</a>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

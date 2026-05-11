@@ -1,0 +1,133 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Detail Mahasiswa{% endblock %}
+{% block content %}
+<div class="card">
+    <div style="display:flex; gap:18px; align-items:center;">
+        {% if mhs.foto %}
+            <img src="{{ url_for('static', filename=mhs.foto) }}"
+                 style="width:96px; height:96px; border-radius:16px; object-fit:cover;">
+        {% else %}
+            <div style="width:96px; height:96px; border-radius:16px; background:var(--orange-l); color:var(--orange); display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:800;">{{ mhs.nama[0]|upper }}</div>
+        {% endif %}
+        <div style="flex:1;">
+            <div style="font-weight:800; font-size:20px;">{{ mhs.nama }}</div>
+            <div style="color:var(--grey-600); font-size:13px;">
+                {{ mhs.profil_mahasiswa.prodi.nama if mhs.profil_mahasiswa else '-' }}
+                &middot; Semester {{ mhs.profil_mahasiswa.semester if mhs.profil_mahasiswa else '-' }}
+                &middot; Angkatan {{ mhs.profil_mahasiswa.angkatan if mhs.profil_mahasiswa else '-' }}
+            </div>
+            <div style="margin-top:6px;">
+                <span class="badge {% if mhs.status=='aktif' %}badge-green{% else %}badge-grey{% endif %}">
+                    {{ mhs.status|capitalize }}
+                </span>
+            </div>
+        </div>
+        <a href="{{ url_for('dosen.list_mahasiswa') }}" class="btn btn-secondary btn-sm">&larr; Kembali</a>
+    </div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Kontak &amp; Identitas</div>
+        <table class="tbl">
+            <tbody>
+                <tr><th>NIM</th><td>{{ mhs.profil_mahasiswa.nim if mhs.profil_mahasiswa else '-' }}</td></tr>
+                <tr><th>Email</th><td>{{ mhs.email }}</td></tr>
+                <tr><th>No. Telepon</th><td>{{ mhs.no_telp or '-' }}</td></tr>
+                <tr><th>Alamat</th><td>{{ mhs.alamat or '-' }}</td></tr>
+                <tr><th>Tanggal Lahir</th><td>{{ mhs.tanggal_lahir|tgl_id if mhs.tanggal_lahir else '-' }}</td></tr>
+                <tr><th>Jenis Kelamin</th><td>{{ mhs.jenis_kelamin or '-' }}</td></tr>
+                <tr><th>IPK</th><td>{{ "%.2f"|format(mhs.profil_mahasiswa.ipk) if mhs.profil_mahasiswa and mhs.profil_mahasiswa.ipk else '-' }}</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Organisasi &amp; Keaktifan</div>
+        {% if mhs.profil_mahasiswa and mhs.profil_mahasiswa.organisasi %}
+            <div style="white-space: pre-wrap; color:var(--grey-800);">{{ mhs.profil_mahasiswa.organisasi }}</div>
+        {% else %}
+            <p style="color:var(--grey-600);">Belum ada data organisasi.</p>
+        {% endif %}
+
+        <div class="card-title" style="margin-top:22px;">Rekap Absensi (Seluruh Kelas)</div>
+        <div class="stat-grid" style="grid-template-columns: repeat(4, 1fr);">
+            <div class="stat-card" style="padding:10px;">
+                <div><div class="v" style="font-size:20px;">{{ absen_rekap.hadir }}</div>
+                     <div class="l">Hadir</div></div>
+            </div>
+            <div class="stat-card" style="padding:10px;">
+                <div><div class="v" style="font-size:20px;">{{ absen_rekap.izin }}</div>
+                     <div class="l">Izin</div></div>
+            </div>
+            <div class="stat-card" style="padding:10px;">
+                <div><div class="v" style="font-size:20px;">{{ absen_rekap.alpha }}</div>
+                     <div class="l">Alpha</div></div>
+            </div>
+            <div class="stat-card" style="padding:10px;">
+                <div><div class="v" style="font-size:20px;">{{ absen_rekap.sakit }}</div>
+                     <div class="l">Sakit</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Mata Kuliah KRS Aktif</div>
+    {% if mk_ambil %}
+        <div style="display:flex; flex-wrap:wrap; gap:6px;">
+            {% for mk, k in mk_ambil %}
+                <span class="badge {% if k.dosen_id == current_user.id %}badge-orange{% else %}badge-grey{% endif %}">
+                    {{ mk.nama }} ({{ k.kode_kelas }}){% if k.dosen_id == current_user.id %} &mdash; Kelas Anda{% endif %}
+                </span>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color:var(--grey-600);">Belum ada kelas aktif.</p>
+    {% endif %}
+
+    <div class="actions-row" style="margin-top:14px;">
+        <form method="post" action="{{ url_for('dosen.konseling_start') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="mahasiswa_id" value="{{ mhs.id }}">
+            <button class="btn btn-primary btn-sm" type="submit">&#128172; Mulai Konseling</button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Nilai Per Semester</div>
+    {% if nilai_per_sem %}
+        {% for sem, items in nilai_per_sem.items() %}
+            <div style="margin-bottom:14px;">
+                <div style="font-weight:700; margin-bottom:6px;">Semester {{ sem }}</div>
+                <div class="table-wrap">
+                <table class="tbl">
+                    <thead><tr>
+                        <th>Mata Kuliah</th><th>Kuis</th><th>Tugas</th><th>UTS</th>
+                        <th>UAS</th><th>Keaktifan</th><th>Proyek</th><th>Akhir</th><th>Grade</th>
+                    </tr></thead>
+                    <tbody>
+                    {% for n, mk, k in items %}
+                        <tr>
+                            <td>{{ mk.nama }} ({{ k.kode_kelas }})</td>
+                            <td>{{ "%.1f"|format(n.nilai_kuis or 0) }}</td>
+                            <td>{{ "%.1f"|format(n.nilai_tugas or 0) }}</td>
+                            <td>{{ "%.1f"|format(n.nilai_uts or 0) }}</td>
+                            <td>{{ "%.1f"|format(n.nilai_uas or 0) }}</td>
+                            <td>{{ "%.1f"|format(n.nilai_keaktifan or 0) }}</td>
+                            <td>{{ "%.1f"|format(n.nilai_proyek or 0) }}</td>
+                            <td><b>{{ "%.2f"|format(n.nilai_akhir or 0) }}</b></td>
+                            <td><span class="badge badge-orange">{{ n.grade }}</span></td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p style="color:var(--grey-600);">Belum ada nilai.</p>
+    {% endif %}
+</div>
+{% endblock %}

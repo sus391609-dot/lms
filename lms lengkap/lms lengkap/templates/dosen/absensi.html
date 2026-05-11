@@ -1,0 +1,132 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}{{ 'Rekap Absensi' if view == 'rekap' else 'Absensi' }}{% endblock %}
+{% block content %}
+<style>
+.absen-toggle-group{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;}
+.absen-toggle{position:relative;cursor:pointer;}
+.absen-toggle input[type="radio"]{position:absolute;opacity:0;width:0;height:0;}
+.absen-toggle .absen-label{display:flex;align-items:center;justify-content:center;min-width:64px;min-height:48px;padding:10px 14px;border:2px solid var(--grey-200);border-radius:12px;font-size:13px;font-weight:600;color:var(--grey-600);background:var(--white);transition:all .2s ease;user-select:none;text-align:center;}
+.absen-toggle input[type="radio"]:checked+.absen-label.label-hadir{background:linear-gradient(135deg,#d1fae5,#a7f3d0);border-color:#16a34a;color:#065f46;box-shadow:0 2px 8px rgba(22,163,74,0.22);}
+.absen-toggle input[type="radio"]:checked+.absen-label.label-izin{background:linear-gradient(135deg,#dbeafe,#bfdbfe);border-color:#2563eb;color:#1e40af;}
+.absen-toggle input[type="radio"]:checked+.absen-label.label-sakit{background:linear-gradient(135deg,#fef3c7,#fde68a);border-color:#ca8a04;color:#854d0e;}
+.absen-toggle input[type="radio"]:checked+.absen-label.label-alpha{background:linear-gradient(135deg,#fee2e2,#fecaca);border-color:#dc2626;color:#991b1b;}
+.absen-alasan{width:100%;min-width:120px;padding:10px 12px;border:1px solid var(--grey-200);border-radius:10px;font-family:var(--font);font-size:13px;transition:.15s;}
+.absen-alasan:focus{outline:none;border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-l);}
+</style>
+
+{% if view == 'rekap' %}
+{# ── REKAP ABSENSI ────────────────────────────────────────────── #}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div style="font-weight:700; font-size:15px;">Rekap Absensi</div>
+    <a href="{{ url_for('dosen.absensi') }}" class="btn btn-outline">&#8592; Kembali ke Input</a>
+</div>
+<div class="card">
+    <form method="get" style="display:flex; gap:10px;">
+        <div class="field" style="flex:1;">
+            <label>Kelas</label>
+            <select name="kelas_id" onchange="this.form.submit()">
+                <option value="">-- Pilih kelas --</option>
+                {% for k in kelas_list %}<option value="{{ k.id }}" {% if selected_kelas==k.id %}selected{% endif %}>{{ k.matkul.nama }} ({{ k.kode_kelas }}) {% if k.jenis_kelas=='nonreguler' %}[NR]{% else %}[R]{% endif %}</option>{% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+{% if rekap %}
+<div class="card">
+    <div class="card-title">Rekap (Total Pertemuan: {{ pertemuan_count }})</div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Mahasiswa</th><th>Hadir</th><th>Izin</th><th>Sakit</th><th>Alpha</th><th>% Hadir</th><th>Alasan</th></tr></thead>
+        <tbody>
+        {% for r in rekap %}
+            {% set total = r.hadir + r.izin + r.sakit + r.alpha %}
+            <tr>
+                <td>{{ r.mhs.nama }}</td>
+                <td>{{ r.hadir }}</td><td>{{ r.izin }}</td><td>{{ r.sakit }}</td><td>{{ r.alpha }}</td>
+                <td><b>{% if total %}{{ "%.0f"|format(r.hadir/total*100) }}{% else %}0{% endif %}%</b></td>
+                <td style="font-size:11px; color:var(--grey-600);">
+                    {% if r.alasan_detail %}<ul style="margin:0; padding-left:15px;">{% for d in r.alasan_detail %}<li>{{ d }}</li>{% endfor %}</ul>{% else %}-{% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+{# ── INPUT ABSENSI ────────────────────────────────────────────── #}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div style="font-weight:700; font-size:15px;">Input Absensi</div>
+    <a href="{{ url_for('dosen.absensi_rekap') }}" class="btn btn-outline">&#128202; Rekap Absensi</a>
+</div>
+<div class="card">
+    <form method="get" style="display:flex; gap:10px; align-items:end; flex-wrap:wrap;">
+        <div class="field" style="flex:1; min-width:220px;">
+            <label>Kelas</label>
+            <select name="kelas_id" onchange="this.form.submit()" required>
+                <option value="">-- Pilih kelas --</option>
+                {% for k in kelas_list %}<option value="{{ k.id }}" {% if selected_kelas==k.id %}selected{% endif %}>{{ k.matkul.nama }} ({{ k.kode_kelas }}) {% if k.jenis_kelas=='nonreguler' %}[NR]{% else %}[R]{% endif %}</option>{% endfor %}
+            </select>
+        </div>
+        <div class="field" style="width:130px;"><label>Pertemuan ke</label><input type="number" name="pertemuan" value="{{ pertemuan }}" min="1" onchange="this.form.submit()"></div>
+        <div class="field" style="width:170px;"><label>Tanggal</label><input type="date" name="tanggal" value="{{ tanggal_str }}" onchange="this.form.submit()"></div>
+    </form>
+</div>
+{% if rows %}
+<div class="card">
+    <div class="card-title">Absensi Pertemuan {{ pertemuan }}</div>
+    <form method="post" id="absensiForm">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+        <input type="hidden" name="pertemuan" value="{{ pertemuan }}">
+        <input type="hidden" name="tanggal" value="{{ tanggal_str }}">
+        <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Mahasiswa</th><th style="text-align:center;">Status</th><th>Alasan</th></tr></thead>
+            <tbody>
+            {% for mhs, a in rows %}
+                {% set st = a.status if a else 'hadir' %}
+                <tr>
+                    <td>{{ mhs.nama }}<br><small style="color:var(--grey-600);">{{ mhs.profil_mahasiswa.nim if mhs.profil_mahasiswa else '' }}</small></td>
+                    <td>
+                        <div class="absen-toggle-group">
+                            {% for val, lbl, cls in [('hadir','&#10003; Hadir','label-hadir'),('izin','&#128203; Izin','label-izin'),('sakit','&#127973; Sakit','label-sakit'),('alpha','&#10007; Alpha','label-alpha')] %}
+                            <label class="absen-toggle">
+                                <input type="radio" name="status_{{ mhs.id }}" value="{{ val }}" {% if st==val %}checked{% endif %}>
+                                <div class="absen-label {{ cls }}">{{ lbl }}</div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td><input type="text" name="alasan_{{ mhs.id }}" value="{{ a.alasan if a else '' }}" placeholder="Wajib untuk Izin/Sakit" class="absen-alasan" id="alasan_{{ mhs.id }}"></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <button class="btn btn-primary" type="submit" style="margin-top:14px;">&#128190; Simpan Absensi</button>
+    </form>
+</div>
+<script>
+document.getElementById('absensiForm').addEventListener('submit', function(e) {
+    for (const row of this.querySelectorAll('tbody tr')) {
+        const checked = row.querySelector('input[type="radio"]:checked');
+        if (checked && (checked.value==='izin'||checked.value==='sakit')) {
+            const a = row.querySelector('input[type="text"]');
+            if (a && !a.value.trim()) { a.focus(); a.style.borderColor='#dc2626'; e.preventDefault(); return; }
+        }
+    }
+});
+document.querySelectorAll('.absen-toggle input[type="radio"]').forEach(r => {
+    r.addEventListener('change', function() {
+        const alasan = this.closest('tr').querySelector('input[type="text"]');
+        if (this.value==='izin'||this.value==='sakit') { alasan.style.borderColor='var(--orange)'; alasan.placeholder='&#9888; Wajib: tulis alasan '+this.value; }
+        else { alasan.style.borderColor=''; alasan.placeholder='Opsional'; }
+    });
+});
+</script>
+{% endif %}
+{% endif %}
+{% endblock %}

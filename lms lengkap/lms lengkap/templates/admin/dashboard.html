@@ -1,0 +1,81 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Dashboard Admin{% endblock %}
+{% block content %}
+<div class="welcome-banner">
+    <div>
+        <div class="welcome-hi">Halo, {{ current_user.nama.split(' ')[0] }}! &#128075;</div>
+        <div class="welcome-sub">
+            {{ total_mhs }} mahasiswa &middot; {{ total_dosen }} dosen &middot;
+            {{ total_pending }} akun menunggu approval
+        </div>
+    </div>
+    <a href="{{ url_for('admin.approval') }}" class="btn btn-secondary btn-sm welcome-cta">
+        &#9989; Review Approval
+    </a>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="icon">&#127891;</div><div><div class="v">{{ total_mhs }}</div><div class="l">Mahasiswa Aktif</div></div></div>
+    <div class="stat-card"><div class="icon">&#128104;&#8205;&#127979;</div><div><div class="v">{{ total_dosen }}</div><div class="l">Dosen Aktif</div></div></div>
+    <div class="stat-card"><div class="icon">&#9203;</div><div><div class="v">{{ total_pending }}</div><div class="l">Menunggu Approval</div></div></div>
+    <div class="stat-card"><div class="icon">&#127979;</div><div><div class="v">{{ total_prodi }}</div><div class="l">Program Studi</div></div></div>
+    <div class="stat-card"><div class="icon">&#128214;</div><div><div class="v">{{ total_matkul }}</div><div class="l">Mata Kuliah</div></div></div>
+    <div class="stat-card"><div class="icon">&#127979;</div><div><div class="v">{{ total_kelas }}</div><div class="l">Kelas</div></div></div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Statistik Per Prodi (Real-time)</div>
+        <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Prodi</th><th>Mahasiswa</th><th>Login Hari Ini</th></tr></thead>
+            <tbody>
+            {% for s in stats_prodi %}
+                <tr>
+                    <td>{{ s.prodi.nama }}</td>
+                    <td><b>{{ s.mahasiswa }}</b></td>
+                    <td><span class="badge badge-green">{{ s.login_hari_ini }}</span></td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <p style="font-size:12px; color:var(--grey-600); margin-top:6px;">Auto-refresh setiap 30 detik.</p>
+    </div>
+    <div class="card">
+        <div class="card-title">Aktivitas Login Terbaru</div>
+        {% for l in recent_logins %}
+            <div style="padding:8px; border-bottom:1px dashed var(--grey-200); font-size:13px;">
+                <b>{{ l.user_id }}</b> ({{ l.role }}) - {{ l.created_at.strftime('%d/%m %H:%M') }}
+            </div>
+        {% else %}
+            <p style="color:var(--grey-600);">Belum ada aktivitas login.</p>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Reset Poin Mahasiswa</div>
+    <p class="muted-sm">Hapus poin penilaian mahasiswa ke dosen. Gunakan "Reset Semua" untuk membersihkan seluruh data poin dalam satu klik.</p>
+    <div style="display:flex; gap:18px; flex-wrap:wrap;">
+        <form method="post" action="{{ url_for('admin.poin_reset') }}" style="display:flex; gap:8px; align-items:flex-end;" onsubmit="return confirm('Reset poin pada semester yang dipilih?');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="scope" value="semester">
+            <div class="field" style="margin:0;">
+                <label style="font-size:12px;">Semester</label>
+                <input type="number" name="semester" min="1" value="1" style="width:100px;">
+            </div>
+            <button class="btn btn-outline" type="submit">Reset Semester</button>
+        </form>
+        <form method="post" action="{{ url_for('admin.poin_reset') }}" style="display:flex; gap:8px; align-items:flex-end;" onsubmit="return confirm('Reset SEMUA poin di semua semester? Tindakan ini tidak bisa dibatalkan.');">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="scope" value="all">
+            <button class="btn btn-danger" type="submit">⚠ Reset Semua Poin</button>
+        </form>
+    </div>
+</div>
+
+<script>
+setInterval(() => location.reload(), 30000);
+</script>
+{% endblock %}

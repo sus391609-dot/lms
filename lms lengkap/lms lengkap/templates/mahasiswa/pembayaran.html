@@ -1,0 +1,78 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Pembayaran{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">💳 Tagihan & Riwayat Pembayaran</div>
+
+    {# Desktop table #}
+    <div class="table-wrap hide-mobile">
+    <table class="tbl">
+        <thead><tr><th>Judul</th><th>Semester</th><th>Nominal</th><th>Status</th><th>Bukti</th><th></th></tr></thead>
+        <tbody>
+        {% for b in bayar %}
+            <tr>
+                <td>{{ b.judul }}</td>
+                <td>{{ b.semester }}</td>
+                <td>{{ b.nominal|rupiah }}</td>
+                <td>
+                    {% if b.status == 'lunas' %}<span class="badge badge-green">Lunas</span>
+                    {% elif b.status == 'menunggu' %}<span class="badge badge-orange">Menunggu Verifikasi</span>
+                    {% elif b.status == 'ditolak' %}<span class="badge badge-red">Ditolak</span>
+                    {% else %}<span class="badge badge-grey">Belum bayar</span>{% endif %}
+                </td>
+                <td>
+                    {% if b.bukti %}
+                        <a class="btn btn-secondary btn-sm" href="{{ url_for('static', filename=b.bukti) }}" target="_blank">Lihat</a>
+                    {% else %} - {% endif %}
+                </td>
+                <td>
+                    {% if b.status in ['belum_bayar','ditolak'] %}
+                    <form method="post" action="{{ url_for('mahasiswa.pembayaran_upload', bid=b.id) }}" enctype="multipart/form-data" style="display:flex; gap:6px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="file" name="bukti" required>
+                        <button class="btn btn-primary btn-sm">Upload</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" style="text-align:center; color:var(--grey-600);">Belum ada tagihan.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {# Mobile card layout #}
+    <div class="show-mobile">
+        {% for b in bayar %}
+        <div class="bayar-mobile-card">
+            <div style="display:flex; justify-content:space-between; align-items:start; gap:8px; margin-bottom:8px;">
+                <div>
+                    <div class="mobile-card-title">{{ b.judul }}</div>
+                    <div class="mobile-card-meta"><span>📅 Semester {{ b.semester }}</span></div>
+                </div>
+                {% if b.status == 'lunas' %}<span class="badge badge-green">Lunas</span>
+                {% elif b.status == 'menunggu' %}<span class="badge badge-orange">Menunggu</span>
+                {% elif b.status == 'ditolak' %}<span class="badge badge-red">Ditolak</span>
+                {% else %}<span class="badge badge-grey">Belum bayar</span>{% endif %}
+            </div>
+            <div class="bayar-nominal">{{ b.nominal|rupiah }}</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;">
+                {% if b.bukti %}
+                <a class="btn btn-secondary btn-sm" href="{{ url_for('static', filename=b.bukti) }}" target="_blank">📎 Lihat Bukti</a>
+                {% endif %}
+                {% if b.status in ['belum_bayar','ditolak'] %}
+                <form method="post" action="{{ url_for('mahasiswa.pembayaran_upload', bid=b.id) }}" enctype="multipart/form-data" class="bayar-upload-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="file" name="bukti" required style="font-size:12px;">
+                    <button class="btn btn-primary btn-sm" style="width:100%;">📤 Upload Bukti</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <p style="text-align:center; color:var(--grey-600); padding:20px;">Belum ada tagihan.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

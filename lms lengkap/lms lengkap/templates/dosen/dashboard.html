@@ -1,0 +1,78 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Dashboard Dosen{% endblock %}
+{% block content %}
+<div class="welcome-banner">
+    <div>
+        <div class="welcome-hi">Selamat bertugas, {{ current_user.nama.split(' ')[0] }} &#128075;</div>
+        <div class="welcome-sub">
+            {{ kelas_list|length }} kelas diampu &middot; {{ total_mhs }} mahasiswa aktif &middot; {{ jawaban_belum_dinilai }} jawaban menunggu penilaian
+        </div>
+    </div>
+    <a href="{{ url_for('dosen.list_mahasiswa') }}" class="btn btn-secondary btn-sm welcome-cta">
+        &#128101; Lihat Data Mahasiswa
+    </a>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="icon">&#128214;</div><div><div class="v">{{ kelas_list|length }}</div><div class="l">Kelas Diampu</div></div></div>
+    <div class="stat-card"><div class="icon">&#127891;</div><div><div class="v">{{ total_mhs }}</div><div class="l">Total Mahasiswa</div></div></div>
+    <div class="stat-card"><div class="icon">&#128218;</div><div><div class="v">{{ tugas_count }}</div><div class="l">Tugas Dibuat</div></div></div>
+    <div class="stat-card"><div class="icon">&#128203;</div><div><div class="v">{{ jawaban_belum_dinilai }}</div><div class="l">Jawaban Pending</div></div></div>
+</div>
+
+<div class="grid-2">
+    <div class="card">
+        <div class="card-title">Kelas yang Anda Ampu</div>
+        {% if kelas_list %}
+            <div class="table-wrap">
+            <table class="tbl">
+                <thead><tr><th>Mata Kuliah</th><th>Kode Kelas</th><th>SKS</th><th>Kuota</th></tr></thead>
+                <tbody>
+                {% for k in kelas_list %}
+                <tr>
+                    <td>{{ k.matkul.nama }}</td>
+                    <td>{{ k.label }}</td>
+                    <td>{{ k.matkul.sks }}</td>
+                    <td>{{ k.kuota }}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            </div>
+        {% else %}<p style="color:var(--grey-600);">Belum ada kelas yang diampu. Hubungi admin untuk plotting.</p>{% endif %}
+    </div>
+    <div class="card">
+        <div class="card-title">Poin Diterima dari Mahasiswa</div>
+        <div style="font-size:48px; font-weight:800; color:var(--orange);">{{ poin_diterima }}</div>
+        <p style="color:var(--grey-600);">Total seluruh poin penilaian dari mahasiswa.</p>
+    </div>
+</div>
+
+{%- if view == 'matkul' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div style="font-weight:700; font-size:15px;">Mata Kuliah yang Diampu</div>
+    <a href="{{ url_for('dosen.dashboard') }}" class="btn btn-outline btn-sm">&#8592; Dashboard</a>
+</div>
+<div class="card">
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Kode</th><th>Mata Kuliah</th><th>SKS</th><th>Kelas</th><th>Jenis</th><th>Kuota</th><th>Tahun</th></tr></thead>
+        <tbody>
+        {% for k in kelas_list %}
+        <tr>
+            <td>{{ k.matkul.kode }}</td>
+            <td>{{ k.matkul.nama }}</td>
+            <td>{{ k.matkul.sks }}</td>
+            <td>{{ k.kode_kelas }}</td>
+            <td>{% if k.jenis_kelas == 'nonreguler' %}<span class="badge badge-orange">NR</span>{% else %}<span class="badge badge-green">R</span>{% endif %}</td>
+            <td>{{ k.kuota }}</td>
+            <td>{{ k.tahun_ajaran }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" style="text-align:center; color:var(--grey-600);">Belum ada kelas.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{%- endif %}
+{% endblock %}

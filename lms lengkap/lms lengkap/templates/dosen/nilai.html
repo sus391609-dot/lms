@@ -1,0 +1,76 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Input Nilai{% endblock %}
+{% block content %}
+{% if not nilai_open %}
+    <div class="alert alert-warning">Periode input nilai sedang ditutup oleh admin.</div>
+{% endif %}
+<div class="card">
+    <form method="get">
+        <div class="field">
+            <label>Kelas</label>
+            <select name="kelas_id" onchange="this.form.submit()">
+                <option value="">-- Pilih --</option>
+                {% for k in kelas_list %}
+                    <option value="{{ k.id }}" {% if selected_kelas==k.id %}selected{% endif %}>{{ k.matkul.nama }} ({{ k.kode_kelas }}) {% if k.jenis_kelas == 'nonreguler' %}[NR]{% else %}[R]{% endif %}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+    <p style="font-size:13px; color:var(--grey-600);">Bobot:
+        {% for komp, b in bobot.items() %}
+            <span class="badge badge-orange">{{ komp|capitalize }} {{ b }}%</span>
+        {% endfor %}
+    </p>
+    <div class="alert alert-info" style="margin-top:10px;">
+        ℹ️ <b>Catatan:</b> Nilai yang sudah diinput dan tersimpan <b>tidak dapat diubah</b> oleh dosen.
+        Hubungi admin jika perlu melakukan koreksi nilai.
+    </div>
+</div>
+
+{% if rows %}
+<div class="card">
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="kelas_id" value="{{ selected_kelas }}">
+        <div class="table-wrap">
+        <table class="tbl">
+            <thead><tr><th>Mahasiswa</th><th>Kuis</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Keaktifan</th><th>Proyek</th><th>Akhir</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for mhs, n in rows %}
+                {% set is_locked = n and n.nilai_akhir > 0 %}
+                <tr {% if is_locked %}style="background:var(--grey-50);"{% endif %}>
+                    <td>{{ mhs.nama }}</td>
+                    {% for komp in ['kuis','tugas','uts','uas','keaktifan','proyek'] %}
+                    <td>
+                        {% if is_locked %}
+                        <span style="font-weight:600; color:var(--grey-800);">{{ "%.1f"|format(n['nilai_'+komp]) }}</span>
+                        {% else %}
+                        <input type="number" step="0.1" min="0" max="100" name="{{ komp }}_{{ mhs.id }}"
+                               value="{{ (n['nilai_'+komp]) if n else '' }}" style="width:70px;"
+                               {% if not nilai_open %}disabled{% endif %}>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                    <td><b>{{ "%.2f"|format(n.nilai_akhir) if n else '0.00' }}</b> <span class="badge badge-orange">{{ n.grade if n else '-' }}</span></td>
+                    <td>
+                        {% if is_locked %}
+                        <span class="badge badge-green">🔒 Terkunci</span>
+                        {% else %}
+                        <span class="badge badge-grey">✏️ Belum diisi</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% if nilai_open %}
+            <button class="btn btn-primary" type="submit" style="margin-top:14px;">Simpan Nilai</button>
+            <p style="font-size:12px; color:var(--grey-600); margin-top:6px;">
+                Hanya nilai mahasiswa yang belum diinput yang akan tersimpan. Nilai yang sudah terkunci tidak akan berubah.
+            </p>
+        {% endif %}
+    </form>
+</div>
+{% endif %}
+{% endblock %}

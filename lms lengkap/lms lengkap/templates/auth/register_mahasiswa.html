@@ -1,0 +1,101 @@
+﻿{% extends "auth/_form_base.html" %}
+{% block title %}{{ 'Daftar Dosen' if view=='dosen' else 'Daftar Mahasiswa' }}{% endblock %}
+{% block side_title %}{{ 'Pendaftaran Dosen' if view=='dosen' else 'Pendaftaran Mahasiswa' }}{% endblock %}
+{% block side_text %}{{ 'Email wajib berdomain @yarsipratama.ac.id. Pilih maksimal 10 prodi yang Anda ajar.' if view=='dosen' else 'Isi data dengan benar. Akun Anda akan diverifikasi melalui kode email lalu di-approve oleh admin.' }}{% endblock %}
+{% block form %}
+{% if view == 'dosen' %}
+{% block form %}
+<h2>Daftar Dosen</h2>
+<p class="sub">Domain email wajib <b>@yarsipratama.ac.id</b>.</p>
+<form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+        <label>Nama Lengkap (dengan gelar)</label>
+        <input type="text" name="nama" required />
+    </div>
+    <div class="field">
+        <label>NIDN</label>
+        <input type="text" name="nidn" required />
+    </div>
+    <div class="field">
+        <label>Email Institusi</label>
+        <input type="email" name="email" placeholder="namadosen@yarsipratama.ac.id" required />
+    </div>
+    <div class="field">
+        <label>Nomor Telepon</label>
+        <input type="text" name="no_telp" />
+    </div>
+    <div class="field">
+        <label>Program Studi yang Diampu (max 10)</label>
+        <div class="checkbox-group">
+            {% for p in prodi_list %}
+            <label><input type="checkbox" name="prodi_ids" value="{{ p.id }}"> {{ p.nama }}</label>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required minlength="6" />
+    </div>
+    <div class="field">
+        <label>Ulangi Password</label>
+        <input type="password" name="password2" required minlength="6" />
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Daftar &amp; Kirim Kode Verifikasi</button>
+</form>
+<div class="links">
+    Sudah punya akun?
+    <a href="{{ url_for('auth.login_dosen') }}">Login Dosen</a>
+{% else %}
+{% block form %}
+<h2>Daftar Mahasiswa</h2>
+<p class="sub">Pilih program studi dan jenis kelas.</p>
+<form method="post" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="field">
+        <label>Nama Lengkap</label>
+        <input type="text" name="nama" required />
+    </div>
+    <div class="field">
+        <label>NIM</label>
+        <input type="text" name="nim" required />
+    </div>
+    <div class="field">
+        <label>Program Studi</label>
+        <select name="prodi_id" required>
+            <option value="">-- Pilih --</option>
+            {% for p in prodi_list %}
+                <option value="{{ p.id }}">{{ p.nama }} ({{ p.fakultas }})</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="field">
+        <label>Jenis Kelas</label>
+        <select name="jenis_kelas" required>
+            <option value="reguler">Reguler</option>
+            <option value="nonreguler">Non-Reguler</option>
+        </select>
+    </div>
+    <div class="field">
+        <label>Email</label>
+        <input type="email" name="email" required />
+    </div>
+    <div class="field">
+        <label>Nomor Telepon</label>
+        <input type="text" name="no_telp" />
+    </div>
+    <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" required minlength="6" />
+    </div>
+    <div class="field">
+        <label>Ulangi Password</label>
+        <input type="password" name="password2" required minlength="6" />
+    </div>
+    <button class="btn btn-primary btn-block" type="submit">Daftar &amp; Kirim Kode Verifikasi</button>
+</form>
+<div class="links">
+    Sudah punya akun?
+    <a href="{{ url_for('auth.login_mahasiswa') }}">Login Mahasiswa</a>
+{% endif %}
+{% endblock %}

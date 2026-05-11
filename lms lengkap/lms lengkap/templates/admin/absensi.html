@@ -1,0 +1,115 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Rekap Absensi Mahasiswa{% endblock %}
+{% block content %}
+<div class="card">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:240px;">
+            <div style="font-weight:700; font-size:16px;">Rekap Absensi Mahasiswa</div>
+            <div style="color:var(--grey-600); font-size:13px;">
+                Pilih <b>Program Studi</b> &rarr; <b>Semester</b> &rarr; <b>Mata Kuliah</b> &rarr; <b>Jenis Kelas</b>.
+            </div>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            {% set qs = {} %}
+            {% if selected %}{% set _ = qs.update({'prodi_id': selected}) %}{% endif %}
+            {% if semester %}{% set _ = qs.update({'semester': semester}) %}{% endif %}
+            {% if matkul_id %}{% set _ = qs.update({'matkul_id': matkul_id}) %}{% endif %}
+            {% if jk_filter %}{% set _ = qs.update({'jenis_kelas': jk_filter}) %}{% endif %}
+            <a class="btn btn-primary btn-sm"
+               href="{{ url_for('admin.absensi_export_csv', **qs) }}">
+                &#128229; Download CSV
+            </a>
+        </div>
+    </div>
+    <form method="get" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="field" style="margin:0; min-width:200px;">
+            <label>Program Studi</label>
+            <select name="prodi_id" onchange="this.form.submit()">
+                <option value="">-- Pilih prodi --</option>
+                {% for p in prodi_list %}
+                    <option value="{{ p.id }}" {% if selected==p.id %}selected{% endif %}>{{ p.nama }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0; min-width:140px;">
+            <label>Semester</label>
+            <select name="semester" onchange="this.form.submit()" {% if not selected %}disabled{% endif %}>
+                <option value="">-- Semua --</option>
+                {% for s in range(1, 9) %}
+                    <option value="{{ s }}" {% if semester==s %}selected{% endif %}>Semester {{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0; min-width:200px;">
+            <label>Mata Kuliah</label>
+            <select name="matkul_id" onchange="this.form.submit()" {% if not selected %}disabled{% endif %}>
+                <option value="">-- Semua --</option>
+                {% for mk in matkul_choices %}
+                    <option value="{{ mk.id }}" {% if matkul_id==mk.id %}selected{% endif %}>
+                        {{ mk.kode }} &mdash; {{ mk.nama }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0; min-width:150px;">
+            <label>Jenis Kelas</label>
+            <select name="jenis_kelas" onchange="this.form.submit()">
+                <option value="">-- Semua --</option>
+                <option value="reguler" {% if jk_filter=='reguler' %}selected{% endif %}>Reguler</option>
+                <option value="nonreguler" {% if jk_filter=='nonreguler' %}selected{% endif %}>Non-Reguler</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+{% if selected and rekap %}
+<div class="card">
+    <div class="card-title">
+        Hasil ({{ rekap|length }} baris &middot; total pertemuan max: {{ pertemuan_count }})
+    </div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr>
+            <th>Mahasiswa</th><th>Jenis</th><th>Mata Kuliah</th><th>Kelas</th>
+            <th>Total Pertemuan</th>
+            <th>Hadir</th><th>Izin</th><th>Sakit</th><th>Alpha</th>
+            <th>% Hadir</th>
+        </tr></thead>
+        <tbody>
+        {% for r in rekap %}
+            <tr>
+                <td>
+                    <b>{{ r.mhs.nama }}</b><br>
+                    <small style="color:var(--grey-600);">{{ r.mhs.profil_mahasiswa.nim if r.mhs.profil_mahasiswa else '' }}</small>
+                </td>
+                <td>
+                    {% if r.mhs.profil_mahasiswa and r.mhs.profil_mahasiswa.jenis_kelas == 'nonreguler' %}
+                        <span class="badge badge-orange">NR</span>
+                    {% else %}
+                        <span class="badge badge-green">R</span>
+                    {% endif %}
+                </td>
+                <td>{{ r.matkul.kode if r.matkul else '' }} &mdash; {{ r.matkul.nama if r.matkul else '' }}</td>
+                <td>{{ r.kelas.label if r.kelas else '' }}</td>
+                <td>{{ r.pertemuan }}</td>
+                <td>{{ r.hadir }}</td>
+                <td>{{ r.izin }}</td>
+                <td>{{ r.sakit }}</td>
+                <td>{{ r.alpha }}</td>
+                <td><b>{{ "%.0f"|format(r.persen_hadir) }}%</b></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% elif selected %}
+<div class="card">
+    <p style="color:var(--grey-600);">Belum ada data absensi untuk filter yang dipilih.</p>
+</div>
+{% else %}
+<div class="card">
+    <p style="color:var(--grey-600);">Silakan pilih program studi terlebih dahulu.</p>
+</div>
+{% endif %}
+{% endblock %}

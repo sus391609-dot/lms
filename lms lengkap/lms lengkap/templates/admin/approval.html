@@ -1,0 +1,29 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Approval Pendaftaran{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">User Menunggu Approval</div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Nama</th><th>Email</th><th>Role</th><th>Email Verified</th><th>Daftar</th><th>Aksi</th></tr></thead>
+        <tbody>
+        {% for u in pending %}
+            <tr>
+                <td>{{ u.nama }}</td>
+                <td>{{ u.email }}</td>
+                <td><span class="badge badge-blue">{{ u.role }}</span></td>
+                <td>{% if u.email_verified %}<span class="badge badge-green">Ya</span>{% else %}<span class="badge badge-red">Belum</span>{% endif %}</td>
+                <td>{{ u.created_at|tgl_id }}</td>
+                <td>
+                    <a class="btn btn-success btn-sm" href="{{ url_for('admin.approval_aksi', uid=u.id, aksi='approve') }}">Setujui</a>
+                    <a class="btn btn-danger  btn-sm" href="{{ url_for('admin.approval_aksi', uid=u.id, aksi='reject') }}">Tolak</a>
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="6" style="text-align:center; color:var(--grey-600);">Tidak ada pendaftaran tertunda.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}{{ 'Edit Materi' if m else ('Tambah Materi' if view == 'form' else 'Materi & Video') }}{% endblock %}
+{% block content %}
+
+{% if view == 'form' %}
+<a href="{{ url_for('dosen.materi_list') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">&#8592; Kembali</a>
+<div class="card" style="max-width:700px;">
+    <div class="card-title">{{ 'Edit Materi' if m else 'Tambah Materi Baru' }}</div>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        {% if m %}<input type="hidden" name="kelas_id" value="{{ m.kelas_id }}">{% endif %}
+        <div class="field">
+            <label>Kelas *</label>
+            <select name="{% if m %}_kelas_display{% else %}kelas_id{% endif %}" required {% if m %}disabled{% endif %}>
+                <option value="">-- Pilih kelas --</option>
+                {% for k in kelas_list %}
+                    <option value="{{ k.id }}" {% if (m and m.kelas_id==k.id) or (not m and request.args.get('kelas_id','')|int==k.id) %}selected{% endif %}>
+                        {{ k.matkul.nama }} ({{ k.kode_kelas }}) {% if k.jenis_kelas=='nonreguler' %}[NR]{% else %}[R]{% endif %}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="width:150px;">
+            <label>Semester</label>
+            <select name="semester">{% for s in range(1,9) %}<option value="{{ s }}" {% if m and m.semester==s %}selected{% endif %}>Semester {{ s }}</option>{% endfor %}</select>
+        </div>
+        <div class="field"><label>Judul Materi *</label><input type="text" name="judul" value="{{ m.judul if m else '' }}" required placeholder="Contoh: Pengantar Algoritma"></div>
+        <div class="field"><label>Deskripsi</label><textarea name="deskripsi" rows="3" placeholder="Deskripsi singkat materi...">{{ m.deskripsi if m else '' }}</textarea></div>
+        <div class="field">
+            <label>&#127916; Link YouTube (opsional)</label>
+            <input type="url" name="youtube_url" value="{{ m.youtube_url if m else '' }}" placeholder="https://www.youtube.com/watch?v=..." id="ytInput">
+            <small>Thumbnail dan embed akan otomatis diambil dari link video.</small>
+            <div id="ytPreview" style="margin-top:10px; display:none;"><img id="ytThumb" style="width:200px; border-radius:8px;"></div>
+        </div>
+        <div class="field">
+            <label>&#128206; File Lampiran (PDF, PPTX, DOCX, PPT, DOC, PNG, JPG)</label>
+            <input type="file" name="file" accept=".pdf,.pptx,.ppt,.docx,.doc,.png,.jpg,.jpeg">
+            {% if m and m.file_path %}<small>File saat ini: <a href="{{ url_for('static', filename=m.file_path) }}" target="_blank">{{ m.file_path.split('/')[-1] }}</a></small>{% endif %}
+        </div>
+        <div class="field" style="width:150px;"><label>Urutan</label><input type="number" name="urutan" value="{{ m.urutan if m else 1 }}" min="1"></div>
+        <div style="display:flex; gap:8px;">
+            <button type="submit" class="btn btn-primary">&#128190; Simpan</button>
+            <a href="{{ url_for('dosen.materi_list') }}" class="btn btn-secondary">Batal</a>
+        </div>
+    </form>
+</div>
+<script>
+document.getElementById('ytInput').addEventListener('input', function() {
+    const match = this.value.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+    const preview = document.getElementById('ytPreview');
+    if (match) { document.getElementById('ytThumb').src = 'https://img.youtube.com/vi/' + match[1] + '/hqdefault.jpg'; preview.style.display = 'block'; }
+    else { preview.style.display = 'none'; }
+});
+{% if m and m.youtube_url %}document.getElementById('ytInput').dispatchEvent(new Event('input'));{% endif %}
+</script>
+
+{% else %}
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+        <form method="get" style="display:flex; gap:10px; align-items:end; flex:1;">
+            <div class="field" style="flex:1; min-width:220px; margin:0;">
+                <label>Kelas</label>
+                <select name="kelas_id" onchange="this.form.submit()">
+                    <option value="">-- Pilih kelas --</option>
+                    {% for k in kelas_list %}<option value="{{ k.id }}" {% if selected_kelas==k.id %}selected{% endif %}>{{ k.matkul.nama }} ({{ k.kode_kelas }}) {% if k.jenis_kelas=='nonreguler' %}[NR]{% else %}[R]{% endif %}</option>{% endfor %}
+                </select>
+            </div>
+        </form>
+        {% if selected_kelas %}<a href="{{ url_for('dosen.materi_baru') }}?kelas_id={{ selected_kelas }}" class="btn btn-primary btn-sm">+ Tambah Materi</a>{% endif %}
+    </div>
+</div>
+{% if materi %}
+<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px;">
+{% for m in materi %}
+<div class="card" style="margin:0; overflow:hidden;">
+    {% if m.youtube_thumbnail %}
+    <div style="position:relative; border-radius:10px; overflow:hidden; margin:-22px -22px 14px -22px;">
+        <img src="{{ m.youtube_thumbnail }}" alt="Thumbnail" style="width:100%; height:180px; object-fit:cover; display:block;">
+        <div style="position:absolute; inset:0; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center;">
+            <div style="width:56px; height:56px; background:rgba(255,255,255,0.95); border-radius:50%; display:flex; align-items:center; justify-content:center;"><span style="font-size:24px; margin-left:3px;">&#9654;</span></div>
+        </div>
+    </div>
+    {% endif %}
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+        <span class="badge badge-orange">Materi {{ m.urutan }}</span>
+        {% if m.youtube_url %}<span class="badge badge-red" style="background:#fee2e2;color:#991b1b;">YouTube</span>{% endif %}
+        {% if m.file_path %}<span class="badge badge-blue">File</span>{% endif %}
+    </div>
+    <div style="font-weight:700; font-size:15px; margin-bottom:6px;">{{ m.judul }}</div>
+    {% if m.deskripsi %}<p style="color:var(--grey-600); font-size:13px; margin-bottom:10px;">{{ m.deskripsi[:150] }}{% if m.deskripsi|length > 150 %}...{% endif %}</p>{% endif %}
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        {% if m.youtube_video_id %}<button onclick="playVideo('{{ m.youtube_video_id }}','{{ m.judul }}')" class="btn btn-primary btn-sm">&#9654; Tonton Video</button>{% endif %}
+        {% if m.file_path %}<a href="{{ url_for('static', filename=m.file_path) }}" class="btn btn-outline btn-sm" target="_blank">&#128229; Download</a>{% endif %}
+        <a href="{{ url_for('dosen.materi_edit', mid=m.id) }}" class="btn btn-secondary btn-sm">&#9999;&#65039; Edit</a>
+        <form method="post" action="{{ url_for('dosen.materi_delete', mid=m.id) }}" style="display:inline;" onsubmit="return confirm('Hapus materi ini?')">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger btn-sm">&#128465;</button>
+        </form>
+    </div>
+</div>
+{% endfor %}
+</div>
+<div id="videoModal" style="display:none; position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.8); backdrop-filter:blur(4px);" onclick="closeVideo(event)">
+    <div style="max-width:900px; margin:40px auto; padding:16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+            <div id="videoTitle" style="color:white; font-weight:700;"></div>
+            <button onclick="closeVideo()" style="background:rgba(255,255,255,0.2); border:0; color:white; padding:8px 14px; border-radius:8px; cursor:pointer; font-size:16px;">&#10005;</button>
+        </div>
+        <div style="position:relative; padding-top:56.25%; border-radius:12px; overflow:hidden;">
+            <iframe id="videoFrame" style="position:absolute; inset:0; width:100%; height:100%;" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+</div>
+<script>
+function playVideo(id,title){document.getElementById('videoFrame').src='https://www.youtube.com/embed/'+id+'?autoplay=1';document.getElementById('videoTitle').textContent=title;document.getElementById('videoModal').style.display='block';document.body.style.overflow='hidden';}
+function closeVideo(e){if(e&&e.target!==e.currentTarget)return;document.getElementById('videoFrame').src='';document.getElementById('videoModal').style.display='none';document.body.style.overflow='';}
+</script>
+{% elif selected_kelas %}
+<div class="card"><p style="color:var(--grey-600); text-align:center;">Belum ada materi untuk kelas ini. <a href="{{ url_for('dosen.materi_baru') }}?kelas_id={{ selected_kelas }}">Tambah materi</a></p></div>
+{% else %}
+<div class="card"><p style="color:var(--grey-600); text-align:center;">Pilih kelas terlebih dahulu untuk menampilkan daftar materi.</p></div>
+{% endif %}
+{% endif %}
+{% endblock %}

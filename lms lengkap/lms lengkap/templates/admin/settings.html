@@ -1,0 +1,49 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Pengaturan Sistem{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">Gatekeeping (Periode Akses)</div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+            <label>
+                <input type="checkbox" name="krs_open" {% if krs_open %}checked{% endif %}>
+                Periode KRS dibuka (mahasiswa dapat memilih kelas)
+            </label>
+        </div>
+        <div class="field">
+            <label>
+                <input type="checkbox" name="nilai_open" {% if nilai_open %}checked{% endif %}>
+                Input Nilai dibuka (dosen dapat menginput nilai)
+            </label>
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+    </form>
+</div>
+
+{%- if view == 'audit' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div style="font-weight:700;">Audit Log</div>
+    <a href="{{ url_for('admin.settings') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+</div>
+<div class="card">
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Waktu</th><th>User</th><th>Aksi</th><th>Target</th><th>Detail</th></tr></thead>
+        <tbody>
+        {% for l in logs %}
+            <tr>
+                <td>{{ l.created_at.strftime('%d/%m %H:%M') }}</td>
+                <td>{{ l.user.nama if l.user else '-' }}</td>
+                <td><span class="badge badge-blue">{{ l.aksi }}</span></td>
+                <td>{{ l.target or '-' }}</td>
+                <td style="font-size:12px;">{{ l.detail or '-' }}</td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5" style="text-align:center; color:var(--grey-600);">Belum ada aktivitas tercatat.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+{%- endif %}
+{% endblock %}

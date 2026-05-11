@@ -1,0 +1,89 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Nilai Saya{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">📊 Bobot Komponen Nilai</div>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        {% for komp, b in bobot.items() %}
+            <span class="badge badge-orange">{{ komp|capitalize }}: {{ b }}%</span>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">📋 Daftar Nilai</div>
+
+    {# Desktop table #}
+    <div class="table-wrap hide-mobile">
+    <table class="tbl">
+        <thead><tr>
+            <th>Mata Kuliah</th><th>Sem</th>
+            <th>Kuis</th><th>Tugas</th><th>UTS</th><th>UAS</th><th>Keaktifan</th><th>Proyek</th>
+            <th>Akhir</th><th>Grade</th>
+        </tr></thead>
+        <tbody>
+        {% for n in nilai_list %}
+            <tr>
+                <td>{{ n.kelas.matkul.nama }}</td>
+                <td>{{ n.semester }}</td>
+                <td>{{ "%.1f"|format(n.nilai_kuis) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_tugas) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_uts) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_uas) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_keaktifan) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_proyek) }}</td>
+                <td><b>{{ "%.2f"|format(n.nilai_akhir) }}</b></td>
+                <td><span class="badge badge-orange">{{ n.grade }}</span></td>
+            </tr>
+        {% else %}
+            <tr><td colspan="10" style="text-align:center; color:var(--grey-600);">Belum ada nilai.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+
+    {# Mobile card layout #}
+    <div class="show-mobile">
+        {% for n in nilai_list %}
+        <div class="nilai-mobile-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <div class="mobile-card-title">{{ n.kelas.matkul.nama }}</div>
+                <span class="badge badge-orange" style="font-size:14px; padding:4px 12px;">{{ n.grade }}</span>
+            </div>
+            <div class="mobile-card-meta" style="margin-bottom:6px;">
+                <span>📅 Semester {{ n.semester }}</span>
+                <span>🏆 Akhir: <b>{{ "%.2f"|format(n.nilai_akhir) }}</b></span>
+            </div>
+            <div class="nilai-grid">
+                <div class="nilai-item">
+                    <div class="nilai-label">Kuis</div>
+                    <div class="nilai-value">{{ "%.1f"|format(n.nilai_kuis) }}</div>
+                </div>
+                <div class="nilai-item">
+                    <div class="nilai-label">Tugas</div>
+                    <div class="nilai-value">{{ "%.1f"|format(n.nilai_tugas) }}</div>
+                </div>
+                <div class="nilai-item">
+                    <div class="nilai-label">UTS</div>
+                    <div class="nilai-value">{{ "%.1f"|format(n.nilai_uts) }}</div>
+                </div>
+                <div class="nilai-item">
+                    <div class="nilai-label">UAS</div>
+                    <div class="nilai-value">{{ "%.1f"|format(n.nilai_uas) }}</div>
+                </div>
+                <div class="nilai-item">
+                    <div class="nilai-label">Keaktifan</div>
+                    <div class="nilai-value">{{ "%.1f"|format(n.nilai_keaktifan) }}</div>
+                </div>
+                <div class="nilai-item">
+                    <div class="nilai-label">Proyek</div>
+                    <div class="nilai-value">{{ "%.1f"|format(n.nilai_proyek) }}</div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <p style="text-align:center; color:var(--grey-600); padding:20px;">Belum ada nilai.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

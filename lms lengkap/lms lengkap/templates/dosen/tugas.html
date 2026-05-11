@@ -1,0 +1,127 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}
+  {% if view == 'form' %}Buat Tugas Baru
+  {% elif view == 'detail' %}{{ t.judul }}
+  {% else %}Tugas{% endif %}
+{% endblock %}
+{% block content %}
+
+{# ── VIEW: LIST ───────────────────────────────────────────────── #}
+{% if not view or view == 'list' %}
+<a class="btn btn-primary" href="{{ url_for('dosen.tugas_baru') }}" style="margin-bottom:14px;">+ Buat Tugas Baru</a>
+<div class="card">
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Judul</th><th>Mata Kuliah</th><th>Jenis</th><th>Bobot</th><th>Deadline</th><th></th></tr></thead>
+        <tbody>
+        {% for t in tugas %}
+        <tr>
+            <td>{{ t.judul }}</td>
+            <td>{{ t.kelas.matkul.nama }} ({{ t.kelas.kode_kelas }})</td>
+            <td><span class="badge badge-blue">{{ t.jenis|upper }}</span></td>
+            <td>{{ t.bobot }}%</td>
+            <td>{{ t.deadline|tgl_id if t.deadline else '-' }}</td>
+            <td><a class="btn btn-outline btn-sm" href="{{ url_for('dosen.tugas_detail', tid=t.id) }}">Lihat Jawaban</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" style="text-align:center; color:var(--grey-600);">Belum ada tugas.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+{# ── VIEW: FORM BUAT TUGAS BARU ──────────────────────────────── #}
+{% elif view == 'form' %}
+<a href="{{ url_for('dosen.tugas_list') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">← Kembali</a>
+<div class="card">
+    <div class="card-title">Buat Tugas Baru</div>
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid-2">
+            <div class="field">
+                <label>Kelas</label>
+                <select name="kelas_id" required>
+                    {% for k in kelas_list %}
+                        <option value="{{ k.id }}">{{ k.matkul.nama }} - {{ k.kode_kelas }} {% if k.jenis_kelas == 'nonreguler' %}[NR]{% else %}[R]{% endif %}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Jenis</label>
+                <select name="jenis">
+                    <option value="kuis">Kuis (5%)</option>
+                    <option value="tugas" selected>Tugas (10%)</option>
+                    <option value="uts">UTS (15%)</option>
+                    <option value="uas">UAS (20%)</option>
+                    <option value="proyek">Proyek (30%)</option>
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label>Judul</label>
+            <input type="text" name="judul" required>
+        </div>
+        <div class="field">
+            <label>Deskripsi</label>
+            <textarea name="deskripsi" rows="5"></textarea>
+        </div>
+        <div class="grid-2">
+            <div class="field">
+                <label>Deadline</label>
+                <input type="datetime-local" name="deadline">
+            </div>
+            <div class="field">
+                <label>Bobot (%)</label>
+                <input type="number" name="bobot" value="10" min="1" max="100">
+            </div>
+        </div>
+        <div class="field">
+            <label>File Soal/Tugas (PDF/DOCX/PPTX/JPG/PNG, max 20MB)</label>
+            <input type="file" name="file" accept=".pdf,.docx,.doc,.pptx,.ppt,.png,.jpg,.jpeg">
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan Tugas</button>
+    </form>
+</div>
+
+{# ── VIEW: DETAIL / JAWABAN MAHASISWA ────────────────────────── #}
+{% elif view == 'detail' %}
+<a href="{{ url_for('dosen.tugas_list') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">← Kembali</a>
+<div class="card">
+    <div class="card-title">{{ t.judul }}</div>
+    <p>{{ t.kelas.matkul.nama }} ({{ t.kelas.kode_kelas }}) | Bobot {{ t.bobot }}% | Deadline: {{ t.deadline|tgl_id if t.deadline else '-' }}</p>
+    <p style="white-space:pre-wrap; margin-top:8px;">{{ t.deskripsi or '-' }}</p>
+</div>
+<div class="card">
+    <div class="card-title">Jawaban Mahasiswa</div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Mahasiswa</th><th>Status</th><th>File</th><th>Submit</th><th>Nilai &amp; Feedback</th></tr></thead>
+        <tbody>
+        {% for mhs, j in rows %}
+            <tr>
+                <td>{{ mhs.nama }}</td>
+                <td>{% if j %}<span class="badge badge-orange">Submit</span>{% else %}<span class="badge badge-grey">-</span>{% endif %}</td>
+                <td>{% if j and j.file_path %}<a href="{{ url_for('static', filename=j.file_path) }}" target="_blank">Lihat</a>{% else %}-{% endif %}</td>
+                <td>{{ j.submitted_at|tgl_id if j else '-' }}</td>
+                <td>
+                    {% if j %}
+                    <form method="post" action="{{ url_for('dosen.beri_nilai', jid=j.id) }}" style="display:flex; gap:6px;">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="number" name="nilai" step="0.1" min="0" max="100" value="{{ j.nilai or '' }}" style="width:80px;">
+                        <input type="text" name="feedback" placeholder="Feedback" value="{{ j.feedback or '' }}" style="width:160px;">
+                        <button class="btn btn-primary btn-sm">Simpan</button>
+                    </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="5" style="text-align:center; color:var(--grey-600);">Belum ada mahasiswa di kelas ini.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

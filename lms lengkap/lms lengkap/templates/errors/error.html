@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}
+  {% if code == "locked" %}Sistem Terkunci{% else %}Error {{ code }}{% endif %}
+{% endblock %}
+{% block body %}
+<div style="min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:var(--bg,#f6f7fb);">
+    <div style="text-align:center; max-width:480px;">
+        {% if code == "locked" %}
+            <div style="font-size:90px; margin-bottom:8px;">&#128274;</div>
+            <h2>Sistem Sedang Dinonaktifkan</h2>
+            <p style="color:var(--grey-600,#6b7280); margin:14px 0 24px;">
+                Sistem LMS sedang ditutup oleh Super Admin untuk pemeliharaan.<br>
+                Silakan coba lagi nanti.
+            </p>
+        {% elif code == 403 %}
+            <div style="font-size:90px; font-weight:800; color:var(--orange,#ff5f1a);">403</div>
+            <h2>Akses Ditolak</h2>
+            <p style="color:var(--grey-600,#6b7280); margin:14px 0 24px;">{{ message }}</p>
+        {% elif code == 404 %}
+            <div style="font-size:90px; font-weight:800; color:var(--orange,#ff5f1a);">404</div>
+            <h2>Halaman Tidak Ditemukan</h2>
+            <p style="color:var(--grey-600,#6b7280); margin:14px 0 24px;">{{ message }}</p>
+        {% elif code == 413 %}
+            <div style="font-size:90px; font-weight:800; color:var(--orange,#ff5f1a);">413</div>
+            <h2>File Terlalu Besar</h2>
+            <p style="color:var(--grey-600,#6b7280); margin:14px 0 24px;">{{ message }}</p>
+        {% elif code == 500 %}
+            <div style="font-size:90px; font-weight:800; color:var(--orange,#ff5f1a);">500</div>
+            <h2>Kesalahan Server</h2>
+            <p style="color:var(--grey-600,#6b7280); margin:14px 0 24px;">{{ message }}</p>
+        {% else %}
+            <div style="font-size:90px; font-weight:800; color:var(--orange,#ff5f1a);">{{ code }}</div>
+            <h2>Terjadi Kesalahan</h2>
+            <p style="color:var(--grey-600,#6b7280); margin:14px 0 24px;">{{ message }}</p>
+        {% endif %}
+        <a class="btn btn-primary" href="{{ url_for('auth.landing') }}">&#8592; Kembali ke Beranda</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,147 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Keaktifan Organisasi{% endblock %}
+{% block content %}
+<div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;">
+    <a class="btn btn-secondary btn-sm {% if not jk_filter %}btn-primary{% endif %}" href="{{ url_for('admin.organisasi') }}">Semua</a>
+    <a class="btn btn-secondary btn-sm {% if jk_filter=='reguler' %}btn-primary{% endif %}" href="?jenis_kelas=reguler">Reguler</a>
+    <a class="btn btn-secondary btn-sm {% if jk_filter=='nonreguler' %}btn-primary{% endif %}" href="?jenis_kelas=nonreguler">Non-Reguler</a>
+</div>
+<div class="card">
+    <div class="card-title">Tambah / Perbarui Keaktifan Organisasi</div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid-2">
+            <div>
+                <div class="field">
+                    <label>ðŸ” Cari Mahasiswa (Nama / NIM)</label>
+                    <input type="text" id="searchMhsOrg" placeholder="Ketik nama atau NIM untuk filter..."
+                           autocomplete="off" oninput="filterMhsOrgSelect()">
+                </div>
+                <div class="field">
+                    <label>Mahasiswa</label>
+                    <select name="mahasiswa_id" id="mhs-sel" onchange="loadOrg()" required>
+                        <option value="">-- Pilih --</option>
+                        {% for m in mhs_list %}
+                            <option value="{{ m.id }}" data-org="{{ (m.profil_mahasiswa.organisasi or '')|e }}"
+                                    data-nama="{{ m.nama|lower }}"
+                                    data-nim="{{ m.profil_mahasiswa.nim|lower if m.profil_mahasiswa else '' }}">
+                                {{ m.nama }} ({{ m.profil_mahasiswa.nim if m.profil_mahasiswa else '-' }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="field">
+            <label>Keaktifan Organisasi</label>
+            <textarea name="organisasi" id="org-text" rows="5"
+                      placeholder="contoh: Sekretaris HMI 2024, Anggota BEM 2025"></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+    </form>
+</div>
+
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:10px;">
+        <div class="card-title" style="margin:0;">Daftar Keaktifan Mahasiswa</div>
+        <div class="field" style="margin:0; min-width:220px;">
+            <input id="filter-input" type="text" placeholder="ðŸ” Cari nama / NIM..."
+                   style="padding:8px 12px; border:1px solid var(--grey-200); border-radius:8px; width:100%;">
+        </div>
+    </div>
+    <div class="table-wrap">
+    <table class="tbl" id="org-table">
+        <thead><tr><th>Nama</th><th>NIM</th><th>Prodi</th><th>Organisasi</th><th>Aksi</th></tr></thead>
+        <tbody>
+        {% for m in mhs_list %}
+        {% set pm = m.profil_mahasiswa %}
+        <tr>
+            <td><b>{{ m.nama }}</b></td>
+            <td>{{ pm.nim if pm else "-" }}</td>
+            <td>{{ pm.prodi.nama if pm and pm.prodi else "-" }}</td>
+            <td style="max-width:380px; white-space:pre-wrap;">{{ pm.organisasi or "-" if pm else "-" }}</td>
+            <td>
+                <div class="actions-row">
+                    <a class="btn btn-outline btn-sm"
+                       href="{{ url_for('admin.organisasi_edit', mhs_id=m.id) }}">Edit</a>
+                    {% if pm and pm.organisasi %}
+                    <form method="post" action="{{ url_for('admin.organisasi_delete', mhs_id=m.id) }}"
+                          onsubmit="return confirm('Hapus data organisasi mahasiswa ini?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-danger btn-sm" type="submit">Hapus</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<script>
+function loadOrg(){
+    const s = document.getElementById('mhs-sel');
+    document.getElementById('org-text').value = s.options[s.selectedIndex].dataset.org || '';
+}
+
+// Filter dropdown mahasiswa by nama/NIM
+function filterMhsOrgSelect() {
+    const q = document.getElementById('searchMhsOrg').value.toLowerCase().trim();
+    const select = document.getElementById('mhs-sel');
+    const options = select.querySelectorAll('option');
+    options.forEach(opt => {
+        if (!opt.value) { opt.style.display = ''; return; }
+        const nama = (opt.dataset.nama || '');
+        const nim = (opt.dataset.nim || '');
+        if (q === '' || nama.includes(q) || nim.includes(q)) {
+            opt.style.display = '';
+        } else {
+            opt.style.display = 'none';
+        }
+    });
+}
+
+// Filter table by nama/NIM
+document.getElementById('filter-input').addEventListener('input', function(){
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#org-table tbody tr').forEach(tr => {
+        tr.style.display = tr.innerText.toLowerCase().includes(q) ? '' : 'none';
+    });
+});
+</script>
+
+{% if show_form %}
+<div class="card">
+    <div class="flex-between">
+        <div>
+            <div class="card-title" style="margin:0;">Edit Organisasi</div>
+            <div class="muted-sm">
+                {{ pm.user.nama }} Â· {{ pm.nim }} Â· {{ pm.prodi.nama if pm.prodi else "-" }}
+            </div>
+        </div>
+        <a href="{{ url_for('admin.organisasi') }}" class="btn btn-outline">â† Kembali</a>
+    </div>
+
+    <form method="post" style="margin-top:14px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+            <label>Keaktifan Organisasi</label>
+            <textarea name="organisasi" rows="8"
+                      placeholder="contoh: Sekretaris HMI 2024, Anggota BEM 2025">{{ pm.organisasi or "" }}</textarea>
+            <div class="muted-sm">Kosongkan untuk menghapus data organisasi mahasiswa ini.</div>
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+    </form>
+
+    {% if pm.organisasi %}
+    <form method="post" action="{{ url_for('admin.organisasi_delete', mhs_id=pm.user_id) }}"
+          style="margin-top:12px;"
+          onsubmit="return confirm('Hapus data organisasi mahasiswa ini?');">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-danger" type="submit">Hapus Data Organisasi</button>
+    </form>
+    {% endif %}
+{% endif %}
+{% endblock %}

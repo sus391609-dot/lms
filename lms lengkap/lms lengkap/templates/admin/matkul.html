@@ -1,0 +1,83 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Master Mata Kuliah{% endblock %}
+{% block content %}
+<a class="btn btn-primary" href="{{ url_for('admin.matkul_form') }}" style="margin-bottom:14px;">+ Tambah Mata Kuliah</a>
+<div class="card">
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr><th>Kode</th><th>Nama</th><th>Prodi</th><th>SKS</th><th>Jenis</th><th>Sem</th><th>Prasyarat</th><th>Silabus</th><th></th></tr></thead>
+        <tbody>
+        {% for m in matkul_list %}
+            <tr>
+                <td>{{ m.kode }}</td>
+                <td>{{ m.nama }}</td>
+                <td>{{ m.prodi.nama }}</td>
+                <td>{{ m.sks }}</td>
+                <td><span class="badge badge-blue">{{ m.jenis }}</span></td>
+                <td>{{ m.semester }}</td>
+                <td>{{ m.prasyarat.kode if m.prasyarat else '-' }}</td>
+                <td>{% if m.silabus %}<a href="{{ url_for('static', filename=m.silabus) }}" target="_blank">Lihat</a>{% else %}-{% endif %}</td>
+                <td>
+                    <a class="btn btn-outline btn-sm" href="{{ url_for('admin.matkul_form', mid=m.id) }}">Edit</a>
+                    <form method="post" action="{{ url_for('admin.matkul_delete', mid=m.id) }}" style="display:inline;" onsubmit="return confirm('Hapus matkul ini?');">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button class="btn btn-danger btn-sm">Hapus</button>
+                    </form>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+{% if show_form %}
+<a href="{{ url_for('admin.matkul') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">← Kembali ke Daftar MK</a>
+<div class="card-title" style="margin-bottom:12px;">{{ 'Edit Mata Kuliah' if mk and mk.id else 'Tambah Mata Kuliah Baru' }}</div>
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid-2">
+            <div class="field"><label>Kode MK</label><input type="text" name="kode" required value="{{ mk.kode if mk else '' }}"></div>
+            <div class="field"><label>Nama MK</label><input type="text" name="nama" required value="{{ mk.nama if mk else '' }}"></div>
+            <div class="field"><label>Rumpun Ilmu</label><input type="text" name="rumpun" value="{{ mk.rumpun if mk else '' }}"></div>
+            <div class="field"><label>SKS</label><input type="number" name="sks" value="{{ mk.sks if mk else 3 }}"></div>
+            <div class="field">
+                <label>Prodi</label>
+                <select name="prodi_id" required>
+                    {% for p in prodi_list %}
+                        <option value="{{ p.id }}" {% if mk and mk.prodi_id==p.id %}selected{% endif %}>{{ p.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Semester</label>
+                <input type="number" name="semester" value="{{ mk.semester if mk else 1 }}">
+            </div>
+            <div class="field">
+                <label>Jenis</label>
+                <select name="jenis">
+                    <option value="wajib" {% if mk and mk.jenis=='wajib' %}selected{% endif %}>Wajib</option>
+                    <option value="pilihan" {% if mk and mk.jenis=='pilihan' %}selected{% endif %}>Pilihan</option>
+                </select>
+            </div>
+            <div class="field">
+                <label>Prasyarat (opsional)</label>
+                <select name="prasyarat_id">
+                    <option value="">-- Tidak ada --</option>
+                    {% for x in matkul_all if not mk or x.id != mk.id %}
+                        <option value="{{ x.id }}" {% if mk and mk.prasyarat_id==x.id %}selected{% endif %}>{{ x.kode }} - {{ x.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="field">
+            <label>Upload Silabus/RPS (PDF/DOCX)</label>
+            <input type="file" name="silabus" accept=".pdf,.docx,.doc">
+            {% if mk and mk.silabus %}<small>File saat ini: <a href="{{ url_for('static', filename=mk.silabus) }}" target="_blank">Lihat</a></small>{% endif %}
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.matkul') }}">Batal</a>
+    </form>
+{% endif %}
+{% endblock %}

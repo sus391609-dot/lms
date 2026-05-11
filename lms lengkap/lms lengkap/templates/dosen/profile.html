@@ -1,0 +1,47 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Profil Saya{% endblock %}
+{% block content %}
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div style="display:flex; gap:14px; align-items:center; margin-bottom:18px;">
+            {% if current_user.foto %}
+                <img src="{{ url_for('static', filename=current_user.foto) }}" style="width:90px; height:90px; border-radius:12px; object-fit:cover;">
+            {% else %}
+                <div style="width:90px; height:90px; border-radius:12px; background:var(--orange-l); color:var(--orange); display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:800;">{{ current_user.nama[0]|upper }}</div>
+            {% endif %}
+            <div>
+                <div style="font-weight:700; font-size:18px;">{{ current_user.nama }}</div>
+                <div style="color:var(--grey-600); font-size:13px;">NIDN: {{ profil.nidn if profil else '-' }}</div>
+                <input type="file" name="foto" accept=".png,.jpg,.jpeg" style="margin-top:8px; font-size:12px;">
+            </div>
+        </div>
+        <div class="grid-2">
+            <div class="field"><label>Nama</label><input type="text" name="nama" value="{{ current_user.nama }}"></div>
+            <div class="field"><label>Email</label><input type="email" value="{{ current_user.email }}" disabled></div>
+            <div class="field"><label>NIDN</label><input type="text" value="{{ profil.nidn if profil else '' }}" disabled></div>
+            <div class="field"><label>Jabatan</label><input type="text" name="jabatan" value="{{ profil.jabatan if profil else '' }}"></div>
+            <div class="field"><label>No Telp</label><input type="text" name="no_telp" value="{{ current_user.no_telp or '' }}"></div>
+            <div class="field"><label>Alamat</label><input type="text" name="alamat" value="{{ current_user.alamat or '' }}"></div>
+        </div>
+        <div class="field">
+            <label>Riwayat Akademik</label>
+            <textarea name="riwayat" rows="4">{{ profil.riwayat_akademik if profil else '' }}</textarea>
+        </div>
+        <div class="field">
+            <label>Prodi yang Diampu</label>
+            <div style="padding:8px; background:var(--grey-50); border-radius:8px;">
+                {% for p in (profil.prodi_list if profil else []) %}
+                    <span class="badge badge-orange" style="margin:2px;">{{ p.nama }}</span>
+                {% endfor %}
+            </div>
+            <small>Untuk mengubah prodi, hubungi admin.</small>
+        </div>
+        <div class="field">
+            <label>Password Baru (opsional)</label>
+            <input type="password" name="password" placeholder="Kosongkan jika tidak ganti">
+        </div>
+        <button class="btn btn-primary" type="submit">Simpan</button>
+    </form>
+</div>
+{% endblock %}

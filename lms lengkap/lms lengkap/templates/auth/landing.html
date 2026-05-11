@@ -1,0 +1,109 @@
+{% extends "base.html" %} {% block title %}Login - {{ app_name }}{% endblock %}
+{% block extra_css %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='css/auth.css') }}"
+/>
+{% endblock %} {% block body %}
+<div class="auth-page auth-minimal">
+  <aside class="auth-side">
+    <div class="brand-center">
+      <img
+        src="{{ url_for('static', filename='img/logo.png') }}"
+        alt="Logo UYP"
+        style="
+          height: 100px;
+          width: 100px;
+          border-radius: 50%;
+          margin-bottom: 20px;
+          object-fit: cover;
+        "
+      />
+      <h1 class="brand-title">Learning Management System</h1>
+    </div>
+
+    <div class="stats-3">
+      <div class="stat-item">
+        <div class="v">{{ stats.mahasiswa_aktif }}</div>
+        <div class="l">Mahasiswa</div>
+      </div>
+      <div class="stat-item">
+        <div class="v">{{ stats.dosen_aktif }}</div>
+        <div class="l">Dosen</div>
+      </div>
+      <div class="stat-item">
+        <div class="v">{{ stats.prodi }}</div>
+        <div class="l">Program Studi</div>
+      </div>
+    </div>
+
+    <div class="tag tag-center">
+      &copy; {{ now.year }} Rian Saputera
+    </div>
+  </aside>
+
+  <section class="auth-form-wrap">
+    <div class="auth-form">
+      <h2>Masuk</h2>
+      <p class="sub">Satu akun, sistem otomatis mengenali peran Anda.</p>
+
+      {% with messages = get_flashed_messages(with_categories=true) %} {% for
+      cat, msg in messages %}
+      <div class="alert alert-{{ cat }}">{{ msg }}</div>
+      {% endfor %} {% endwith %}
+
+      <form method="post" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="field">
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            required
+            autofocus
+            placeholder="nama@email.com"
+            value="{{ request.form.email or '' }}"
+          />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input
+            type="password"
+            name="password"
+            required
+            placeholder="Password Anda"
+          />
+        </div>
+        <button class="btn btn-primary btn-block" type="submit">
+          Masuk &rarr;
+        </button>
+      </form>
+
+      <div class="aux-links">
+        <a href="{{ url_for('auth.forgot_password') }}">Lupa password?</a>
+        <a href="{{ url_for('pmb.index') }}">Info PMB</a>
+      </div>
+
+      <div
+        style="
+          margin-top: 18px;
+          text-align: center;
+          font-size: 13px;
+          color: var(--grey-600);
+        "
+      >
+        Belum punya akun?
+        <a
+          href="{{ url_for('auth.register_mahasiswa') }}"
+          style="font-weight: 600"
+          >Daftar Mahasiswa</a
+        >
+        &middot;
+        <a href="{{ url_for('auth.register_dosen') }}" style="font-weight: 600"
+          >Daftar Dosen</a
+        >
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}

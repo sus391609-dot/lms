@@ -1,0 +1,51 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Penjadwalan{% endblock %}
+{% block content %}
+<div class="card">
+    <div class="card-title">Tambah Jadwal (dengan Conflict Detector)</div>
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid-3">
+            <div class="field">
+                <label>Kelas</label>
+                <select name="kelas_id" required>
+                    {% for k in kelas_list %}
+                        <option value="{{ k.id }}">{{ k.matkul.nama }} ({{ k.kode_kelas }}) - {{ k.dosen.nama }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="field">
+                <label>Hari</label>
+                <select name="hari">
+                    {% for h in ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu','Minggu'] %}<option>{{ h }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="field"><label>Ruangan</label><input type="text" name="ruangan" value="R-101"></div>
+            <div class="field"><label>Jam Mulai</label><input type="time" name="jam_mulai" value="08:00"></div>
+            <div class="field"><label>Jam Selesai</label><input type="time" name="jam_selesai" value="10:30"></div>
+        </div>
+        <button class="btn btn-primary" type="submit">Tambah Jadwal</button>
+    </form>
+</div>
+
+<div class="grid-3">
+{% for h in hari_order %}
+<div class="card" style="margin-bottom:0;">
+    <div class="card-title">{{ h }}</div>
+    {% for j in grouped[h] %}
+    <div style="padding:8px; background:var(--orange-l); border-radius:8px; margin-bottom:6px; position:relative;">
+        <div style="font-weight:600;">{{ j.kelas.matkul.nama }} ({{ j.kelas.kode_kelas }})</div>
+        <div style="color:var(--grey-600); font-size:12px;">
+            {{ j.jam_mulai }} - {{ j.jam_selesai }} | Ruang {{ j.ruangan }}<br>
+            {{ j.kelas.dosen.nama }}
+        </div>
+        <form method="post" action="{{ url_for('admin.jadwal_delete', jid=j.id) }}" style="position:absolute; top:8px; right:8px;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn-link" type="submit" style="color:var(--red);" onclick="return confirm('Hapus?')">&times;</button>
+        </form>
+    </div>
+    {% else %}<p style="color:var(--grey-600); font-size:13px;">-</p>{% endfor %}
+</div>
+{% endfor %}
+</div>
+{% endblock %}

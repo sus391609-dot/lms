@@ -1,0 +1,184 @@
+﻿{% extends "_dashboard_base.html" %}
+{% block page_title %}Rekap Nilai{% endblock %}
+{% block content %}
+<div class="card">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+        <div style="flex:1; min-width:240px;">
+            <div style="font-weight:700; font-size:16px;">Rekap &amp; Override Nilai</div>
+            <div style="color:var(--grey-600); font-size:13px;">
+                Pilih <b>Program Studi</b> &rarr; <b>Semester</b> &rarr; <b>Mata Kuliah</b> &rarr; <b>Jenis Kelas</b>,
+                lalu klik <b>Download CSV</b> untuk mengunduh hasil nilai mahasiswa.
+            </div>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            {% set qs = {} %}
+            {% if selected %}{% set _ = qs.update({'prodi_id': selected}) %}{% endif %}
+            {% if semester %}{% set _ = qs.update({'semester': semester}) %}{% endif %}
+            {% if matkul_id %}{% set _ = qs.update({'matkul_id': matkul_id}) %}{% endif %}
+            {% if jk_filter %}{% set _ = qs.update({'jenis_kelas': jk_filter}) %}{% endif %}
+            <a class="btn btn-primary btn-sm"
+               href="{{ url_for('admin.nilai_export_csv', **qs) }}">
+                &#128229; Download CSV
+            </a>
+        </div>
+    </div>
+    <form method="get" style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="field" style="margin:0; min-width:200px;">
+            <label>Program Studi</label>
+            <select name="prodi_id" onchange="this.form.submit()">
+                <option value="">-- Pilih prodi --</option>
+                {% for p in prodi_list %}
+                    <option value="{{ p.id }}" {% if selected==p.id %}selected{% endif %}>{{ p.nama }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0; min-width:140px;">
+            <label>Semester</label>
+            <select name="semester" onchange="this.form.submit()" {% if not selected %}disabled{% endif %}>
+                <option value="">-- Semua --</option>
+                {% for s in range(1, 9) %}
+                    <option value="{{ s }}" {% if semester==s %}selected{% endif %}>Semester {{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0; min-width:200px;">
+            <label>Mata Kuliah</label>
+            <select name="matkul_id" onchange="this.form.submit()" {% if not selected %}disabled{% endif %}>
+                <option value="">-- Semua --</option>
+                {% for mk in matkul_choices %}
+                    <option value="{{ mk.id }}" {% if matkul_id==mk.id %}selected{% endif %}>
+                        {{ mk.kode }} &mdash; {{ mk.nama }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="field" style="margin:0; min-width:150px;">
+            <label>Jenis Kelas</label>
+            <select name="jenis_kelas" onchange="this.form.submit()">
+                <option value="">-- Semua --</option>
+                <option value="reguler" {% if jk_filter=='reguler' %}selected{% endif %}>Reguler</option>
+                <option value="nonreguler" {% if jk_filter=='nonreguler' %}selected{% endif %}>Non-Reguler</option>
+            </select>
+        </div>
+    </form>
+</div>
+
+{% if selected and rows %}
+<div class="card">
+    <div class="card-title">Hasil ({{ rows|length }} entri)</div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead><tr>
+            <th>Mahasiswa</th><th>Jenis</th><th>Mata Kuliah</th><th>Sem</th>
+            <th>Kuis</th><th>Tugas</th><th>UTS</th><th>UAS</th>
+            <th>Keaktifan</th><th>Proyek</th>
+            <th>Akhir</th><th>Grade</th><th>Aksi</th>
+        </tr></thead>
+        <tbody>
+        {% for n, u, mk in rows %}
+            <tr>
+                <td>
+                    <b>{{ u.nama }}</b><br>
+                    <small style="color:var(--grey-600);">{{ u.profil_mahasiswa.nim if u.profil_mahasiswa else '' }}</small>
+                </td>
+                <td>
+                    {% if u.profil_mahasiswa and u.profil_mahasiswa.jenis_kelas == 'nonreguler' %}
+                        <span class="badge badge-orange">NR</span>
+                    {% else %}
+                        <span class="badge badge-green">R</span>
+                    {% endif %}
+                </td>
+                <td>{{ mk.kode }} &mdash; {{ mk.nama }}</td>
+                <td>{{ n.semester }}</td>
+                <td>{{ "%.1f"|format(n.nilai_kuis or 0) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_tugas or 0) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_uts or 0) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_uas or 0) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_keaktifan or 0) }}</td>
+                <td>{{ "%.1f"|format(n.nilai_proyek or 0) }}</td>
+                <td><b>{{ "%.2f"|format(n.nilai_akhir or 0) }}</b></td>
+                <td><span class="badge badge-orange">{{ n.grade }}</span></td>
+                <td>
+                    <a href="{{ url_for('admin.nilai_edit', nid=n.id) }}"
+                       class="btn btn-sm btn-outline">Edit</a>
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% elif selected %}
+<div class="card">
+    <p style="color:var(--grey-600);">Belum ada nilai untuk filter yang dipilih.</p>
+</div>
+{% else %}
+<div class="card">
+    <p style="color:var(--grey-600);">Silakan pilih program studi terlebih dahulu.</p>
+</div>
+{% endif %}
+
+{% if show_form %}
+<a href="{{ url_for('admin.nilai') }}" class="btn btn-secondary btn-sm" style="margin-bottom:14px;">← Kembali ke Daftar Nilai</a>
+<div class="card">
+    <div style="margin-bottom:14px;">
+        <div style="font-weight:700; font-size:17px;">{{ n.mahasiswa.nama }}</div>
+        <div style="color:var(--grey-600); font-size:13px;">
+            {{ n.mahasiswa.profil_mahasiswa.nim if n.mahasiswa.profil_mahasiswa else '-' }}
+            &middot; {{ n.kelas.matkul.nama }} ({{ n.kelas.label }})
+            &middot; Semester {{ n.semester }}
+        </div>
+    </div>
+
+    <div class="alert alert-warning" style="margin-bottom:18px;">
+        <b>Perhatian:</b> mengubah nilai akan meng-override input dosen.
+        Semua perubahan tercatat di audit log.
+    </div>
+
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="grid-3">
+            <div class="field">
+                <label>Kuis ({{ bobot.kuis }}%)</label>
+                <input type="number" step="0.01" min="0" max="100"
+                       name="kuis" value="{{ n.nilai_kuis or 0 }}">
+            </div>
+            <div class="field">
+                <label>Tugas ({{ bobot.tugas }}%)</label>
+                <input type="number" step="0.01" min="0" max="100"
+                       name="tugas" value="{{ n.nilai_tugas or 0 }}">
+            </div>
+            <div class="field">
+                <label>UTS ({{ bobot.uts }}%)</label>
+                <input type="number" step="0.01" min="0" max="100"
+                       name="uts" value="{{ n.nilai_uts or 0 }}">
+            </div>
+            <div class="field">
+                <label>UAS ({{ bobot.uas }}%)</label>
+                <input type="number" step="0.01" min="0" max="100"
+                       name="uas" value="{{ n.nilai_uas or 0 }}">
+            </div>
+            <div class="field">
+                <label>Keaktifan ({{ bobot.keaktifan }}%)</label>
+                <input type="number" step="0.01" min="0" max="100"
+                       name="keaktifan" value="{{ n.nilai_keaktifan or 0 }}">
+            </div>
+            <div class="field">
+                <label>Proyek ({{ bobot.proyek }}%)</label>
+                <input type="number" step="0.01" min="0" max="100"
+                       name="proyek" value="{{ n.nilai_proyek or 0 }}">
+            </div>
+        </div>
+        <div class="field">
+            <label>Catatan / Alasan Override</label>
+            <textarea name="catatan" rows="3"
+                      placeholder="Jelaskan alasan perubahan nilai">{{ n.catatan or '' }}</textarea>
+        </div>
+        <div style="display:flex; gap:8px;">
+            <button type="submit" class="btn btn-primary">Simpan Override</button>
+            <a href="{{ url_for('admin.nilai', prodi_id=n.mahasiswa.profil_mahasiswa.prodi_id if n.mahasiswa.profil_mahasiswa else None) }}"
+               class="btn btn-secondary">Batal</a>
+        </div>
+    </form>
+{% endif %}
+{% endblock %}
