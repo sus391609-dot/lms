@@ -156,6 +156,17 @@ def run_seed() -> None:
     )
     admin.set_password("admin123")
     db.session.add(admin)
+
+    # ---- Admin Sosmed (CMS / konten publik) ----
+    admin_sosmed = User(
+        nama="Admin Sosmed UYP",
+        email="sosmed@yarsipratama.ac.id",
+        role="admin_sosmed",
+        status="aktif",
+        email_verified=True,
+    )
+    admin_sosmed.set_password("sosmed123")
+    db.session.add(admin_sosmed)
     db.session.commit()
 
     # ---- Dosen demo ----
@@ -305,7 +316,7 @@ def run_seed() -> None:
     db.session.commit()
 
     # ── Konten publik: Berita / Kegiatan / Kerja Sama ──────────────────
-    _seed_konten_publik(admin.id)
+    _seed_konten_publik(admin_sosmed.id)
 
 
 def _seed_konten_publik(admin_id: int) -> None:

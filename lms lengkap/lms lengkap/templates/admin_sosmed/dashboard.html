@@ -1,0 +1,253 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Dashboard Admin Sosmed{% endblock %}
+{% block content %}
+
+{# Hero / welcome banner #}
+<div class="welcome-banner" style="background:linear-gradient(135deg,#ff5722 0%,#c0392b 100%);">
+    <div>
+        <div class="welcome-hi">Halo, {{ current_user.nama.split(' ')[0] }}! &#128075;</div>
+        <div class="welcome-sub">
+            Selamat datang di pusat kendali <b>Konten Publik</b> Universitas Yarsi Pratama.
+            {{ total_berita }} berita &middot; {{ total_kegiatan }} kegiatan &middot;
+            {{ total_kerjasama }} kerja sama &middot; {{ total_pendaftar }} pendaftar PMB.
+        </div>
+    </div>
+    <a href="{{ url_for('admin_sosmed.berita_form') }}" class="btn btn-secondary btn-sm welcome-cta">
+        &#10133; Upload Berita Baru
+    </a>
+</div>
+
+{# Quick stats grid #}
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="icon">&#128240;</div>
+        <div>
+            <div class="v">{{ total_berita }}</div>
+            <div class="l">Total Berita</div>
+            <div style="font-size:11px;color:#16a34a;margin-top:4px;">
+                {{ pub_berita }} publish &middot; {{ draft_berita }} draft
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon">&#127881;</div>
+        <div>
+            <div class="v">{{ total_kegiatan }}</div>
+            <div class="l">Kegiatan</div>
+            <div style="font-size:11px;color:#16a34a;margin-top:4px;">
+                {{ pub_kegiatan }} tampil di publik
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon">&#129309;</div>
+        <div>
+            <div class="v">{{ total_kerjasama }}</div>
+            <div class="l">Kerja Sama</div>
+            <div style="font-size:11px;color:#16a34a;margin-top:4px;">
+                {{ pub_kerjasama }} aktif
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="icon">&#127891;</div>
+        <div>
+            <div class="v">{{ total_pendaftar }}</div>
+            <div class="l">Pendaftar PMB</div>
+            <div style="font-size:11px;color:#dc2626;margin-top:4px;">
+                {{ pendaftar_baru }} belum diproses
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Aksi cepat #}
+<div class="card" style="margin-top:18px;">
+    <div class="card-title">&#9889; Aksi Cepat</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a href="{{ url_for('admin_sosmed.berita_form') }}" class="btn btn-primary">&#128240; Upload Berita</a>
+        <a href="{{ url_for('admin_sosmed.kegiatan_form') }}" class="btn btn-primary">&#127881; Upload Kegiatan</a>
+        <a href="{{ url_for('admin_sosmed.kerjasama_form') }}" class="btn btn-primary">&#129309; Tambah Kerja Sama</a>
+        <a href="{{ url_for('admin_sosmed.pmb_pendaftar') }}" class="btn btn-secondary">&#127891; Kelola Pendaftar PMB</a>
+        <a href="{{ url_for('public.home') }}" target="_blank" class="btn btn-secondary">&#127760; Lihat Website Publik</a>
+    </div>
+</div>
+
+{# Pendaftar PMB status pipeline #}
+<div class="card" style="margin-top:18px;">
+    <div class="card-title">&#128202; Pipeline Pendaftar PMB</div>
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat-card" style="border-left:4px solid #f59e0b;">
+            <div class="icon">&#128276;</div>
+            <div><div class="v">{{ pendaftar_baru }}</div><div class="l">Baru</div></div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #3b82f6;">
+            <div class="icon">&#128221;</div>
+            <div><div class="v">{{ pendaftar_diproses }}</div><div class="l">Diproses</div></div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #16a34a;">
+            <div class="icon">&#9989;</div>
+            <div><div class="v">{{ pendaftar_diterima }}</div><div class="l">Diterima</div></div>
+        </div>
+        <div class="stat-card" style="border-left:4px solid #6b7280;">
+            <div class="icon">&#128202;</div>
+            <div><div class="v">{{ total_pendaftar }}</div><div class="l">Total</div></div>
+        </div>
+    </div>
+</div>
+
+<div class="grid-2" style="margin-top:18px;">
+    {# Top berita #}
+    <div class="card">
+        <div class="card-title">&#128293; Top Berita (terbanyak dibaca)</div>
+        {% if top_berita %}
+        <div class="table-wrap">
+            <table class="tbl">
+                <thead><tr><th>Judul</th><th style="width:80px;">Kategori</th><th style="width:60px;text-align:right;">Views</th></tr></thead>
+                <tbody>
+                    {% for b in top_berita %}
+                    <tr>
+                        <td><a href="{{ url_for('public.berita_detail', bid=b.id) }}" target="_blank">{{ b.judul }}</a></td>
+                        <td><span class="pill">{{ b.kategori or 'Umum' }}</span></td>
+                        <td style="text-align:right;font-weight:600;">{{ b.views or 0 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color:#6b7280;">Belum ada berita yang dipublikasikan.</p>
+        {% endif %}
+    </div>
+
+    {# Sebaran kategori berita - mini chart bar #}
+    <div class="card">
+        <div class="card-title">&#128200; Sebaran Kategori Berita</div>
+        {% if kategori_berita %}
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:6px;">
+            {% set max_val = kategori_berita.values()|max %}
+            {% for kat, val in kategori_berita.items() %}
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px;">
+                    <span>{{ kat }}</span>
+                    <span style="color:#6b7280;">{{ val }} berita</span>
+                </div>
+                <div style="background:#f3f4f6;border-radius:6px;height:8px;overflow:hidden;">
+                    <div style="background:linear-gradient(90deg,#ff5722,#c0392b);height:100%;width:{{ (val / max_val * 100)|round(0) }}%;border-radius:6px;transition:width .6s;"></div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p style="color:#6b7280;">Belum ada data kategori.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid-2" style="margin-top:18px;">
+    {# Berita terbaru #}
+    <div class="card">
+        <div class="card-title">&#128221; Berita Terbaru
+            <a href="{{ url_for('admin_sosmed.berita_list') }}" style="float:right;font-size:12px;font-weight:500;color:#ff5722;">Lihat semua →</a>
+        </div>
+        {% if latest_berita %}
+        <ul style="list-style:none;padding:0;margin:0;">
+            {% for b in latest_berita %}
+            <li style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
+                <a href="{{ url_for('admin_sosmed.berita_form', bid=b.id) }}" style="font-weight:600;">{{ b.judul }}</a>
+                <div style="font-size:12px;color:#6b7280;margin-top:2px;">
+                    <span class="pill" style="background:{% if b.status=='published' %}#dcfce7;color:#16a34a{% else %}#fef3c7;color:#92400e{% endif %};">{{ b.status }}</span>
+                    &middot; {{ b.kategori or 'Umum' }} &middot;
+                    {{ b.created_at.strftime('%d %b %Y') if b.created_at else '-' }}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color:#6b7280;">Belum ada berita.</p>
+        {% endif %}
+    </div>
+
+    {# Kegiatan terbaru #}
+    <div class="card">
+        <div class="card-title">&#127881; Kegiatan Terbaru
+            <a href="{{ url_for('admin_sosmed.kegiatan_list') }}" style="float:right;font-size:12px;font-weight:500;color:#ff5722;">Lihat semua →</a>
+        </div>
+        {% if latest_kegiatan %}
+        <ul style="list-style:none;padding:0;margin:0;">
+            {% for k in latest_kegiatan %}
+            <li style="padding:10px 0;border-bottom:1px solid #f3f4f6;">
+                <a href="{{ url_for('admin_sosmed.kegiatan_form', kid=k.id) }}" style="font-weight:600;">{{ k.judul }}</a>
+                <div style="font-size:12px;color:#6b7280;margin-top:2px;">
+                    <span class="pill" style="background:{% if k.status=='published' %}#dcfce7;color:#16a34a{% else %}#fef3c7;color:#92400e{% endif %};">{{ k.status }}</span>
+                    &middot;
+                    {% if k.tanggal_mulai %}{{ k.tanggal_mulai.strftime('%d %b %Y') }}{% else %}-{% endif %}
+                    {% if k.lokasi %}&middot; &#128205; {{ k.lokasi }}{% endif %}
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color:#6b7280;">Belum ada kegiatan.</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="grid-2" style="margin-top:18px;">
+    {# Pendaftar PMB terbaru #}
+    <div class="card">
+        <div class="card-title">&#127891; Pendaftar PMB Terbaru
+            <a href="{{ url_for('admin_sosmed.pmb_pendaftar') }}" style="float:right;font-size:12px;font-weight:500;color:#ff5722;">Lihat semua →</a>
+        </div>
+        {% if latest_pendaftar %}
+        <div class="table-wrap">
+            <table class="tbl">
+                <thead><tr><th>Nama</th><th>Prodi</th><th>Status</th></tr></thead>
+                <tbody>
+                    {% for p in latest_pendaftar %}
+                    <tr>
+                        <td>
+                            <div style="font-weight:600;">{{ p.nama_lengkap }}</div>
+                            <div style="font-size:11px;color:#6b7280;">{{ p.email }}</div>
+                        </td>
+                        <td>{{ p.prodi.nama if p.prodi else '-' }}</td>
+                        <td><span class="pill">{{ p.status }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color:#6b7280;">Belum ada pendaftar PMB.</p>
+        {% endif %}
+    </div>
+
+    {# Aktivitas audit #}
+    <div class="card">
+        <div class="card-title">&#128221; Aktivitas Terakhir</div>
+        {% if aktivitas %}
+        <ul style="list-style:none;padding:0;margin:0;">
+            {% for a in aktivitas %}
+            <li style="padding:8px 0;border-bottom:1px solid #f3f4f6;font-size:13px;">
+                <div style="display:flex;justify-content:space-between;gap:8px;">
+                    <span><b>{{ a.aksi }}</b> &middot; <span style="color:#6b7280;">{{ a.target or '-' }}</span></span>
+                    <span style="color:#6b7280;font-size:11px;white-space:nowrap;">{{ a.created_at.strftime('%d %b, %H:%M') }}</span>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color:#6b7280;">Belum ada aktivitas tercatat.</p>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.pill{display:inline-block;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:600;background:#fef2f2;color:#dc2626;}
+.welcome-banner .welcome-hi{color:#fff;font-size:24px;font-weight:700;}
+.welcome-banner .welcome-sub{color:rgba(255,255,255,.92);}
+.stat-card .icon{background:linear-gradient(135deg,#ff5722,#c0392b);color:#fff;}
+.stat-card .v{font-weight:800;}
+</style>
+
+{% endblock %}

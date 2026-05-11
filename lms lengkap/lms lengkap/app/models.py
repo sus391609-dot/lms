@@ -68,7 +68,7 @@ class User(db.Model, UserMixin):
 
     role = db.Column(
         db.String(20), nullable=False, default="mahasiswa"
-    )  # mahasiswa | dosen | admin | superadmin
+    )  # mahasiswa | dosen | admin | admin_sosmed | superadmin
     status = db.Column(
         db.String(20), nullable=False, default="pending"
     )  # pending | aktif | nonaktif | ditolak

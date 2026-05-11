@@ -51,6 +51,9 @@ def create_app(config_class=Config):
     from app.admin.routes import bp as admin_bp
     app.register_blueprint(admin_bp, url_prefix="/admin")
 
+    from app.admin_sosmed.routes import bp as admin_sosmed_bp
+    app.register_blueprint(admin_sosmed_bp, url_prefix="/sosmed")
+
     from app.dosen.routes import bp as dosen_bp
     app.register_blueprint(dosen_bp, url_prefix="/dosen")
 

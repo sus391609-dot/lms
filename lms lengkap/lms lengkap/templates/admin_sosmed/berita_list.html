@@ -9,7 +9,7 @@
             Total: <b>{{ total }}</b> berita.
         </div>
     </div>
-    <a href="{{ url_for('admin.berita_form') }}" class="btn btn-primary welcome-cta">
+    <a href="{{ url_for('admin_sosmed.berita_form') }}" class="btn btn-primary welcome-cta">
         + Upload Berita Baru
     </a>
 </div>
@@ -19,7 +19,7 @@
         <input type="text" name="q" placeholder="Cari judul atau kategori…" value="{{ q }}"
                style="flex:1; min-width:220px; padding:9px 12px; border:1px solid var(--grey-200); border-radius:8px; font-size:14px;">
         <button class="btn btn-secondary btn-sm" type="submit">🔍 Cari</button>
-        {% if q %}<a href="{{ url_for('admin.berita_list') }}" class="btn btn-link btn-sm">Reset</a>{% endif %}
+        {% if q %}<a href="{{ url_for('admin_sosmed.berita_list') }}" class="btn btn-link btn-sm">Reset</a>{% endif %}
     </form>
 
     {% if rows %}
@@ -64,8 +64,8 @@
                 <td style="font-size:12px;">{{ b.published_at.strftime('%d %b %Y, %H:%M') }}</td>
                 <td><b>{{ b.views }}</b></td>
                 <td>
-                    <a href="{{ url_for('admin.berita_form', bid=b.id) }}" class="btn btn-secondary btn-sm">✏️ Edit</a>
-                    <form action="{{ url_for('admin.berita_delete', bid=b.id) }}" method="post" style="display:inline;"
+                    <a href="{{ url_for('admin_sosmed.berita_form', bid=b.id) }}" class="btn btn-secondary btn-sm">✏️ Edit</a>
+                    <form action="{{ url_for('admin_sosmed.berita_delete', bid=b.id) }}" method="post" style="display:inline;"
                           onsubmit="return confirm('Hapus berita ini secara permanen?');">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                         <button class="btn btn-danger btn-sm" type="submit">🗑️ Hapus</button>
@@ -83,7 +83,7 @@
             {% if p == page %}
                 <span class="btn btn-primary btn-sm" style="pointer-events:none;">{{ p }}</span>
             {% else %}
-                <a href="{{ url_for('admin.berita_list', page=p, q=q) }}" class="btn btn-secondary btn-sm">{{ p }}</a>
+                <a href="{{ url_for('admin_sosmed.berita_list', page=p, q=q) }}" class="btn btn-secondary btn-sm">{{ p }}</a>
             {% endif %}
         {% endfor %}
     </div>
@@ -91,7 +91,7 @@
     {% else %}
     <div style="text-align:center; padding:40px 16px; color:var(--grey-600);">
         <div style="font-size:48px; margin-bottom:10px;">📭</div>
-        <p>Belum ada berita. <a href="{{ url_for('admin.berita_form') }}">Upload berita pertama →</a></p>
+        <p>Belum ada berita. <a href="{{ url_for('admin_sosmed.berita_form') }}">Upload berita pertama →</a></p>
     </div>
     {% endif %}
 </div>
