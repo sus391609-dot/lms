@@ -28,7 +28,7 @@ from app.models import (
     User, ProgramStudi, ProfilDosen, ProfilMahasiswa,
     MataKuliah, Kelas, Jadwal, KRS, Tugas, JawabanTugas,
     Absen, Nilai, Poin, KonselingThread, KonselingPesan,
-    Materi,
+    Materi, BankSoal, Soal, PilihanJawaban, SesiUjian, JawabanUjian,
 )
 from app.utils import save_upload
 
@@ -720,3 +720,126 @@ def profile():
 
 
 
+
+# ---------------------------------------------------------------------
+# UJIAN ONLINE
+# ---------------------------------------------------------------------
+import secrets as _secrets
+
+
+@bp.route("/ujian")
+def ujian_list():
+    kelas_list = Kelas.query.filter_by(dosen_id=current_user.id).all()
+    bank_list = BankSoal.query.filter_by(dosen_id=current_user.id)\
+        .order_by(BankSoal.created_at.desc()).all()
+    return render_template("dosen/ujian.html", bank_list=bank_list,
+                           kelas_list=kelas_list, view="list")
+
+
+@bp.route("/ujian/baru", methods=["GET", "POST"])
+def ujian_baru():
+    kelas_list = Kelas.query.filter_by(dosen_id=current_user.id).all()
+    if request.method == "POST":
+        kelas_id = request.form.get("kelas_id", type=int)
+        if kelas_id not in [k.id for k in kelas_list]:
+            flash("Kelas tidak valid.", "danger")
+            return redirect(url_for("dosen.ujian_baru"))
+        judul = request.form.get("judul", "").strip()
+        jenis = request.form.get("jenis_ujian", "uts")
+        durasi = request.form.get("durasi_menit", type=int) or 90
+        acak = request.form.get("acak_soal") == "1"
+        token = _secrets.token_hex(4).upper()
+        bs = BankSoal(
+            dosen_id=current_user.id, kelas_id=kelas_id,
+            judul=judul, jenis_ujian=jenis, durasi_menit=durasi,
+            token=token, acak_soal=acak,
+        )
+        db.session.add(bs)
+        db.session.commit()
+        flash(f"Ujian dibuat. Token: {token}", "success")
+        return redirect(url_for("dosen.ujian_soal", bid=bs.id))
+    return render_template("dosen/ujian.html", kelas_list=kelas_list, view="form")
+
+
+@bp.route("/ujian/<int:bid>/soal", methods=["GET", "POST"])
+def ujian_soal(bid):
+    bs = BankSoal.query.get_or_404(bid)
+    if bs.dosen_id != current_user.id:
+        abort(403)
+    if request.method == "POST":
+        tipe = request.form.get("tipe", "pg")
+        pertanyaan = request.form.get("pertanyaan", "").strip()
+        bobot = request.form.get("bobot", type=int) or 1
+        nomor = len(bs.soal_list) + 1
+        soal = Soal(bank_soal_id=bs.id, nomor=nomor, tipe=tipe,
+                    pertanyaan=pertanyaan, bobot=bobot)
+        db.session.add(soal)
+        db.session.flush()
+        if tipe == "pg":
+            for lbl in ["A", "B", "C", "D", "E"]:
+                teks = request.form.get(f"pilihan_{lbl}", "").strip()
+                if not teks:
+                    continue
+                is_correct = request.form.get("jawaban_benar") == lbl
+                db.session.add(PilihanJawaban(
+                    soal_id=soal.id, label=lbl, teks=teks,
+                    is_correct=is_correct,
+                ))
+        else:
+            soal.kunci_esai = request.form.get("kunci_esai", "").strip()
+        db.session.commit()
+        flash(f"Soal #{nomor} ditambahkan.", "success")
+        return redirect(url_for("dosen.ujian_soal", bid=bs.id))
+    return render_template("dosen/ujian.html", bs=bs, view="soal")
+
+
+@bp.route("/ujian/<int:bid>/soal/<int:sid>/hapus", methods=["POST"])
+def ujian_hapus_soal(bid, sid):
+    bs = BankSoal.query.get_or_404(bid)
+    if bs.dosen_id != current_user.id:
+        abort(403)
+    soal = Soal.query.get_or_404(sid)
+    if soal.bank_soal_id != bs.id:
+        abort(404)
+    db.session.delete(soal)
+    db.session.commit()
+    for i, s in enumerate(Soal.query.filter_by(bank_soal_id=bs.id)
+                          .order_by(Soal.nomor).all(), 1):
+        s.nomor = i
+    db.session.commit()
+    flash("Soal dihapus.", "success")
+    return redirect(url_for("dosen.ujian_soal", bid=bs.id))
+
+
+@bp.route("/ujian/<int:bid>/toggle", methods=["POST"])
+def ujian_toggle(bid):
+    bs = BankSoal.query.get_or_404(bid)
+    if bs.dosen_id != current_user.id:
+        abort(403)
+    bs.is_active = not bs.is_active
+    db.session.commit()
+    status = "diaktifkan" if bs.is_active else "dinonaktifkan"
+    flash(f"Ujian {status}.", "success")
+    return redirect(url_for("dosen.ujian_list"))
+
+
+@bp.route("/ujian/<int:bid>/hasil")
+def ujian_hasil(bid):
+    bs = BankSoal.query.get_or_404(bid)
+    if bs.dosen_id != current_user.id:
+        abort(403)
+    sesi_list = SesiUjian.query.filter_by(bank_soal_id=bs.id)\
+        .order_by(SesiUjian.skor.desc().nulls_last()).all()
+    return render_template("dosen/ujian.html", bs=bs, sesi_list=sesi_list,
+                           view="hasil")
+
+
+@bp.route("/ujian/<int:bid>/hapus", methods=["POST"])
+def ujian_hapus(bid):
+    bs = BankSoal.query.get_or_404(bid)
+    if bs.dosen_id != current_user.id:
+        abort(403)
+    db.session.delete(bs)
+    db.session.commit()
+    flash("Ujian dihapus.", "success")
+    return redirect(url_for("dosen.ujian_list"))

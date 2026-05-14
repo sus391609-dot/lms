@@ -16,6 +16,7 @@ from app.models import (
     MataKuliah, Kelas, Jadwal, KRS, Pembayaran, SystemSetting, Nilai,
     KonselingThread, Materi, Portfolio,
     Berita, Kegiatan, KerjaSama,
+    BankSoal, Soal, PilihanJawaban,
 )
 
 
@@ -350,8 +351,161 @@ def run_seed() -> None:
 
     db.session.commit()
 
+    # ── Demo Mahasiswa per Prodi (2 per prodi: reguler & nonreguler) ───
+    _seed_demo_mahasiswa(dosen, k1, k2)
+
+    # ── Demo Ujian Online ──────────────────────────────────────────────
+    _seed_demo_ujian(dosen, k1)
+
     # ── Konten publik: Berita / Kegiatan / Kerja Sama ──────────────────
     _seed_konten_publik(admin_sosmed.id)
+
+
+def _seed_demo_mahasiswa(dosen, k1, k2):
+    """Buat 2 mahasiswa demo per prodi (reguler & nonreguler) = 16 mahasiswa.
+
+    Prodi TI sudah punya 'andi' (reguler), jadi TI hanya tambah 1 nonreg.
+    Total tambahan: 15 mahasiswa baru.
+    """
+    import secrets as _sec
+
+    DEMO_MHS = [
+        # (nama, email_prefix, prodi_nama, jenis, nim, semester)
+        ("Budi Pratama",    "budi",    "S1 Teknik Informatika",     "nonreguler", "2024010002", 1),
+        ("Siti Rahayu",     "siti",    "S1 Manajemen",              "reguler",    "2024020001", 1),
+        ("Rudi Hartono",    "rudi",    "S1 Manajemen",              "nonreguler", "2024020002", 1),
+        ("Dewi Lestari",    "dewi",    "S1 Hukum",                  "reguler",    "2024030001", 1),
+        ("Ahmad Fauzi",     "ahmad",   "S1 Hukum",                  "nonreguler", "2024030002", 1),
+        ("Rina Wulandari",  "rina",    "S1 Ilmu Komunikasi",        "reguler",    "2024040001", 1),
+        ("Dimas Saputra",   "dimas",   "S1 Ilmu Komunikasi",        "nonreguler", "2024040002", 1),
+        ("Nur Hidayah",     "nur",     "D3 Kebidanan",              "reguler",    "2024050001", 1),
+        ("Fitri Handayani", "fitri",   "D3 Kebidanan",              "nonreguler", "2024050002", 1),
+        ("Rizky Ramadhan",  "rizky",   "D3 Radiologi",              "reguler",    "2024060001", 1),
+        ("Maya Sari",       "maya",    "D3 Radiologi",              "nonreguler", "2024060002", 1),
+        ("Fajar Nugroho",   "fajar",   "S1 Ilmu Gizi",              "reguler",    "2024070001", 1),
+        ("Putri Ayu",       "putri",   "S1 Ilmu Gizi",              "nonreguler", "2024070002", 1),
+        ("Hendra Wijaya",   "hendra",  "S1 Administrasi Kesehatan", "reguler",    "2024080001", 1),
+        ("Linda Permata",   "linda",   "S1 Administrasi Kesehatan", "nonreguler", "2024080002", 1),
+    ]
+
+    for nama, prefix, prodi_nama, jenis, nim, sem in DEMO_MHS:
+        email = f"{prefix}@student.yarsipratama.ac.id"
+        if User.query.filter_by(email=email).first():
+            continue
+        prodi = ProgramStudi.query.filter_by(nama=prodi_nama).first()
+        if not prodi:
+            continue
+        u = User(
+            nama=nama, email=email, role="mahasiswa",
+            status="aktif", email_verified=True,
+        )
+        u.set_password("mhs123")
+        db.session.add(u)
+        db.session.flush()
+
+        db.session.add(ProfilMahasiswa(
+            user_id=u.id, nim=nim, prodi_id=prodi.id,
+            angkatan=2024, semester=sem, jenis_kelas=jenis,
+        ))
+
+        # Untuk prodi TI: enrollkan ke kelas k1 & k2 (reguler di kelas reguler)
+        if prodi_nama == "S1 Teknik Informatika":
+            jk = "reguler" if jenis == "reguler" else "nonreguler"
+            # Tambah ke KRS jika kelas cocok dengan jenis
+            if k1.jenis_kelas == jk or True:  # enroll semua TI ke demo kelas
+                db.session.add(KRS(mahasiswa_id=u.id, kelas_id=k1.id, semester=sem))
+                db.session.add(KRS(mahasiswa_id=u.id, kelas_id=k2.id, semester=sem))
+                # Nilai demo
+                n = Nilai(
+                    kelas_id=k1.id, mahasiswa_id=u.id, semester=sem,
+                    nilai_kuis=75, nilai_tugas=80, nilai_uts=70,
+                    nilai_uas=78, nilai_keaktifan=82, nilai_proyek=85,
+                )
+                n.hitung()
+                db.session.add(n)
+
+        # Pembayaran demo
+        db.session.add(Pembayaran(
+            mahasiswa_id=u.id, judul="UKT Semester 1",
+            nominal=5_000_000, semester=1, status="belum_bayar",
+        ))
+
+    db.session.commit()
+
+
+def _seed_demo_ujian(dosen, kelas):
+    """Buat bank soal demo dengan 5 soal PG + 2 soal esai."""
+    if BankSoal.query.count() > 0:
+        return
+
+    import secrets as _sec
+    token = _sec.token_hex(4).upper()
+
+    bs = BankSoal(
+        dosen_id=dosen.id, kelas_id=kelas.id,
+        judul="UTS Algoritma & Pemrograman 2024",
+        jenis_ujian="uts", durasi_menit=90,
+        token=token, is_active=True, acak_soal=False,
+    )
+    db.session.add(bs)
+    db.session.flush()
+
+    # ── Soal PG ────────────────────────────────────────────────────
+    pg_data = [
+        {
+            "pertanyaan": "Apa output dari kode berikut?\n\nprint(2 ** 3 + 1)",
+            "pilihan": [("A", "7", False), ("B", "9", True), ("C", "8", False), ("D", "6", False)],
+        },
+        {
+            "pertanyaan": "Manakah yang merupakan tipe data immutable di Python?",
+            "pilihan": [("A", "list", False), ("B", "dict", False), ("C", "tuple", True), ("D", "set", False)],
+        },
+        {
+            "pertanyaan": "Apa kompleksitas waktu rata-rata dari algoritma Binary Search?",
+            "pilihan": [("A", "O(n)", False), ("B", "O(n log n)", False), ("C", "O(log n)", True), ("D", "O(1)", False)],
+        },
+        {
+            "pertanyaan": "Statement mana yang benar tentang rekursi?",
+            "pilihan": [
+                ("A", "Rekursi selalu lebih cepat dari iterasi", False),
+                ("B", "Rekursi memerlukan base case untuk berhenti", True),
+                ("C", "Python tidak mendukung rekursi", False),
+                ("D", "Rekursi tidak menggunakan stack", False),
+            ],
+        },
+        {
+            "pertanyaan": "Apa hasil dari: len([1, [2, 3], 4])?",
+            "pilihan": [("A", "3", True), ("B", "4", False), ("C", "5", False), ("D", "Error", False)],
+        },
+    ]
+    for i, pg in enumerate(pg_data, 1):
+        soal = Soal(bank_soal_id=bs.id, nomor=i, tipe="pg",
+                    pertanyaan=pg["pertanyaan"], bobot=2)
+        db.session.add(soal)
+        db.session.flush()
+        for label, teks, correct in pg["pilihan"]:
+            db.session.add(PilihanJawaban(
+                soal_id=soal.id, label=label, teks=teks, is_correct=correct,
+            ))
+
+    # ── Soal Esai ──────────────────────────────────────────────────
+    esai_data = [
+        {
+            "pertanyaan": "Jelaskan perbedaan antara algoritma Bubble Sort dan Selection Sort, termasuk kompleksitas waktu masing-masing.",
+            "kunci": "bubble sort membandingkan elemen bersebelahan",
+        },
+        {
+            "pertanyaan": "Apa yang dimaksud dengan Big O Notation? Berikan contoh penggunaannya.",
+            "kunci": "notasi untuk menggambarkan kompleksitas waktu",
+        },
+    ]
+    for i, es in enumerate(esai_data, len(pg_data) + 1):
+        soal = Soal(bank_soal_id=bs.id, nomor=i, tipe="esai",
+                    pertanyaan=es["pertanyaan"], bobot=5,
+                    kunci_esai=es["kunci"])
+        db.session.add(soal)
+
+    db.session.commit()
 
 
 def _seed_konten_publik(admin_id: int) -> None:

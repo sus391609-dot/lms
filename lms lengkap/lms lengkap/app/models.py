@@ -700,3 +700,103 @@ class SkpiPengajuan(db.Model):
         "User", foreign_keys=[mahasiswa_id], backref="skpi_pengajuan"
     )
     reviewer = db.relationship("User", foreign_keys=[reviewed_by])
+
+
+# =====================================================================
+# UJIAN ONLINE (UTS / UAS) - Pilihan Ganda & Esai
+# =====================================================================
+class BankSoal(db.Model):
+    """Paket ujian yang dibuat dosen. Berisi metadata ujian dan token akses."""
+
+    __tablename__ = "bank_soal"
+    id = db.Column(db.Integer, primary_key=True)
+    dosen_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    kelas_id = db.Column(db.Integer, db.ForeignKey("kelas.id"), nullable=False)
+    judul = db.Column(db.String(200), nullable=False)
+    jenis_ujian = db.Column(db.String(10), nullable=False, default="uts")  # uts | uas
+    durasi_menit = db.Column(db.Integer, nullable=False, default=90)
+    token = db.Column(db.String(20), unique=True, nullable=False)
+    is_active = db.Column(db.Boolean, default=False, nullable=False)
+    acak_soal = db.Column(db.Boolean, default=False, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    dosen = db.relationship("User", foreign_keys=[dosen_id])
+    kelas = db.relationship("Kelas")
+    soal_list = db.relationship("Soal", back_populates="bank_soal",
+                                cascade="all, delete-orphan",
+                                order_by="Soal.nomor")
+
+
+class Soal(db.Model):
+    """Satu butir soal (pilihan ganda atau esai)."""
+
+    __tablename__ = "soal"
+    id = db.Column(db.Integer, primary_key=True)
+    bank_soal_id = db.Column(db.Integer, db.ForeignKey("bank_soal.id"), nullable=False)
+    nomor = db.Column(db.Integer, nullable=False, default=1)
+    tipe = db.Column(db.String(10), nullable=False, default="pg")  # pg | esai
+    pertanyaan = db.Column(db.Text, nullable=False)
+    bobot = db.Column(db.Integer, nullable=False, default=1)
+    # Untuk esai: jawaban kunci (digunakan auto-koreksi sederhana)
+    kunci_esai = db.Column(db.Text, nullable=True)
+
+    bank_soal = db.relationship("BankSoal", back_populates="soal_list")
+    pilihan_list = db.relationship("PilihanJawaban", back_populates="soal",
+                                   cascade="all, delete-orphan",
+                                   order_by="PilihanJawaban.label")
+
+
+class PilihanJawaban(db.Model):
+    """Opsi jawaban untuk soal pilihan ganda (A/B/C/D/E)."""
+
+    __tablename__ = "pilihan_jawaban"
+    id = db.Column(db.Integer, primary_key=True)
+    soal_id = db.Column(db.Integer, db.ForeignKey("soal.id"), nullable=False)
+    label = db.Column(db.String(1), nullable=False)  # A, B, C, D, E
+    teks = db.Column(db.Text, nullable=False)
+    is_correct = db.Column(db.Boolean, default=False, nullable=False)
+
+    soal = db.relationship("Soal", back_populates="pilihan_list")
+
+
+class SesiUjian(db.Model):
+    """Sesi ujian individual mahasiswa."""
+
+    __tablename__ = "sesi_ujian"
+    id = db.Column(db.Integer, primary_key=True)
+    bank_soal_id = db.Column(db.Integer, db.ForeignKey("bank_soal.id"), nullable=False)
+    mahasiswa_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    started_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    finished_at = db.Column(db.DateTime, nullable=True)
+    skor = db.Column(db.Float, nullable=True)
+    total_benar = db.Column(db.Integer, default=0)
+    total_salah = db.Column(db.Integer, default=0)
+    total_ragu = db.Column(db.Integer, default=0)
+    tab_leave_count = db.Column(db.Integer, default=0, nullable=False)
+    is_submitted = db.Column(db.Boolean, default=False, nullable=False)
+
+    bank_soal = db.relationship("BankSoal")
+    mahasiswa = db.relationship("User", foreign_keys=[mahasiswa_id])
+    jawaban_list = db.relationship("JawabanUjian", back_populates="sesi",
+                                   cascade="all, delete-orphan")
+
+    __table_args__ = (
+        db.UniqueConstraint("bank_soal_id", "mahasiswa_id", name="uq_sesi_ujian"),
+    )
+
+
+class JawabanUjian(db.Model):
+    """Jawaban mahasiswa per soal dalam satu sesi ujian."""
+
+    __tablename__ = "jawaban_ujian"
+    id = db.Column(db.Integer, primary_key=True)
+    sesi_id = db.Column(db.Integer, db.ForeignKey("sesi_ujian.id"), nullable=False)
+    soal_id = db.Column(db.Integer, db.ForeignKey("soal.id"), nullable=False)
+    jawaban_pg = db.Column(db.String(1), nullable=True)  # A/B/C/D/E
+    jawaban_esai = db.Column(db.Text, nullable=True)
+    is_ragu = db.Column(db.Boolean, default=False, nullable=False)
+    is_correct = db.Column(db.Boolean, nullable=True)
+    skor_soal = db.Column(db.Float, default=0, nullable=False)
+
+    sesi = db.relationship("SesiUjian", back_populates="jawaban_list")
+    soal = db.relationship("Soal")
