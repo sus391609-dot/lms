@@ -29,12 +29,6 @@
         margin: 0; font-size: 17px; color: var(--cv-dark);
         display: flex; align-items: center; gap: 10px;
     }
-    .cv-toolbar h3 .badge-score {
-        font-size: 12px; font-weight: 700;
-        padding: 4px 10px; border-radius: 999px;
-        background: linear-gradient(135deg, #ff7a3d, #e94424);
-        color: #fff; letter-spacing: .5px;
-    }
     .cv-toolbar .actions { display: flex; gap: 10px; flex-wrap: wrap; }
     .cv-toolbar .btn-pdf {
         background: linear-gradient(135deg, #ff6a3d 0%, #e94424 55%, #b8341a 100%);
@@ -95,13 +89,6 @@
     .cv-role {
         font-size: 12.5px; color: #ff7a3d; font-style: italic;
         margin-bottom: 10px;
-    }
-    .cv-badge {
-        display: inline-block; padding: 4px 12px; border-radius: 999px;
-        background: linear-gradient(135deg, #ff7a3d, #e94424);
-        color: #fff; font-size: 11px; font-weight: 700;
-        letter-spacing: 1px; text-transform: uppercase;
-        margin-bottom: 14px;
     }
     .cv-sidebar h4 {
         font-size: 11px; letter-spacing: 1.2px;
@@ -197,7 +184,6 @@
 <div class="cv-toolbar">
     <h3>
         Curriculum Vitae
-        <span class="badge-score">{{ keaktifan_label }} · {{ keaktifan_score }}/100</span>
     </h3>
     <div class="actions">
         <button class="btn-print" onclick="window.print();">
@@ -228,7 +214,6 @@
                 Mahasiswa Universitas Yarsi Pratama
             {% endif %}
         </div>
-        <div class="cv-badge">{{ keaktifan_label }}</div>
 
         <h4>Contact</h4>
         <p><b style="color:#fff;">Email</b><br>{{ current_user.email }}</p>
@@ -292,8 +277,7 @@
                 {% endif %}
                 Memiliki <b>{{ portfolio|length }}</b> portofolio (prestasi, karya, sertifikasi,
                 penghargaan), serta aktif di <b>{{ organisasi|length }}</b> organisasi /
-                peran kampus. Berdasarkan rekam keaktifan, dinilai sebagai mahasiswa
-                <b>{{ keaktifan_label }}</b> (skor {{ keaktifan_score }}/100).
+                peran kampus.
             </p>
         </section>
 

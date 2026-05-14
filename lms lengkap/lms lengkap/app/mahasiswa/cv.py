@@ -458,17 +458,6 @@ def _build_cv_pdf(data: dict[str, Any]) -> BytesIO:
     else:
         story.append(Paragraph("Mahasiswa Universitas Yarsi Pratama", role_style))
 
-    # Keaktifan badge
-    badge_color = C_ACCENT if data["keaktifan_score"] >= 55 else colors.HexColor("#6b7280")
-    badge = Table(
-        [[Paragraph(data["keaktifan_label"].upper(), badge_text)]],
-        colWidths=[36 * mm], rowHeights=[6.5 * mm],
-    )
-    badge.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, -1), badge_color),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-    ]))
-    story.append(badge)
     story.append(Spacer(1, 4))
 
     # ── Contact
@@ -576,9 +565,7 @@ def _build_cv_pdf(data: dict[str, Any]) -> BytesIO:
     summary_lines.append(
         f"Memiliki <b>{len(data['portfolio'])}</b> portofolio yang terdiri dari "
         f"prestasi, karya, sertifikasi, dan penghargaan, serta aktif "
-        f"di <b>{len(data['organisasi'])}</b> organisasi/peran kampus. "
-        f"Berdasarkan rekam keaktifan, dinilai sebagai mahasiswa "
-        f"<b>{data['keaktifan_label']}</b> (skor {data['keaktifan_score']}/100)."
+        f"di <b>{len(data['organisasi'])}</b> organisasi/peran kampus."
     )
     for ln in summary_lines:
         story.append(Paragraph(ln, summary_text))
