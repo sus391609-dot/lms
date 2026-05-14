@@ -33,6 +33,7 @@ from app.models import (
     Absen, Nilai, Poin, KonselingThread, KonselingPesan,
     Pembayaran, Notifikasi, AuditLog, LoginActivity,
     SystemSetting, dosen_prodi, Portfolio, Materi,
+    SkpiPengajuan,
 )
 from app.utils import save_upload
 from app.utils import record_audit
@@ -871,6 +872,13 @@ def leaderboard():
             ipk = round(total_bobot / total_sks, 2) if total_sks > 0 else 0
             pm.ipk = ipk
             portfolio_items = Portfolio.query.filter_by(mahasiswa_id=u.id).all()
+            skpi_total = (
+                db.session.query(db.func.coalesce(db.func.sum(SkpiPengajuan.poin), 0))
+                .filter(SkpiPengajuan.mahasiswa_id == u.id,
+                        SkpiPengajuan.status == "approved")
+                .scalar() or 0
+            )
+            skor = ipk + 0.05 * float(skpi_total)
             mhs_data.append({
                 "user": u,
                 "profil": pm,
@@ -879,9 +887,11 @@ def leaderboard():
                 "semester_count": len(set(n.semester for n in nilai_list)),
                 "organisasi": pm.organisasi,
                 "portfolio": portfolio_items,
+                "skpi_total": int(skpi_total),
+                "skor": round(skor, 3),
             })
         db.session.commit()
-        mhs_data.sort(key=lambda x: x["ipk"], reverse=True)
+        mhs_data.sort(key=lambda x: x["skor"], reverse=True)
         top10 = mhs_data[:10]
     return render_template(
         "admin/leaderboard.html", prodi_list=prodi_list,
@@ -1330,5 +1340,97 @@ def stats_json():
             "login": LoginActivity.query.filter_by(prodi_id=p.id).count(),
         })
     return jsonify(data)
+
+
+# =====================================================================
+# SKPI - Review pengajuan sertifikat SKPI dari mahasiswa
+# =====================================================================
+@bp.route("/skpi")
+def skpi_list():
+    """Daftar pengajuan SKPI. Default tampil pending dulu."""
+    status_filter = request.args.get("status", "pending")
+    q = SkpiPengajuan.query
+    if status_filter in ("pending", "approved", "rejected"):
+        q = q.filter_by(status=status_filter)
+    pengajuan_list = q.order_by(SkpiPengajuan.created_at.desc()).all()
+
+    counts = {
+        "pending": SkpiPengajuan.query.filter_by(status="pending").count(),
+        "approved": SkpiPengajuan.query.filter_by(status="approved").count(),
+        "rejected": SkpiPengajuan.query.filter_by(status="rejected").count(),
+    }
+    counts["total"] = counts["pending"] + counts["approved"] + counts["rejected"]
+    total_poin_disetujui = db.session.query(
+        db.func.coalesce(db.func.sum(SkpiPengajuan.poin), 0)
+    ).filter(SkpiPengajuan.status == "approved").scalar() or 0
+
+    return render_template(
+        "admin/skpi.html",
+        pengajuan_list=pengajuan_list,
+        status_filter=status_filter,
+        counts=counts,
+        total_poin_disetujui=total_poin_disetujui,
+    )
+
+
+@bp.route("/skpi/<int:sid>/decide", methods=["POST"])
+def skpi_decide(sid):
+    """Admin meng-approve (dengan poin 1..4) atau reject pengajuan SKPI."""
+    p = SkpiPengajuan.query.get_or_404(sid)
+    aksi = (request.form.get("aksi") or "").strip().lower()
+    catatan = (request.form.get("catatan") or "").strip() or None
+
+    if aksi == "approve":
+        try:
+            poin = int(request.form.get("poin", "0"))
+        except ValueError:
+            poin = 0
+        if poin < 1 or poin > 4:
+            flash("Poin SKPI harus antara 1 sampai 4.", "warning")
+            return redirect(url_for("admin.skpi_list", status="pending"))
+        p.status = "approved"
+        p.poin = poin
+        p.catatan_admin = catatan
+        p.reviewed_by = current_user.id
+        p.reviewed_at = datetime.utcnow()
+        try:
+            n = Notifikasi(
+                user_id=p.mahasiswa_id,
+                judul="Pengajuan SKPI disetujui",
+                isi=f"Sertifikat '{p.judul}' disetujui dengan {poin} poin SKPI.",
+            )
+            db.session.add(n)
+        except Exception:
+            pass
+        _audit("skpi_approve", str(p.id), f"poin={poin}; judul={p.judul}")
+        flash(f"Pengajuan SKPI #{p.id} disetujui dengan {poin} poin.", "success")
+
+    elif aksi == "reject":
+        p.status = "rejected"
+        p.poin = None
+        p.catatan_admin = catatan or "Ditolak oleh admin."
+        p.reviewed_by = current_user.id
+        p.reviewed_at = datetime.utcnow()
+        try:
+            n = Notifikasi(
+                user_id=p.mahasiswa_id,
+                judul="Pengajuan SKPI ditolak",
+                isi=(
+                    f"Sertifikat '{p.judul}' ditolak."
+                    + (f" Catatan: {p.catatan_admin}" if p.catatan_admin else "")
+                ),
+            )
+            db.session.add(n)
+        except Exception:
+            pass
+        _audit("skpi_reject", str(p.id), f"judul={p.judul}")
+        flash(f"Pengajuan SKPI #{p.id} ditolak.", "warning")
+
+    else:
+        flash("Aksi tidak dikenali.", "warning")
+        return redirect(url_for("admin.skpi_list", status="pending"))
+
+    db.session.commit()
+    return redirect(url_for("admin.skpi_list", status=request.form.get("redirect_status", "pending")))
 
 

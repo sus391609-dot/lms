@@ -659,3 +659,44 @@ class PendaftaranPMB(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     prodi = db.relationship("ProgramStudi")
+
+
+# =====================================================================
+# SKPI - Surat Keterangan Pendamping Ijazah
+# Mahasiswa upload sertifikat (workshop/lomba/seminar/dll), admin
+# mereview lalu memberi poin SKPI 1-4. Akumulasi poin tampil di profil
+# mahasiswa dan ikut menjadi faktor ranking di leaderboard "Top Mahasiswa".
+# =====================================================================
+class SkpiPengajuan(db.Model):
+    __tablename__ = "skpi_pengajuan"
+
+    id = db.Column(db.Integer, primary_key=True)
+    mahasiswa_id = db.Column(
+        db.Integer, db.ForeignKey("users.id"), nullable=False, index=True
+    )
+    judul = db.Column(db.String(200), nullable=False)
+    kategori = db.Column(
+        db.String(80), nullable=True
+    )  # workshop|lomba|seminar|sertifikasi|pengabdian|lainnya
+    deskripsi = db.Column(db.Text, nullable=True)
+    tahun = db.Column(db.Integer, nullable=True)
+    file_path = db.Column(db.String(255), nullable=False)  # path file sertifikat
+
+    status = db.Column(
+        db.String(20), nullable=False, default="pending", index=True
+    )  # pending | approved | rejected
+    poin = db.Column(db.Integer, nullable=True)  # 1..4, diisi admin saat approve
+    catatan_admin = db.Column(db.Text, nullable=True)  # alasan reject / catatan
+
+    reviewed_by = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
+    reviewed_at = db.Column(db.DateTime, nullable=True)
+
+    created_at = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = db.Column(
+        db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    mahasiswa = db.relationship(
+        "User", foreign_keys=[mahasiswa_id], backref="skpi_pengajuan"
+    )
+    reviewer = db.relationship("User", foreign_keys=[reviewed_by])

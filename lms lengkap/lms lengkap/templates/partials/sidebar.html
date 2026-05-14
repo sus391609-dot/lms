@@ -30,6 +30,7 @@
         <a href="{{ url_for('admin.absensi') }}" {% if request.endpoint and 'absensi' in request.endpoint %}class="active"{% endif %}>&#128197; Rekap Absensi</a>
         <a href="{{ url_for('admin.organisasi') }}" {% if request.endpoint=='admin.organisasi' %}class="active"{% endif %}>&#127942; Organisasi</a>
         <a href="{{ url_for('admin.portfolio') }}" {% if request.endpoint and 'portfolio' in request.endpoint %}class="active"{% endif %}>&#128188; Portfolio</a>
+        <a href="{{ url_for('admin.skpi_list') }}" {% if request.endpoint and request.endpoint.startswith('admin.skpi') %}class="active"{% endif %}>&#128221; Pengajuan SKPI</a>
         <a href="{{ url_for('admin.leaderboard') }}" {% if request.endpoint=='admin.leaderboard' %}class="active"{% endif %}>&#127941; Top 10 Mahasiswa</a>
         <a href="{{ url_for('admin.poin_dosen') }}" {% if request.endpoint and 'poin' in request.endpoint %}class="active"{% endif %}>&#11088; Poin Dosen</a>
         <a href="{{ url_for('admin.pembayaran') }}" {% if request.endpoint=='admin.pembayaran' %}class="active"{% endif %}>&#128181; Pembayaran</a>
@@ -86,6 +87,7 @@
         <a href="{{ url_for('mahasiswa.poin') }}" {% if request.endpoint=='mahasiswa.poin' %}class="active"{% endif %}>&#11088; Poin Dosen</a>
         <a href="{{ url_for('mahasiswa.pembayaran') }}" {% if request.endpoint and 'pembayaran' in request.endpoint %}class="active"{% endif %}>&#128181; Pembayaran</a>
         <a href="{{ url_for('mahasiswa.organisasi') }}" {% if request.endpoint=='mahasiswa.organisasi' %}class="active"{% endif %}>&#127942; Organisasi</a>
+        <a href="{{ url_for('mahasiswa.skpi') }}" {% if request.endpoint and request.endpoint.startswith('mahasiswa.skpi') %}class="active"{% endif %}>&#128221; Pengajuan SKPI</a>
         <a href="{{ url_for('mahasiswa_cv.cv_preview') }}" {% if request.endpoint and request.endpoint.startswith('mahasiswa_cv') %}class="active"{% endif %}>&#128196; Cetak CV</a>
         <a href="{{ url_for('mahasiswa.profile') }}" {% if request.endpoint=='mahasiswa.profile' %}class="active"{% endif %}>&#128100; Profil</a>
 

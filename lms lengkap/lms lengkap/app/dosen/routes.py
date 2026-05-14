@@ -631,7 +631,7 @@ def materi_delete(mid):
 # ---------------------------------------------------------------------
 @bp.route("/leaderboard")
 def leaderboard():
-    from app.models import Portfolio
+    from app.models import Portfolio, SkpiPengajuan
     prodi_list = ProgramStudi.query.all()
     selected_prodi = request.values.get("prodi_id", type=int)
     jk_filter = request.values.get("jenis_kelas", "")
@@ -662,6 +662,13 @@ def leaderboard():
             # Update IPK di profil
             pm.ipk = ipk
             portfolio = Portfolio.query.filter_by(mahasiswa_id=u.id).all()
+            skpi_total = (
+                db.session.query(db.func.coalesce(db.func.sum(SkpiPengajuan.poin), 0))
+                .filter(SkpiPengajuan.mahasiswa_id == u.id,
+                        SkpiPengajuan.status == "approved")
+                .scalar() or 0
+            )
+            skor = ipk + 0.05 * float(skpi_total)
             mhs_data.append({
                 "user": u,
                 "profil": pm,
@@ -670,9 +677,11 @@ def leaderboard():
                 "semester_count": len(set(n.semester for n in nilai_list)),
                 "organisasi": pm.organisasi,
                 "portfolio": portfolio,
+                "skpi_total": int(skpi_total),
+                "skor": round(skor, 3),
             })
         db.session.commit()
-        mhs_data.sort(key=lambda x: x["ipk"], reverse=True)
+        mhs_data.sort(key=lambda x: x["skor"], reverse=True)
         top10 = mhs_data[:10]
     return render_template(
         "dosen/leaderboard.html", prodi_list=prodi_list,

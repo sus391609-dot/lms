@@ -25,3 +25,8 @@ env/
 .idea/
 *.swp
 .DS_Store
+
+# User-uploaded files (jangan commit ke git)
+lms lengkap/lms lengkap/static/uploads/skpi/
+lms lengkap/lms lengkap/static/uploads/pembayaran/
+lms lengkap/lms lengkap/static/uploads/jawaban/
