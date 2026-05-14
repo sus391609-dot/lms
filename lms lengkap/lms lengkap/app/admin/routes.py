@@ -1377,6 +1377,14 @@ def skpi_list():
 def skpi_decide(sid):
     """Admin meng-approve (dengan poin 1..4) atau reject pengajuan SKPI."""
     p = SkpiPengajuan.query.get_or_404(sid)
+    redirect_status = request.form.get("redirect_status", "pending")
+    if p.status != "pending":
+        flash(
+            f"Pengajuan '{p.judul}' sudah pernah direview (status: {p.status}). "
+            "Tidak bisa diproses ulang.",
+            "warning",
+        )
+        return redirect(url_for("admin.skpi_list", status=redirect_status))
     aksi = (request.form.get("aksi") or "").strip().lower()
     catatan = (request.form.get("catatan") or "").strip() or None
 
