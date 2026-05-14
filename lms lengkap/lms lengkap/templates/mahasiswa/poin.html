@@ -2,6 +2,7 @@
 {% block page_title %}Poin Dosen{% endblock %}
 {% block content %}
 
+{%- if view != 'dosen_list' %}
 {# Summary banner #}
 <div class="poin-banner">
     <div class="poin-banner-inner">
@@ -100,6 +101,7 @@
     </p>
 </div>
 {% endif %}
+{%- endif %}
 
 {%- if view == 'dosen_list' %}
 <div class="flex-between" style="margin-bottom:12px;">

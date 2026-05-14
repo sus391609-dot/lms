@@ -562,6 +562,10 @@ def profile():
     return render_template("mahasiswa/profile.html", profil=profil)
 
 
+# NOTE: route /cv (preview HTML + PDF) hidup di app/mahasiswa/cv.py
+# (blueprint mahasiswa_cv) supaya generator CV + PDF tidak menumpuk di sini.
+
+
 # ---------------------------------------------------------------------
 # CHATBOT — rule-based assistant untuk mahasiswa
 # ---------------------------------------------------------------------

@@ -104,7 +104,7 @@ def create_app(config_class=Config):
             "now": datetime.utcnow(),
         }
 
-    # ── Jinja filters (rupiah, tgl_id) ────────────────────────────────
+    # ── Jinja filters (rupiah, tgl_id, tgl_id_full) ──────────────────────
     BULAN_ID = [
         "Januari", "Februari", "Maret", "April", "Mei", "Juni",
         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
@@ -113,10 +113,11 @@ def create_app(config_class=Config):
     @app.template_filter("rupiah")
     def _rupiah(value):
         try:
-            n = int(value)
+            n = int(round(float(value or 0)))
         except (TypeError, ValueError):
             return value
-        return "Rp " + f"{n:,.0f}".replace(",", ".")
+        sign = "-" if n < 0 else ""
+        return f"{sign}Rp " + f"{abs(n):,.0f}".replace(",", ".")
 
     @app.template_filter("tgl_id")
     def _tgl_id(value):
