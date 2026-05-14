@@ -1,10 +1,9 @@
-﻿{% extends "auth/_form_base.html" %}
+{% extends "auth/_form_base.html" %}
 {% block title %}{{ 'Daftar Dosen' if view=='dosen' else 'Daftar Mahasiswa' }}{% endblock %}
 {% block side_title %}{{ 'Pendaftaran Dosen' if view=='dosen' else 'Pendaftaran Mahasiswa' }}{% endblock %}
 {% block side_text %}{{ 'Email wajib berdomain @yarsipratama.ac.id. Pilih maksimal 10 prodi yang Anda ajar.' if view=='dosen' else 'Isi data dengan benar. Akun Anda akan diverifikasi melalui kode email lalu di-approve oleh admin.' }}{% endblock %}
 {% block form %}
 {% if view == 'dosen' %}
-{% block form %}
 <h2>Daftar Dosen</h2>
 <p class="sub">Domain email wajib <b>@yarsipratama.ac.id</b>.</p>
 <form method="post">
@@ -46,8 +45,8 @@
 <div class="links">
     Sudah punya akun?
     <a href="{{ url_for('auth.login_dosen') }}">Login Dosen</a>
+</div>
 {% else %}
-{% block form %}
 <h2>Daftar Mahasiswa</h2>
 <p class="sub">Pilih program studi dan jenis kelas.</p>
 <form method="post" enctype="multipart/form-data">
@@ -97,5 +96,6 @@
 <div class="links">
     Sudah punya akun?
     <a href="{{ url_for('auth.login_mahasiswa') }}">Login Mahasiswa</a>
+</div>
 {% endif %}
 {% endblock %}
