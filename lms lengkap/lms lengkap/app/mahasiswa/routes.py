@@ -31,6 +31,7 @@ from app.models import (
     MataKuliah, Kelas, Jadwal, KRS, Tugas, JawabanTugas,
     Absen, Nilai, Poin, KonselingThread, KonselingPesan,
     Pembayaran, Notifikasi, SystemSetting, Materi, Portfolio,
+    SkpiPengajuan,
 )
 from app.utils import save_upload
 
@@ -75,11 +76,17 @@ def dashboard():
         .order_by(Pembayaran.created_at.desc()).limit(3).all()
     )
 
+    # SKPI summary untuk ditampilkan di dashboard
+    skpi_all = SkpiPengajuan.query.filter_by(mahasiswa_id=current_user.id).all()
+    skpi_total = sum(p.poin or 0 for p in skpi_all if p.status == "approved")
+    skpi_pending = sum(1 for p in skpi_all if p.status == "pending")
+
     return render_template(
         "mahasiswa/dashboard.html",
         profil=profil, jadwal=jadwal, tugas=tugas,
         notifikasi=notifikasi, pembayaran=pembayaran,
         krs_count=len(krs_list),
+        skpi_total=skpi_total, skpi_pending=skpi_pending,
     )
 
 
@@ -508,6 +515,17 @@ def leaderboard():
             ipk = round(total_bobot / total_sks, 2) if total_sks > 0 else 0
             pm.ipk = ipk
             portfolio = Portfolio.query.filter_by(mahasiswa_id=u.id).all()
+            skpi_total = (
+                db.session.query(db.func.coalesce(db.func.sum(SkpiPengajuan.poin), 0))
+                .filter(SkpiPengajuan.mahasiswa_id == u.id,
+                        SkpiPengajuan.status == "approved")
+                .scalar() or 0
+            )
+            # Skor gabungan: IPK adalah faktor utama (skala 0-4),
+            # SKPI menjadi tiebreaker dengan kontribusi kecil
+            # (0.05 per poin) supaya tidak menggeser ranking IPK murni
+            # tetapi tetap memberi keuntungan mahasiswa dengan banyak SKPI.
+            skor = ipk + 0.05 * float(skpi_total)
             mhs_data.append({
                 "user": u,
                 "profil": pm,
@@ -516,9 +534,11 @@ def leaderboard():
                 "semester_count": len(set(n.semester for n in nilai_list)),
                 "organisasi": pm.organisasi,
                 "portfolio": portfolio,
+                "skpi_total": int(skpi_total),
+                "skor": round(skor, 3),
             })
         db.session.commit()
-        mhs_data.sort(key=lambda x: x["ipk"], reverse=True)
+        mhs_data.sort(key=lambda x: x["skor"], reverse=True)
         top10 = mhs_data[:10]
     return render_template(
         "mahasiswa/leaderboard.html", prodi_list=prodi_list,
@@ -559,7 +579,19 @@ def profile():
         db.session.commit()
         flash("Profil diperbarui.", "success")
         return redirect(url_for("mahasiswa.profile"))
-    return render_template("mahasiswa/profile.html", profil=profil)
+
+    skpi_approved = (
+        SkpiPengajuan.query
+        .filter_by(mahasiswa_id=current_user.id, status="approved")
+        .order_by(SkpiPengajuan.reviewed_at.desc().nullslast()
+                  if hasattr(SkpiPengajuan.reviewed_at, "desc") else SkpiPengajuan.reviewed_at)
+        .all()
+    )
+    skpi_total_poin = sum(p.poin or 0 for p in skpi_approved)
+    return render_template(
+        "mahasiswa/profile.html", profil=profil,
+        skpi_approved=skpi_approved, skpi_total_poin=skpi_total_poin,
+    )
 
 
 # NOTE: route /cv (preview HTML + PDF) hidup di app/mahasiswa/cv.py
@@ -787,6 +819,97 @@ def chatbot_ask():
         return jsonify({"reply": "Tulis pertanyaan kamu dulu ya.", "links": []})
     result = _chatbot_intent(msg)
     return jsonify(result)
+
+
+# =====================================================================
+# SKPI - Surat Keterangan Pendamping Ijazah
+# Mahasiswa upload sertifikat dan menunggu approval admin.
+# =====================================================================
+_SKPI_KATEGORI = [
+    "Workshop", "Lomba", "Seminar", "Sertifikasi",
+    "Pengabdian Masyarakat", "Pelatihan", "Lainnya",
+]
+
+
+@bp.route("/skpi", methods=["GET", "POST"])
+def skpi():
+    """Halaman upload sertifikat SKPI + riwayat pengajuan mahasiswa."""
+    if request.method == "POST":
+        judul = (request.form.get("judul") or "").strip()
+        kategori = (request.form.get("kategori") or "").strip()
+        deskripsi = (request.form.get("deskripsi") or "").strip() or None
+        tahun_raw = (request.form.get("tahun") or "").strip()
+        try:
+            tahun = int(tahun_raw) if tahun_raw else None
+        except ValueError:
+            tahun = None
+        file = request.files.get("file")
+
+        if not judul or not file or not file.filename:
+            flash("Judul dan file sertifikat wajib diisi.", "warning")
+            return redirect(url_for("mahasiswa.skpi"))
+        if kategori and kategori not in _SKPI_KATEGORI:
+            kategori = "Lainnya"
+
+        rel_path = save_upload(file, "skpi")
+        if not rel_path:
+            flash(
+                "File sertifikat tidak dapat diunggah. "
+                "Pastikan format PDF/JPG/PNG dan ukuran wajar.",
+                "warning",
+            )
+            return redirect(url_for("mahasiswa.skpi"))
+
+        pengajuan = SkpiPengajuan(
+            mahasiswa_id=current_user.id,
+            judul=judul,
+            kategori=kategori or None,
+            deskripsi=deskripsi,
+            tahun=tahun,
+            file_path=rel_path,
+            status="pending",
+        )
+        db.session.add(pengajuan)
+        db.session.commit()
+        flash(
+            "Pengajuan SKPI dikirim. Menunggu review admin.",
+            "success",
+        )
+        return redirect(url_for("mahasiswa.skpi"))
+
+    pengajuan_list = (
+        SkpiPengajuan.query.filter_by(mahasiswa_id=current_user.id)
+        .order_by(SkpiPengajuan.created_at.desc())
+        .all()
+    )
+    total_poin = sum(
+        p.poin or 0 for p in pengajuan_list if p.status == "approved"
+    )
+    count_approved = sum(1 for p in pengajuan_list if p.status == "approved")
+    count_pending = sum(1 for p in pengajuan_list if p.status == "pending")
+    return render_template(
+        "mahasiswa/skpi.html",
+        pengajuan_list=pengajuan_list,
+        total_poin=total_poin,
+        count_approved=count_approved,
+        count_pending=count_pending,
+        kategori_opsi=_SKPI_KATEGORI,
+    )
+
+
+@bp.route("/skpi/<int:sid>/delete", methods=["POST"])
+def skpi_delete(sid):
+    """Mahasiswa hanya boleh menarik pengajuan miliknya yang masih pending."""
+    p = SkpiPengajuan.query.get_or_404(sid)
+    if p.mahasiswa_id != current_user.id:
+        abort(403)
+    if p.status != "pending":
+        flash("Pengajuan yang sudah direview tidak bisa dibatalkan.", "warning")
+        return redirect(url_for("mahasiswa.skpi"))
+    db.session.delete(p)
+    db.session.commit()
+    flash("Pengajuan SKPI dibatalkan.", "success")
+    return redirect(url_for("mahasiswa.skpi"))
 
 
 

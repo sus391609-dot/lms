@@ -79,9 +79,27 @@
     </div>
 </div>
 
+<div class="cv-cta-card" style="background: linear-gradient(135deg, #fb923c 0%, #ea580c 55%, #9a3412 100%); margin-top:14px;">
+    <div class="left">
+        <div class="ico">📜</div>
+        <div>
+            <div class="title">Pengajuan SKPI</div>
+            <div class="sub">
+                Upload sertifikat workshop, lomba, seminar, atau sertifikasi.
+                Admin akan memberi poin SKPI 1–4 setelah review.
+                {% if skpi_total %}Kamu sudah memiliki <b>{{ skpi_total }} poin SKPI</b>{% if skpi_pending %} · {{ skpi_pending }} pengajuan menunggu review{% endif %}.{% elif skpi_pending %}{{ skpi_pending }} pengajuan menunggu review.{% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="actions">
+        <a href="{{ url_for('mahasiswa.skpi') }}" class="btn-cv">📤 Upload Sertifikat</a>
+    </div>
+</div>
+
 <div class="stat-grid">
     <div class="stat-card"><div class="icon">&#128221;</div><div><div class="v">{{ krs_count }}</div><div class="l">Mata Kuliah</div></div></div>
     <div class="stat-card"><div class="icon">&#128218;</div><div><div class="v">{{ tugas|length }}</div><div class="l">Tugas Aktif</div></div></div>
+    <div class="stat-card"><div class="icon">&#127942;</div><div><div class="v">{{ skpi_total or 0 }}</div><div class="l">Poin SKPI</div></div></div>
     <div class="stat-card"><div class="icon">&#128181;</div><div><div class="v">{{ pembayaran|length }}</div><div class="l">Riwayat Bayar</div></div></div>
     <div class="stat-card"><div class="icon">&#128276;</div><div><div class="v">{{ notifikasi|length }}</div><div class="l">Notifikasi</div></div></div>
 </div>

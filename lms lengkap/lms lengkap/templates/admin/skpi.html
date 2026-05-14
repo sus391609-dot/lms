@@ -1,0 +1,174 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Pengajuan SKPI Mahasiswa{% endblock %}
+
+{% block content %}
+<style>
+.skpi-stats { display: grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; margin-bottom: 16px; }
+.skpi-stat {
+    background: #fff; border: 1px solid var(--grey-200);
+    border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow);
+}
+.skpi-stat .v { font-size: 26px; font-weight: 800; }
+.skpi-stat .l { font-size: 12px; color: var(--grey-600); text-transform: uppercase; letter-spacing: .6px; }
+.skpi-stat.pending  .v { color: #92400e; }
+.skpi-stat.approved .v { color: #065f46; }
+.skpi-stat.rejected .v { color: #991b1b; }
+.skpi-stat.total    .v { color: var(--orange); }
+
+.skpi-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.skpi-tab {
+    padding: 8px 14px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    text-decoration: none; background: #fff; border: 1px solid var(--grey-200);
+    color: var(--grey-700, #374151);
+}
+.skpi-tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
+.skpi-tab .num {
+    background: rgba(255,255,255,.25); padding: 1px 8px;
+    border-radius: 999px; margin-left: 4px; font-size: 11px;
+}
+.skpi-tab:not(.active) .num { background: #fff3eb; color: var(--orange); }
+
+.skpi-row { padding: 14px; border-bottom: 1px solid var(--grey-200); display: grid; grid-template-columns: 1.4fr 1fr 1fr auto; gap: 16px; align-items: start; }
+.skpi-row:last-child { border-bottom: 0; }
+@media (max-width: 900px) { .skpi-row { grid-template-columns: 1fr; } }
+.skpi-row .judul { font-weight: 700; font-size: 14.5px; }
+.skpi-row .meta  { font-size: 12px; color: var(--grey-600); margin-top: 3px; }
+.skpi-row .deskripsi { font-size: 13px; margin-top: 6px; color: var(--grey-700, #374151); }
+.skpi-row .mhs { font-size: 13px; }
+.skpi-row .mhs .nim { color: var(--grey-600); font-size: 12px; }
+
+.skpi-badge { padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; display: inline-block; }
+.skpi-badge.pending  { background: #fef3c7; color: #92400e; }
+.skpi-badge.approved { background: #d1fae5; color: #065f46; }
+.skpi-badge.rejected { background: #fee2e2; color: #991b1b; }
+
+.skpi-decide form { display: flex; flex-direction: column; gap: 6px; }
+.skpi-decide label { font-weight: 600; font-size: 12px; }
+.skpi-decide select, .skpi-decide textarea { width: 100%; }
+.poin-pill {
+    background: linear-gradient(135deg, #ff7a3d, #e94424); color: #fff;
+    padding: 4px 10px; border-radius: 999px; font-weight: 800; font-size: 12px;
+    display: inline-block;
+}
+</style>
+
+<div class="welcome-banner" style="background: linear-gradient(135deg, #ff7a3d, #e94424); color:#fff;">
+    <div>
+        <h2 style="margin:0; font-size:20px; color:#fff;">📜 Pengajuan SKPI Mahasiswa</h2>
+        <p style="margin-top:6px; opacity:.9; font-size:13px;">
+            Review sertifikat yang diajukan mahasiswa, lalu beri nilai poin SKPI 1–4
+            atau tolak dengan catatan. Total poin disetujui saat ini:
+            <b>{{ total_poin_disetujui }}</b>.
+        </p>
+    </div>
+</div>
+
+<div class="skpi-stats">
+    <div class="skpi-stat pending"><div class="v">{{ counts.pending }}</div><div class="l">Menunggu Review</div></div>
+    <div class="skpi-stat approved"><div class="v">{{ counts.approved }}</div><div class="l">Disetujui</div></div>
+    <div class="skpi-stat rejected"><div class="v">{{ counts.rejected }}</div><div class="l">Ditolak</div></div>
+    <div class="skpi-stat total"><div class="v">{{ counts.total }}</div><div class="l">Total Pengajuan</div></div>
+</div>
+
+<div class="skpi-tabs">
+    <a class="skpi-tab {% if status_filter == 'pending' %}active{% endif %}"
+       href="{{ url_for('admin.skpi_list', status='pending') }}">
+       ⏳ Pending <span class="num">{{ counts.pending }}</span>
+    </a>
+    <a class="skpi-tab {% if status_filter == 'approved' %}active{% endif %}"
+       href="{{ url_for('admin.skpi_list', status='approved') }}">
+       ✓ Disetujui <span class="num">{{ counts.approved }}</span>
+    </a>
+    <a class="skpi-tab {% if status_filter == 'rejected' %}active{% endif %}"
+       href="{{ url_for('admin.skpi_list', status='rejected') }}">
+       ✗ Ditolak <span class="num">{{ counts.rejected }}</span>
+    </a>
+    <a class="skpi-tab {% if status_filter == 'all' %}active{% endif %}"
+       href="{{ url_for('admin.skpi_list', status='all') }}">
+       Semua <span class="num">{{ counts.total }}</span>
+    </a>
+</div>
+
+<div class="card" style="padding: 0;">
+    {% if pengajuan_list %}
+        {% for p in pengajuan_list %}
+        <div class="skpi-row">
+            <div>
+                <div class="judul">{{ p.judul }}</div>
+                <div class="meta">
+                    {% if p.kategori %}{{ p.kategori }} · {% endif %}
+                    {% if p.tahun %}Tahun {{ p.tahun }} · {% endif %}
+                    Diajukan {{ p.created_at|tgl_id }}
+                </div>
+                {% if p.deskripsi %}<div class="deskripsi">{{ p.deskripsi }}</div>{% endif %}
+                <div style="margin-top:8px;">
+                    <a href="{{ url_for('static', filename=p.file_path) }}" target="_blank"
+                       class="btn btn-outline btn-sm" style="font-size:12px; padding:5px 10px;">
+                       👁️ Buka File Sertifikat
+                    </a>
+                </div>
+            </div>
+
+            <div class="mhs">
+                <b>{{ p.mahasiswa.nama }}</b>
+                <div class="nim">{{ p.mahasiswa.email }}</div>
+                {% if p.mahasiswa.profil_mahasiswa %}
+                <div class="nim">
+                    NIM {{ p.mahasiswa.profil_mahasiswa.nim }} ·
+                    {{ p.mahasiswa.profil_mahasiswa.prodi.nama }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div>
+                {% if p.status == 'pending' %}
+                    <span class="skpi-badge pending">⏳ Menunggu Review</span>
+                {% elif p.status == 'approved' %}
+                    <span class="skpi-badge approved">✓ Disetujui</span>
+                    <div style="margin-top:6px;"><span class="poin-pill">⭐ {{ p.poin }} Poin SKPI</span></div>
+                    {% if p.reviewed_at %}
+                    <div class="meta">oleh {{ p.reviewer.nama if p.reviewer else '-' }}<br>{{ p.reviewed_at|tgl_id }}</div>
+                    {% endif %}
+                {% elif p.status == 'rejected' %}
+                    <span class="skpi-badge rejected">✗ Ditolak</span>
+                    {% if p.catatan_admin %}<div class="meta" style="margin-top:6px;">{{ p.catatan_admin }}</div>{% endif %}
+                {% endif %}
+            </div>
+
+            <div class="skpi-decide">
+                {% if p.status == 'pending' %}
+                <form method="post" action="{{ url_for('admin.skpi_decide', sid=p.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="redirect_status" value="{{ status_filter }}">
+                    <label>Poin SKPI</label>
+                    <select name="poin" required>
+                        <option value="1">1 Poin</option>
+                        <option value="2" selected>2 Poin</option>
+                        <option value="3">3 Poin</option>
+                        <option value="4">4 Poin</option>
+                    </select>
+                    <textarea name="catatan" rows="2" placeholder="Catatan untuk mahasiswa (opsional)"></textarea>
+                    <button class="btn btn-primary btn-sm" type="submit" name="aksi" value="approve">
+                        ✓ Setujui
+                    </button>
+                    <button class="btn btn-outline btn-sm" type="submit" name="aksi" value="reject"
+                            onclick="return confirm('Tolak pengajuan ini?')"
+                            style="border-color:#dc2626; color:#dc2626;">
+                        ✗ Tolak
+                    </button>
+                </form>
+                {% else %}
+                <div style="font-size:12px; color:var(--grey-600);">
+                    Sudah direview.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="padding: 32px; text-align: center; color: var(--grey-600);">
+            Tidak ada pengajuan SKPI dengan filter <b>{{ status_filter }}</b>.
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

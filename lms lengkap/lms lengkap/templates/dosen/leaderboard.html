@@ -92,6 +92,9 @@
             <div>
                 <span class="lb-name">{{ m.user.nama }}</span>
                 <span class="lb-ipk">IPK {{ "%.2f"|format(m.ipk) }}</span>
+                {% if m.skpi_total %}
+                <span class="lb-ipk" style="background: linear-gradient(135deg, #fed7aa, #ffb084); color:#9a3412;">⭐ {{ m.skpi_total }} Poin SKPI</span>
+                {% endif %}
             </div>
             <div class="lb-detail">
                 {{ m.profil.nim }} &middot;
