@@ -265,6 +265,105 @@
     </div>
 </section>
 
+{# ─── Galeri Kehidupan Kampus ──────────────────────────────────────── #}
+<section class="uyp-section">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Kehidupan Kampus</span>
+            <h2>Suasana <em>Belajar & Berkarya</em></h2>
+            <p>Intip kegiatan dan fasilitas kampus Universitas Yarsi Pratama.</p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px,1fr)); gap:16px;">
+            <div class="uyp-reveal" style="border-radius:14px; overflow:hidden; position:relative; aspect-ratio:16/10;">
+                <img src="{{ url_for('static', filename='img/demo/kampus-1.jpg') }}" alt="Gedung Utama"
+                     style="width:100%; height:100%; object-fit:cover; transition:transform .4s;">
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:14px 16px;
+                            background:linear-gradient(transparent, rgba(0,0,0,.7)); color:#fff;">
+                    <b>Gedung Utama UYP</b>
+                    <div style="font-size:13px; opacity:.85;">Fasilitas modern & nyaman</div>
+                </div>
+            </div>
+            <div class="uyp-reveal delay-1" style="border-radius:14px; overflow:hidden; position:relative; aspect-ratio:16/10;">
+                <img src="{{ url_for('static', filename='img/demo/kampus-2.jpg') }}" alt="Lab Komputer"
+                     style="width:100%; height:100%; object-fit:cover; transition:transform .4s;">
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:14px 16px;
+                            background:linear-gradient(transparent, rgba(0,0,0,.7)); color:#fff;">
+                    <b>Laboratorium Komputer</b>
+                    <div style="font-size:13px; opacity:.85;">Berstandar industri</div>
+                </div>
+            </div>
+            <div class="uyp-reveal delay-2" style="border-radius:14px; overflow:hidden; position:relative; aspect-ratio:16/10;">
+                <img src="{{ url_for('static', filename='img/demo/kampus-3.jpg') }}" alt="Perpustakaan"
+                     style="width:100%; height:100%; object-fit:cover; transition:transform .4s;">
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:14px 16px;
+                            background:linear-gradient(transparent, rgba(0,0,0,.7)); color:#fff;">
+                    <b>Perpustakaan Digital</b>
+                    <div style="font-size:13px; opacity:.85;">Koleksi 50.000+ buku</div>
+                </div>
+            </div>
+            <div class="uyp-reveal delay-3" style="border-radius:14px; overflow:hidden; position:relative; aspect-ratio:16/10;">
+                <img src="{{ url_for('static', filename='img/demo/kampus-4.jpg') }}" alt="Auditorium"
+                     style="width:100%; height:100%; object-fit:cover; transition:transform .4s;">
+                <div style="position:absolute; bottom:0; left:0; right:0; padding:14px 16px;
+                            background:linear-gradient(transparent, rgba(0,0,0,.7)); color:#fff;">
+                    <b>Auditorium Utama</b>
+                    <div style="font-size:13px; opacity:.85;">Kapasitas 500 orang</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ─── Berita & Kegiatan Terbaru ───────────────────────────────────── #}
+<section class="uyp-section" style="background: var(--uyp-grey-50);">
+    <div class="uyp-container">
+        <div class="uyp-section-head uyp-reveal">
+            <span class="eyebrow">Berita & Kegiatan</span>
+            <h2>Update <em>Terbaru</em> dari Kampus</h2>
+            <p>Berita dan kegiatan terkini di lingkungan Universitas Yarsi Pratama.</p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:20px;">
+            <div class="uyp-reveal" style="background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.08);">
+                <img src="{{ url_for('static', filename='img/demo/berita-1.jpg') }}" alt="Seminar"
+                     style="width:100%; height:180px; object-fit:cover;">
+                <div style="padding:18px;">
+                    <span style="font-size:12px; color:var(--uyp-primary); font-weight:600;">BERITA</span>
+                    <h4 style="margin:6px 0 8px; font-size:16px;">Seminar Nasional Kesehatan Digital 2025</h4>
+                    <p style="color:var(--uyp-grey-600); font-size:14px; line-height:1.5;">
+                        Menghadirkan pakar dari Kementerian Kesehatan dan praktisi kesehatan digital.
+                    </p>
+                </div>
+            </div>
+            <div class="uyp-reveal delay-1" style="background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.08);">
+                <img src="{{ url_for('static', filename='img/demo/kegiatan-1.jpg') }}" alt="Workshop"
+                     style="width:100%; height:180px; object-fit:cover;">
+                <div style="padding:18px;">
+                    <span style="font-size:12px; color:var(--uyp-primary); font-weight:600;">KEGIATAN</span>
+                    <h4 style="margin:6px 0 8px; font-size:16px;">Workshop Web Development & Cloud Computing</h4>
+                    <p style="color:var(--uyp-grey-600); font-size:14px; line-height:1.5;">
+                        Hands-on workshop membangun aplikasi web modern dengan teknologi cloud.
+                    </p>
+                </div>
+            </div>
+            <div class="uyp-reveal delay-2" style="background:#fff; border-radius:14px; overflow:hidden; box-shadow:0 2px 12px rgba(0,0,0,.08);">
+                <img src="{{ url_for('static', filename='img/demo/kegiatan-2.jpg') }}" alt="Baksos"
+                     style="width:100%; height:180px; object-fit:cover;">
+                <div style="padding:18px;">
+                    <span style="font-size:12px; color:var(--uyp-primary); font-weight:600;">KEGIATAN</span>
+                    <h4 style="margin:6px 0 8px; font-size:16px;">Bakti Sosial & Pengabdian Masyarakat</h4>
+                    <p style="color:var(--uyp-grey-600); font-size:14px; line-height:1.5;">
+                        Mahasiswa UYP aktif berkontribusi dalam kegiatan pengabdian masyarakat.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:center; margin-top:28px;" class="uyp-reveal">
+            <a href="{{ url_for('public.berita_list') }}" class="uyp-btn uyp-btn-ghost">Lihat Semua Berita →</a>
+            <a href="{{ url_for('public.kegiatan_list') }}" class="uyp-btn uyp-btn-ghost" style="margin-left:8px;">Lihat Semua Kegiatan →</a>
+        </div>
+    </div>
+</section>
+
 {# ─── FAQ singkat ─────────────────────────────────────────────────── #}
 <section class="uyp-section" style="background: var(--uyp-grey-50);">
     <div class="uyp-container">

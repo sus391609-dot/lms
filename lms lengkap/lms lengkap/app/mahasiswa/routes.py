@@ -31,7 +31,7 @@ from app.models import (
     MataKuliah, Kelas, Jadwal, KRS, Tugas, JawabanTugas,
     Absen, Nilai, Poin, KonselingThread, KonselingPesan,
     Pembayaran, Notifikasi, SystemSetting, Materi, Portfolio,
-    SkpiPengajuan,
+    SkpiPengajuan, BankSoal, Soal, PilihanJawaban, SesiUjian, JawabanUjian,
 )
 from app.utils import save_upload
 
@@ -914,3 +914,213 @@ def skpi_delete(sid):
 
 
 
+
+# ---------------------------------------------------------------------
+# UJIAN ONLINE
+# ---------------------------------------------------------------------
+@bp.route("/ujian")
+def ujian_list():
+    """Daftar ujian aktif yang sesuai KRS mahasiswa."""
+    krs_list = KRS.query.filter_by(mahasiswa_id=current_user.id, status="aktif").all()
+    kelas_ids = [k.kelas_id for k in krs_list]
+    ujian_aktif = BankSoal.query.filter(
+        BankSoal.kelas_id.in_(kelas_ids),
+        BankSoal.is_active.is_(True),
+    ).all() if kelas_ids else []
+    # cek sesi yang sudah ada
+    sesi_map = {
+        s.bank_soal_id: s for s in
+        SesiUjian.query.filter_by(mahasiswa_id=current_user.id).all()
+    }
+    riwayat = SesiUjian.query.filter_by(
+        mahasiswa_id=current_user.id, is_submitted=True
+    ).order_by(SesiUjian.finished_at.desc()).all()
+    return render_template(
+        "mahasiswa/ujian.html", ujian_aktif=ujian_aktif,
+        sesi_map=sesi_map, riwayat=riwayat, view="list",
+    )
+
+
+@bp.route("/ujian/masuk", methods=["POST"])
+def ujian_masuk():
+    """Validasi token dan mulai sesi ujian."""
+    token = request.form.get("token", "").strip().upper()
+    bs = BankSoal.query.filter_by(token=token, is_active=True).first()
+    if not bs:
+        flash("Token ujian tidak valid atau ujian tidak aktif.", "danger")
+        return redirect(url_for("mahasiswa.ujian_list"))
+    # cek KRS
+    if not KRS.query.filter_by(
+        mahasiswa_id=current_user.id, kelas_id=bs.kelas_id, status="aktif"
+    ).first():
+        flash("Anda tidak terdaftar di kelas ini.", "danger")
+        return redirect(url_for("mahasiswa.ujian_list"))
+    # cek sudah pernah
+    existing = SesiUjian.query.filter_by(
+        bank_soal_id=bs.id, mahasiswa_id=current_user.id
+    ).first()
+    if existing and existing.is_submitted:
+        flash("Anda sudah mengumpulkan ujian ini.", "info")
+        return redirect(url_for("mahasiswa.ujian_hasil", sesi_id=existing.id))
+    if not existing:
+        existing = SesiUjian(
+            bank_soal_id=bs.id, mahasiswa_id=current_user.id
+        )
+        db.session.add(existing)
+        db.session.commit()
+    return redirect(url_for("mahasiswa.ujian_kerjakan", sesi_id=existing.id))
+
+
+@bp.route("/ujian/kerjakan/<int:sesi_id>")
+def ujian_kerjakan(sesi_id):
+    """Halaman mengerjakan ujian — full screen, anti-cheat."""
+    sesi = SesiUjian.query.get_or_404(sesi_id)
+    if sesi.mahasiswa_id != current_user.id:
+        abort(403)
+    if sesi.is_submitted:
+        return redirect(url_for("mahasiswa.ujian_hasil", sesi_id=sesi.id))
+    bs = sesi.bank_soal
+    soal_list = list(bs.soal_list)
+    if bs.acak_soal:
+        import random
+        random.shuffle(soal_list)
+    # load existing answers
+    jawaban_map = {
+        j.soal_id: j for j in
+        JawabanUjian.query.filter_by(sesi_id=sesi.id).all()
+    }
+    return render_template(
+        "mahasiswa/ujian_kerjakan.html", sesi=sesi, bs=bs,
+        soal_list=soal_list, jawaban_map=jawaban_map,
+    )
+
+
+@bp.route("/ujian/simpan-jawaban", methods=["POST"])
+@csrf.exempt
+def ujian_simpan_jawaban():
+    """AJAX: simpan jawaban per soal (auto-save)."""
+    sesi_id = request.json.get("sesi_id")
+    soal_id = request.json.get("soal_id")
+    jawaban_pg = request.json.get("jawaban_pg")
+    jawaban_esai = request.json.get("jawaban_esai")
+    is_ragu = request.json.get("is_ragu", False)
+
+    sesi = SesiUjian.query.get_or_404(sesi_id)
+    if sesi.mahasiswa_id != current_user.id or sesi.is_submitted:
+        return jsonify({"ok": False}), 403
+
+    existing = JawabanUjian.query.filter_by(
+        sesi_id=sesi_id, soal_id=soal_id
+    ).first()
+    if existing:
+        existing.jawaban_pg = jawaban_pg
+        existing.jawaban_esai = jawaban_esai
+        existing.is_ragu = is_ragu
+    else:
+        db.session.add(JawabanUjian(
+            sesi_id=sesi_id, soal_id=soal_id,
+            jawaban_pg=jawaban_pg, jawaban_esai=jawaban_esai,
+            is_ragu=is_ragu,
+        ))
+    db.session.commit()
+    return jsonify({"ok": True})
+
+
+@bp.route("/ujian/tab-leave", methods=["POST"])
+@csrf.exempt
+def ujian_tab_leave():
+    """AJAX: catat mahasiswa keluar tab."""
+    sesi_id = request.json.get("sesi_id")
+    sesi = SesiUjian.query.get(sesi_id)
+    if sesi and sesi.mahasiswa_id == current_user.id and not sesi.is_submitted:
+        sesi.tab_leave_count = (sesi.tab_leave_count or 0) + 1
+        db.session.commit()
+    return jsonify({"ok": True})
+
+
+@bp.route("/ujian/submit", methods=["POST"])
+@csrf.exempt
+def ujian_submit():
+    """Submit ujian: auto-koreksi dan hitung skor."""
+    sesi_id = request.json.get("sesi_id")
+    sesi = SesiUjian.query.get_or_404(sesi_id)
+    if sesi.mahasiswa_id != current_user.id or sesi.is_submitted:
+        return jsonify({"ok": False}), 403
+
+    bs = sesi.bank_soal
+    total_bobot = sum(s.bobot for s in bs.soal_list) or 1
+    total_skor = 0
+    benar = 0
+    salah = 0
+    ragu = 0
+
+    for soal in bs.soal_list:
+        jawaban = JawabanUjian.query.filter_by(
+            sesi_id=sesi.id, soal_id=soal.id
+        ).first()
+        if not jawaban:
+            jawaban = JawabanUjian(sesi_id=sesi.id, soal_id=soal.id)
+            db.session.add(jawaban)
+
+        correct = False
+        if soal.tipe == "pg":
+            correct_opt = next(
+                (p for p in soal.pilihan_list if p.is_correct), None
+            )
+            if correct_opt and jawaban.jawaban_pg == correct_opt.label:
+                correct = True
+        else:
+            # esai: bandingkan kata kunci sederhana
+            if soal.kunci_esai and jawaban.jawaban_esai:
+                kunci_lower = soal.kunci_esai.strip().lower()
+                jwb_lower = jawaban.jawaban_esai.strip().lower()
+                # match jika jawaban mengandung kunci atau sama persis
+                if kunci_lower in jwb_lower or jwb_lower == kunci_lower:
+                    correct = True
+
+        jawaban.is_correct = correct
+
+        if jawaban.is_ragu:
+            ragu += 1
+            # ragu: benar dapat setengah bobot, salah juga setengah
+            jawaban.skor_soal = (soal.bobot / 2)
+        else:
+            if correct:
+                benar += 1
+                jawaban.skor_soal = soal.bobot
+            else:
+                salah += 1
+                jawaban.skor_soal = 0
+
+        total_skor += jawaban.skor_soal
+
+    sesi.skor = round((total_skor / total_bobot) * 100, 2)
+    sesi.total_benar = benar
+    sesi.total_salah = salah
+    sesi.total_ragu = ragu
+    sesi.is_submitted = True
+    sesi.finished_at = datetime.utcnow()
+    db.session.commit()
+
+    return jsonify({
+        "ok": True,
+        "skor": sesi.skor,
+        "redirect": url_for("mahasiswa.ujian_hasil", sesi_id=sesi.id),
+    })
+
+
+@bp.route("/ujian/hasil/<int:sesi_id>")
+def ujian_hasil(sesi_id):
+    sesi = SesiUjian.query.get_or_404(sesi_id)
+    if sesi.mahasiswa_id != current_user.id:
+        abort(403)
+    if not sesi.is_submitted:
+        return redirect(url_for("mahasiswa.ujian_kerjakan", sesi_id=sesi.id))
+    jawaban_map = {
+        j.soal_id: j for j in
+        JawabanUjian.query.filter_by(sesi_id=sesi.id).all()
+    }
+    return render_template(
+        "mahasiswa/ujian.html", sesi=sesi, bs=sesi.bank_soal,
+        jawaban_map=jawaban_map, view="hasil",
+    )

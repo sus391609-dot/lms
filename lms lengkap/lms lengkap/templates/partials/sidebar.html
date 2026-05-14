@@ -64,6 +64,7 @@
         <a href="{{ url_for('dosen.tugas_list') }}" {% if request.endpoint and 'tugas' in request.endpoint and 'dosen' in request.endpoint %}class="active"{% endif %}>&#128218; Tugas</a>
         <a href="{{ url_for('dosen.absensi') }}" {% if request.endpoint and 'absensi' in request.endpoint and 'dosen' in request.endpoint %}class="active"{% endif %}>&#9989; Absensi</a>
         <a href="{{ url_for('dosen.nilai') }}" {% if request.endpoint=='dosen.nilai' %}class="active"{% endif %}>&#127942; Input Nilai</a>
+        <a href="{{ url_for('dosen.ujian_list') }}" {% if request.endpoint and 'ujian' in request.endpoint and 'dosen' in request.endpoint %}class="active"{% endif %}>&#128221; Ujian Online</a>
         <a href="{{ url_for('dosen.leaderboard') }}" {% if request.endpoint=='dosen.leaderboard' %}class="active"{% endif %}>&#127941; Top 10 Mahasiswa</a>
         <div class="group-title">Komunikasi</div>
         <a href="{{ url_for('dosen.konseling_list') }}" {% if request.endpoint and 'konseling' in request.endpoint %}class="active"{% endif %}>&#128172; Konseling</a>
@@ -79,6 +80,7 @@
         <a href="{{ url_for('mahasiswa.materi_list') }}" {% if request.endpoint and 'materi' in request.endpoint and 'mahasiswa' in request.endpoint %}class="active"{% endif %}>&#127909; Materi &amp; Video</a>
         <a href="{{ url_for('mahasiswa.tugas_list') }}" {% if request.endpoint and 'tugas' in request.endpoint and 'mahasiswa' in request.endpoint %}class="active"{% endif %}>&#128218; Tugas</a>
         <a href="{{ url_for('mahasiswa.nilai') }}" {% if request.endpoint=='mahasiswa.nilai' %}class="active"{% endif %}>&#127942; Nilai</a>
+        <a href="{{ url_for('mahasiswa.ujian_list') }}" {% if request.endpoint and 'ujian' in request.endpoint and 'mahasiswa' in request.endpoint %}class="active"{% endif %}>&#128221; Ujian Online</a>
         <a href="{{ url_for('mahasiswa.leaderboard') }}" {% if request.endpoint=='mahasiswa.leaderboard' %}class="active"{% endif %}>&#127941; Top 10</a>
         <div class="group-title">Komunikasi</div>
         <a href="{{ url_for('mahasiswa.konseling_list') }}" {% if request.endpoint and 'konseling' in request.endpoint %}class="active"{% endif %}>&#128172; Konseling</a>

@@ -1,0 +1,282 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Ujian Online{% endblock %}
+{% block content %}
+
+{# ── LIST BANK SOAL ─────────────────────────────────────────────── #}
+{% if view == 'list' %}
+<div class="flex-between" style="margin-bottom:16px;">
+    <div style="font-weight:700; font-size:17px;">Bank Soal Ujian</div>
+    <a href="{{ url_for('dosen.ujian_baru') }}" class="btn btn-primary btn-sm">+ Buat Ujian Baru</a>
+</div>
+
+{% if bank_list %}
+<div class="table-wrap">
+<table class="tbl">
+    <thead>
+        <tr>
+            <th>Judul</th><th>Kelas</th><th>Jenis</th><th>Durasi</th>
+            <th>Soal</th><th>Token</th><th>Status</th><th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for b in bank_list %}
+    <tr>
+        <td><b>{{ b.judul }}</b></td>
+        <td>{{ b.kelas.matkul.nama }} ({{ b.kelas.kode_kelas }})</td>
+        <td><span class="badge {% if b.jenis_ujian == 'uts' %}badge-blue{% else %}badge-orange{% endif %}">{{ b.jenis_ujian|upper }}</span></td>
+        <td>{{ b.durasi_menit }} menit</td>
+        <td>{{ b.soal_list|length }}</td>
+        <td><code style="background:#f0f0f0; padding:2px 8px; border-radius:4px; font-weight:700;">{{ b.token }}</code></td>
+        <td>
+            {% if b.is_active %}
+                <span class="badge badge-green">Aktif</span>
+            {% else %}
+                <span class="badge badge-grey">Nonaktif</span>
+            {% endif %}
+        </td>
+        <td style="white-space:nowrap;">
+            <a href="{{ url_for('dosen.ujian_soal', bid=b.id) }}" class="btn btn-outline btn-sm">Soal</a>
+            <a href="{{ url_for('dosen.ujian_hasil', bid=b.id) }}" class="btn btn-outline btn-sm">Hasil</a>
+            <form method="post" action="{{ url_for('dosen.ujian_toggle', bid=b.id) }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm {% if b.is_active %}btn-danger{% else %}btn-success{% endif %}">
+                    {% if b.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}
+                </button>
+            </form>
+            <form method="post" action="{{ url_for('dosen.ujian_hapus', bid=b.id) }}" style="display:inline;"
+                  onsubmit="return confirm('Hapus ujian ini beserta semua soal dan hasil?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-danger">Hapus</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% else %}
+<div class="card" style="text-align:center; padding:40px; color:var(--grey-600);">
+    <p style="font-size:48px; margin:0;">&#128221;</p>
+    <p>Belum ada bank soal ujian. Klik <b>Buat Ujian Baru</b> untuk mulai.</p>
+</div>
+{% endif %}
+
+{# ── FORM BUAT UJIAN BARU ───────────────────────────────────────── #}
+{% elif view == 'form' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div style="font-weight:700; font-size:17px;">Buat Ujian Baru</div>
+    <a href="{{ url_for('dosen.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+</div>
+<div class="card">
+    <form method="post">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label>Kelas</label>
+            <select name="kelas_id" class="form-control" required>
+                <option value="">-- Pilih Kelas --</option>
+                {% for k in kelas_list %}
+                <option value="{{ k.id }}">{{ k.matkul.nama }} — {{ k.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Judul Ujian</label>
+            <input type="text" name="judul" class="form-control" placeholder="Mis: UTS Algoritma 2024" required>
+        </div>
+        <div class="form-row" style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div class="form-group" style="flex:1; min-width:180px;">
+                <label>Jenis Ujian</label>
+                <select name="jenis_ujian" class="form-control">
+                    <option value="uts">UTS (Ujian Tengah Semester)</option>
+                    <option value="uas">UAS (Ujian Akhir Semester)</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex:1; min-width:180px;">
+                <label>Durasi (menit)</label>
+                <input type="number" name="durasi_menit" class="form-control" value="90" min="10" max="300">
+            </div>
+        </div>
+        <div class="form-group">
+            <label style="display:flex; align-items:center; gap:8px;">
+                <input type="checkbox" name="acak_soal" value="1"> Acak urutan soal untuk setiap mahasiswa
+            </label>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:8px;">Buat Ujian &amp; Tambah Soal</button>
+    </form>
+</div>
+
+{# ── KELOLA SOAL ────────────────────────────────────────────────── #}
+{% elif view == 'soal' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div>
+        <div style="font-weight:700; font-size:17px;">{{ bs.judul }}</div>
+        <div style="color:var(--grey-600); font-size:13px;">
+            {{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }} &middot; {{ bs.durasi_menit }} menit &middot;
+            Token: <code style="background:#f0f0f0; padding:2px 8px; border-radius:4px; font-weight:700;">{{ bs.token }}</code>
+        </div>
+    </div>
+    <a href="{{ url_for('dosen.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+</div>
+
+<!-- Soal yang sudah ada -->
+{% if bs.soal_list %}
+<div class="card" style="margin-bottom:16px;">
+    <div class="card-title">Daftar Soal ({{ bs.soal_list|length }})</div>
+    {% for soal in bs.soal_list %}
+    <div style="border:1px solid var(--grey-200); border-radius:8px; padding:14px; margin-bottom:10px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+                <span class="badge {% if soal.tipe == 'pg' %}badge-blue{% else %}badge-orange{% endif %}" style="margin-right:6px;">
+                    {% if soal.tipe == 'pg' %}Pilihan Ganda{% else %}Esai{% endif %}
+                </span>
+                <b>Soal #{{ soal.nomor }}</b> (Bobot: {{ soal.bobot }})
+            </div>
+            <form method="post" action="{{ url_for('dosen.ujian_hapus_soal', bid=bs.id, sid=soal.id) }}"
+                  onsubmit="return confirm('Hapus soal ini?');" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button class="btn btn-sm btn-danger">Hapus</button>
+            </form>
+        </div>
+        <p style="margin:8px 0 4px;">{{ soal.pertanyaan }}</p>
+        {% if soal.tipe == 'pg' %}
+            {% for p in soal.pilihan_list %}
+            <div style="padding:2px 0; {% if p.is_correct %}color:green; font-weight:700;{% endif %}">
+                {{ p.label }}. {{ p.teks }} {% if p.is_correct %}&#10004; (Benar){% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="color:var(--grey-600); font-style:italic;">Kunci: {{ soal.kunci_esai or '(tidak ada kunci)' }}</div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Form tambah soal -->
+<div class="card">
+    <div class="card-title">Tambah Soal Baru</div>
+    <form method="post" id="formTambahSoal">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label>Tipe Soal</label>
+            <select name="tipe" id="tipeSoal" class="form-control" onchange="toggleTipeSoal()">
+                <option value="pg">Pilihan Ganda</option>
+                <option value="esai">Esai</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Pertanyaan</label>
+            <textarea name="pertanyaan" class="form-control" rows="3" required placeholder="Tulis pertanyaan di sini..."></textarea>
+        </div>
+        <div class="form-group">
+            <label>Bobot</label>
+            <input type="number" name="bobot" class="form-control" value="1" min="1" max="100">
+        </div>
+
+        <!-- Pilihan Ganda -->
+        <div id="pgSection">
+            <div class="form-group">
+                <label>Jawaban Benar</label>
+                <select name="jawaban_benar" class="form-control">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E">E</option>
+                </select>
+            </div>
+            {% for lbl in ['A','B','C','D','E'] %}
+            <div class="form-group">
+                <label>Pilihan {{ lbl }}</label>
+                <input type="text" name="pilihan_{{ lbl }}" class="form-control" placeholder="Isi pilihan {{ lbl }}">
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Esai -->
+        <div id="esaiSection" style="display:none;">
+            <div class="form-group">
+                <label>Kunci Jawaban Esai</label>
+                <textarea name="kunci_esai" class="form-control" rows="2" placeholder="Kata kunci atau jawaban lengkap untuk auto-koreksi..."></textarea>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="margin-top:8px;">Tambah Soal</button>
+    </form>
+</div>
+
+<script>
+function toggleTipeSoal() {
+    var tipe = document.getElementById('tipeSoal').value;
+    document.getElementById('pgSection').style.display = tipe === 'pg' ? 'block' : 'none';
+    document.getElementById('esaiSection').style.display = tipe === 'esai' ? 'block' : 'none';
+}
+</script>
+
+{# ── HASIL UJIAN ────────────────────────────────────────────────── #}
+{% elif view == 'hasil' %}
+<div class="flex-between" style="margin-bottom:12px;">
+    <div>
+        <div style="font-weight:700; font-size:17px;">Hasil: {{ bs.judul }}</div>
+        <div style="color:var(--grey-600); font-size:13px;">
+            {{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }} &middot;
+            {{ sesi_list|length }} mahasiswa mengikuti
+        </div>
+    </div>
+    <a href="{{ url_for('dosen.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+</div>
+
+{% if sesi_list %}
+<div class="card">
+<div class="table-wrap">
+<table class="tbl">
+    <thead>
+        <tr>
+            <th>#</th><th>Mahasiswa</th><th>NIM</th><th>Skor</th>
+            <th>Benar</th><th>Salah</th><th>Ragu</th>
+            <th>Keluar Tab</th><th>Status</th><th>Waktu Submit</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for s in sesi_list %}
+    <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ s.mahasiswa.nama }}</td>
+        <td>{{ s.mahasiswa.profil_mahasiswa.nim if s.mahasiswa.profil_mahasiswa else '-' }}</td>
+        <td>
+            <b style="color:{% if s.skor and s.skor >= 75 %}green{% elif s.skor and s.skor >= 55 %}orange{% else %}red{% endif %};">
+                {{ '%.1f'|format(s.skor) if s.skor is not none else '-' }}
+            </b>
+        </td>
+        <td>{{ s.total_benar }}</td>
+        <td>{{ s.total_salah }}</td>
+        <td>{{ s.total_ragu }}</td>
+        <td>
+            {% if s.tab_leave_count > 0 %}
+                <span style="color:red; font-weight:700;">{{ s.tab_leave_count }}x</span>
+            {% else %}
+                <span style="color:green;">0</span>
+            {% endif %}
+        </td>
+        <td>
+            {% if s.is_submitted %}
+                <span class="badge badge-green">Selesai</span>
+            {% else %}
+                <span class="badge badge-orange">Belum Submit</span>
+            {% endif %}
+        </td>
+        <td>{{ s.finished_at|tgl_id_full if s.finished_at else '-' }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+</div>
+{% else %}
+<div class="card" style="text-align:center; padding:40px; color:var(--grey-600);">
+    <p>Belum ada mahasiswa yang mengikuti ujian ini.</p>
+</div>
+{% endif %}
+
+{% endif %}
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Ujian Online{% endblock %}
+{% block content %}
+
+{# ── DAFTAR UJIAN ────────────────────────────────────────────────── #}
+{% if view == 'list' %}
+<div style="font-weight:700; font-size:17px; margin-bottom:16px;">Ujian Online</div>
+
+<!-- Form masuk ujian -->
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-title">Masuk Ujian</div>
+    <form method="post" action="{{ url_for('mahasiswa.ujian_masuk') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group" style="flex:1; min-width:240px; margin-bottom:0;">
+            <label>Token Ujian</label>
+            <input type="text" name="token" class="form-control" placeholder="Masukkan token dari dosen..." required
+                   style="text-transform:uppercase; letter-spacing:2px; font-weight:700;">
+        </div>
+        <button type="submit" class="btn btn-primary">Mulai Ujian</button>
+    </form>
+</div>
+
+<!-- Ujian tersedia -->
+{% if ujian_aktif %}
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-title">Ujian yang Tersedia</div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead>
+            <tr><th>Mata Kuliah</th><th>Judul</th><th>Jenis</th><th>Durasi</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+        {% for u in ujian_aktif %}
+        <tr>
+            <td>{{ u.kelas.matkul.nama }}</td>
+            <td><b>{{ u.judul }}</b></td>
+            <td><span class="badge {% if u.jenis_ujian == 'uts' %}badge-blue{% else %}badge-orange{% endif %}">{{ u.jenis_ujian|upper }}</span></td>
+            <td>{{ u.durasi_menit }} menit</td>
+            <td>
+                {% if sesi_map.get(u.id) and sesi_map[u.id].is_submitted %}
+                    <span class="badge badge-green">Selesai — {{ '%.1f'|format(sesi_map[u.id].skor) }}</span>
+                {% elif sesi_map.get(u.id) %}
+                    <span class="badge badge-orange">Sedang Dikerjakan</span>
+                {% else %}
+                    <span class="badge badge-grey">Belum Dikerjakan</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Riwayat -->
+{% if riwayat %}
+<div class="card">
+    <div class="card-title">Riwayat Ujian</div>
+    <div class="table-wrap">
+    <table class="tbl">
+        <thead>
+            <tr><th>Ujian</th><th>Mata Kuliah</th><th>Skor</th><th>Benar</th><th>Salah</th><th>Ragu</th><th>Waktu</th><th>Aksi</th></tr>
+        </thead>
+        <tbody>
+        {% for s in riwayat %}
+        <tr>
+            <td>{{ s.bank_soal.judul }}</td>
+            <td>{{ s.bank_soal.kelas.matkul.nama }}</td>
+            <td><b style="color:{% if s.skor >= 75 %}green{% elif s.skor >= 55 %}orange{% else %}red{% endif %};">{{ '%.1f'|format(s.skor) }}</b></td>
+            <td>{{ s.total_benar }}</td>
+            <td>{{ s.total_salah }}</td>
+            <td>{{ s.total_ragu }}</td>
+            <td>{{ s.finished_at|tgl_id_full }}</td>
+            <td><a href="{{ url_for('mahasiswa.ujian_hasil', sesi_id=s.id) }}" class="btn btn-outline btn-sm">Lihat Hasil</a></td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endif %}
+
+{# ── HASIL UJIAN ────────────────────────────────────────────────── #}
+{% elif view == 'hasil' %}
+<div class="flex-between" style="margin-bottom:16px;">
+    <div>
+        <div style="font-weight:700; font-size:17px;">Hasil Ujian: {{ bs.judul }}</div>
+        <div style="color:var(--grey-600);">{{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }}</div>
+    </div>
+    <a href="{{ url_for('mahasiswa.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+</div>
+
+<div class="stat-grid">
+    <div class="stat-card"><div class="icon">&#127942;</div><div><div class="v" style="color:{% if sesi.skor >= 75 %}green{% elif sesi.skor >= 55 %}orange{% else %}red{% endif %};">{{ '%.1f'|format(sesi.skor) }}</div><div class="l">Skor</div></div></div>
+    <div class="stat-card"><div class="icon">&#10004;</div><div><div class="v" style="color:green;">{{ sesi.total_benar }}</div><div class="l">Benar</div></div></div>
+    <div class="stat-card"><div class="icon">&#10008;</div><div><div class="v" style="color:red;">{{ sesi.total_salah }}</div><div class="l">Salah</div></div></div>
+    <div class="stat-card"><div class="icon">&#10067;</div><div><div class="v" style="color:orange;">{{ sesi.total_ragu }}</div><div class="l">Ragu-Ragu</div></div></div>
+</div>
+
+<div class="card">
+    <div class="card-title">Detail Jawaban</div>
+    {% for soal in bs.soal_list %}
+    {% set jwb = jawaban_map.get(soal.id) %}
+    <div style="border:1px solid var(--grey-200); border-radius:8px; padding:14px; margin-bottom:10px;
+                {% if jwb and jwb.is_correct %}border-left:4px solid green;{% else %}border-left:4px solid red;{% endif %}">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <b>Soal #{{ soal.nomor }}</b>
+            {% if jwb %}
+                {% if jwb.is_ragu %}
+                    <span class="badge badge-orange">Ragu-Ragu ({{ '%.1f'|format(jwb.skor_soal) }} poin)</span>
+                {% elif jwb.is_correct %}
+                    <span class="badge badge-green">Benar ({{ '%.1f'|format(jwb.skor_soal) }} poin)</span>
+                {% else %}
+                    <span class="badge badge-red">Salah (0 poin)</span>
+                {% endif %}
+            {% endif %}
+        </div>
+        <p style="margin:8px 0;">{{ soal.pertanyaan }}</p>
+        {% if soal.tipe == 'pg' %}
+            {% for p in soal.pilihan_list %}
+            <div style="padding:2px 0;
+                        {% if p.is_correct %}color:green; font-weight:700;{% endif %}
+                        {% if jwb and jwb.jawaban_pg == p.label and not p.is_correct %}color:red; text-decoration:line-through;{% endif %}">
+                {{ p.label }}. {{ p.teks }}
+                {% if p.is_correct %}&#10004;{% endif %}
+                {% if jwb and jwb.jawaban_pg == p.label %} &#8592; Jawaban Anda{% endif %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div style="color:var(--grey-600);">Jawaban Anda: {{ jwb.jawaban_esai if jwb and jwb.jawaban_esai else '(tidak dijawab)' }}</div>
+            {% if soal.kunci_esai %}
+            <div style="color:green; font-style:italic;">Kunci: {{ soal.kunci_esai }}</div>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+{% endif %}
+{% endblock %}
