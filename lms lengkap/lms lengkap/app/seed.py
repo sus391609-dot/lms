@@ -299,16 +299,51 @@ def run_seed() -> None:
     db.session.add_all([
         Portfolio(
             mahasiswa_id=mhs.id,
-            judul="Juara 1 Hackathon Nasional",
+            judul="Juara 1 Hackathon Nasional Kominfo 2024",
             kategori="prestasi",
-            deskripsi="Memenangkan kompetisi hackathon nasional yang diselenggarakan oleh Kementerian Kominfo.",
+            deskripsi="Memenangkan kompetisi hackathon nasional yang diselenggarakan oleh Kementerian Kominfo dengan proyek aplikasi AI untuk UMKM.",
             tahun=2024,
         ),
         Portfolio(
             mahasiswa_id=mhs.id,
-            judul="Aplikasi Mobile E-Health",
+            judul="Best Paper Award — Konferensi Mahasiswa TI 2024",
+            kategori="penghargaan",
+            deskripsi="Penghargaan paper terbaik di Konferensi Nasional Mahasiswa Teknik Informatika untuk topik penerapan machine learning di layanan kesehatan.",
+            tahun=2024,
+        ),
+        Portfolio(
+            mahasiswa_id=mhs.id,
+            judul="Aplikasi Mobile E-Health Tracker",
             kategori="karya",
-            deskripsi="Membangun aplikasi mobile berbasis Flutter untuk membantu tracking kesehatan.",
+            deskripsi="Membangun aplikasi mobile berbasis Flutter untuk membantu tracking kesehatan harian: gizi, aktivitas fisik, dan riwayat medis.",
+            tahun=2024,
+        ),
+        Portfolio(
+            mahasiswa_id=mhs.id,
+            judul="Web Portal KKN Mahasiswa UYP",
+            kategori="karya",
+            deskripsi="Pengembangan portal web internal untuk koordinasi program KKN antar prodi menggunakan Flask + PostgreSQL.",
+            tahun=2025,
+        ),
+        Portfolio(
+            mahasiswa_id=mhs.id,
+            judul="Sertifikasi AWS Cloud Practitioner",
+            kategori="sertifikasi",
+            deskripsi="Sertifikasi resmi Amazon Web Services untuk pemahaman dasar layanan cloud, keamanan, dan billing.",
+            tahun=2024,
+        ),
+        Portfolio(
+            mahasiswa_id=mhs.id,
+            judul="TOEFL ITP — Score 567",
+            kategori="sertifikasi",
+            deskripsi="Sertifikat TOEFL ITP dengan skor 567 yang menunjukkan kemampuan bahasa Inggris menengah-lanjut.",
+            tahun=2024,
+        ),
+        Portfolio(
+            mahasiswa_id=mhs.id,
+            judul="Volunteer Pengabdian Masyarakat 2024",
+            kategori="lainnya",
+            deskripsi="Anggota tim pengabdian masyarakat UYP di Desa Sukamulya: edukasi gizi & literasi digital untuk warga.",
             tahun=2024,
         ),
     ])
@@ -414,6 +449,62 @@ def _seed_konten_publik(admin_id: int) -> None:
                 ),
                 kategori="Pengabdian", penulis_id=admin_id,
                 published_at=now - timedelta(days=28), status="published",
+            ),
+            # ── Pengumuman resmi (dilist di section khusus) ─────────────
+            Berita(
+                judul="Jadwal Ujian Tengah Semester (UTS) Ganjil 2025/2026",
+                ringkasan="UTS akan dilaksanakan 28 Oktober – 8 November 2025. Cek jadwal di portal LMS.",
+                isi=(
+                    "Diberitahukan kepada seluruh mahasiswa aktif bahwa pelaksanaan Ujian "
+                    "Tengah Semester (UTS) Ganjil Tahun Akademik 2025/2026 akan berlangsung "
+                    "pada 28 Oktober s.d. 8 November 2025.\n\n"
+                    "Jadwal lengkap setiap mata kuliah dapat dilihat di portal LMS, menu "
+                    "Jadwal. Mahasiswa wajib hadir paling lambat 15 menit sebelum ujian dimulai "
+                    "dan membawa Kartu Tanda Mahasiswa (KTM)."
+                ),
+                kategori="Pengumuman", penulis_id=admin_id,
+                published_at=now - timedelta(days=2), status="published",
+            ),
+            Berita(
+                judul="Beasiswa Prestasi Akademik Semester Genap Dibuka",
+                ringkasan="Mahasiswa dengan IPK ≥ 3.50 dapat mengajukan beasiswa hingga 50% UKT.",
+                isi=(
+                    "Universitas Yarsi Pratama membuka pendaftaran Beasiswa Prestasi Akademik "
+                    "untuk Semester Genap 2025/2026 bagi mahasiswa dengan IPK minimal 3.50 dan "
+                    "aktif di kegiatan organisasi kampus.\n\n"
+                    "Pendaftaran dibuka hingga 30 November 2025. Berkas yang diperlukan: "
+                    "transkrip nilai, surat rekomendasi dosen wali, dan surat keterangan aktif "
+                    "organisasi. Beasiswa berupa potongan UKT 25-50% sesuai kategori."
+                ),
+                kategori="Pengumuman", penulis_id=admin_id,
+                published_at=now - timedelta(days=4), status="published",
+            ),
+            Berita(
+                judul="Pengisian KRS Semester Genap 2025/2026",
+                ringkasan="Periode pengisian KRS 5 - 12 Januari 2026. Konsultasi DW wajib.",
+                isi=(
+                    "Periode pengisian Kartu Rencana Studi (KRS) Semester Genap 2025/2026 "
+                    "akan dibuka pada tanggal 5 - 12 Januari 2026.\n\n"
+                    "Setiap mahasiswa wajib melakukan konsultasi dengan Dosen Wali masing-masing "
+                    "sebelum melakukan input KRS di portal LMS. Konsultasi dapat dilakukan online "
+                    "melalui fitur Konseling atau tatap muka sesuai jadwal masing-masing DW."
+                ),
+                kategori="Pengumuman", penulis_id=admin_id,
+                published_at=now - timedelta(days=8), status="published",
+            ),
+            Berita(
+                judul="Libur Hari Raya & Cuti Bersama Nasional",
+                ringkasan="Perkuliahan dan pelayanan akademik diliburkan selama hari raya nasional.",
+                isi=(
+                    "Mengacu pada Surat Keputusan Bersama 3 Menteri tentang Hari Libur Nasional "
+                    "dan Cuti Bersama, perkuliahan dan layanan akademik akan diliburkan "
+                    "menyesuaikan tanggal yang ditetapkan pemerintah.\n\n"
+                    "Mohon mahasiswa memperhatikan jadwal kuliah pengganti yang akan diumumkan "
+                    "oleh masing-masing dosen pengampu melalui LMS. Layanan administrasi akan "
+                    "kembali normal pada hari kerja berikutnya."
+                ),
+                kategori="Pengumuman", penulis_id=admin_id,
+                published_at=now - timedelta(days=12), status="published",
             ),
         ])
 

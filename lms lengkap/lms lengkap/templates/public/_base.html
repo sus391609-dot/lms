@@ -43,8 +43,21 @@
         </nav>
 
         <div class="uyp-nav-cta">
-            <a href="{{ url_for('auth.landing') }}" class="uyp-btn uyp-btn-ghost uyp-btn-sm">Login</a>
-            <a href="{{ url_for('public.pmb') }}" class="uyp-btn uyp-btn-primary uyp-btn-sm">Daftar Sekarang</a>
+            <a href="{{ url_for('auth.landing') }}" class="uyp-btn uyp-btn-ghost uyp-btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+                    <polyline points="10 17 15 12 10 7"/>
+                    <line x1="15" y1="12" x2="3" y2="12"/>
+                </svg>
+                Login
+            </a>
+            <a href="{{ url_for('public.pmb') }}" class="uyp-btn uyp-btn-primary uyp-btn-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+                Daftar Sekarang
+            </a>
         </div>
 
         <button class="uyp-hamburger" id="uyp-hamburger" aria-label="Buka menu">

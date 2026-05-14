@@ -60,6 +60,10 @@ def create_app(config_class=Config):
     from app.mahasiswa.routes import bp as mahasiswa_bp
     app.register_blueprint(mahasiswa_bp, url_prefix="/mahasiswa")
 
+    # CV generator (HTML preview + PDF download) – sub-blueprint mahasiswa
+    from app.mahasiswa.cv import bp as mahasiswa_cv_bp
+    app.register_blueprint(mahasiswa_cv_bp, url_prefix="/mahasiswa")
+
     from app.superadmin.routes import bp as superadmin_bp
     app.register_blueprint(superadmin_bp, url_prefix="/superadmin")
 
@@ -99,6 +103,41 @@ def create_app(config_class=Config):
             "app_name": "LMS Universitas Yarsi Pratama",
             "now": datetime.utcnow(),
         }
+
+    # ── Jinja filters (rupiah, tgl_id) ────────────────────────────────
+    BULAN_ID = [
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+    ]
+
+    @app.template_filter("rupiah")
+    def _rupiah(value):
+        try:
+            n = int(value)
+        except (TypeError, ValueError):
+            return value
+        return "Rp " + f"{n:,.0f}".replace(",", ".")
+
+    @app.template_filter("tgl_id")
+    def _tgl_id(value):
+        if not value:
+            return "-"
+        try:
+            return f"{value.day} {BULAN_ID[value.month - 1]} {value.year}"
+        except Exception:
+            return str(value)
+
+    @app.template_filter("tgl_id_full")
+    def _tgl_id_full(value):
+        if not value:
+            return "-"
+        try:
+            return (
+                f"{value.day} {BULAN_ID[value.month - 1]} {value.year} "
+                f"{value.strftime('%H:%M')}"
+            )
+        except Exception:
+            return str(value)
 
     # ── Error handlers ─────────────────────────────────────────────────
     @app.errorhandler(400)
