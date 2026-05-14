@@ -583,46 +583,9 @@ def _build_cv_pdf(data: dict[str, Any]) -> BytesIO:
     for ln in summary_lines:
         story.append(Paragraph(ln, summary_text))
 
-    # ── Education detail
-    story.append(Paragraph("EDUCATION", main_heading))
-    if profil and prodi:
-        edu_left = Paragraph(
-            f"<b>{prodi.nama}</b><br/>"
-            f"{prodi.fakultas} — Universitas Yarsi Pratama",
-            main_subheading,
-        )
-        edu_right = Paragraph(
-            f"NIM {profil.nim}<br/>Angkatan {profil.angkatan}",
-            ParagraphStyle("edu_right", parent=main_meta, alignment=TA_RIGHT),
-        )
-        edu_tbl = Table(
-            [[edu_left, edu_right]],
-            colWidths=[main_w * 0.66, main_w * 0.34],
-        )
-        edu_tbl.setStyle(TableStyle([
-            ("VALIGN", (0, 0), (-1, -1), "TOP"),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
-            ("TOPPADDING", (0, 0), (-1, -1), 0),
-            ("LEFTPADDING", (0, 0), (-1, -1), 0),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-        ]))
-        story.append(edu_tbl)
-        edu_details: list[str] = []
-        if profil.ipk:
-            edu_details.append(f"IPK: <b>{profil.ipk:.2f}</b> / 4.00")
-        edu_details.append(f"Semester aktif: {profil.semester}")
-        if data["sks_aktif"]:
-            edu_details.append(f"SKS aktif: {data['sks_aktif']}")
-        edu_details.append(f"Jenis Kelas: {profil.jenis_kelas.title()}")
-        story.append(Paragraph(" &nbsp;|&nbsp; ".join(edu_details), main_meta))
-    else:
-        story.append(Paragraph(
-            "<i>Data profil belum lengkap.</i>", main_meta,
-        ))
-
     # ── GPA per semester
     if data["semester_summary"]:
-        story.append(Spacer(1, 4))
+        story.append(Paragraph("PERFORMANCE PER SEMESTER", main_heading))
         rows = [["Semester", "Jumlah MK", "Rata-rata Nilai"]]
         for s in data["semester_summary"]:
             rows.append([
@@ -647,36 +610,6 @@ def _build_cv_pdf(data: dict[str, Any]) -> BytesIO:
             ("BOTTOMPADDING",(0, 0), (-1, -1), 4),
         ]))
         story.append(tbl)
-
-    # ── Mata kuliah unggulan
-    if data["nilai_unggulan"]:
-        story.append(Paragraph("KEY COURSES", main_heading))
-        for n in data["nilai_unggulan"]:
-            mk = n.kelas.matkul if n.kelas and n.kelas.matkul else None
-            if not mk:
-                continue
-            row_left = Paragraph(
-                f"<b>{mk.nama}</b> &middot; <font color='#6b7280'>{mk.kode}</font>",
-                main_text,
-            )
-            row_right = Paragraph(
-                f"<b>{n.grade}</b> &nbsp; ({n.nilai_akhir:.1f})",
-                ParagraphStyle("grade", parent=main_text,
-                               alignment=TA_RIGHT, fontName=bold_font,
-                               textColor=C_PRIMARY),
-            )
-            tbl = Table(
-                [[row_left, row_right]],
-                colWidths=[main_w * 0.72, main_w * 0.28],
-            )
-            tbl.setStyle(TableStyle([
-                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-                ("BOTTOMPADDING", (0, 0), (-1, -1), 1),
-                ("TOPPADDING", (0, 0), (-1, -1), 1),
-                ("LEFTPADDING", (0, 0), (-1, -1), 0),
-                ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-            ]))
-            story.append(tbl)
 
     # ── Organisasi
     if data["organisasi"]:
