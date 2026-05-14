@@ -562,71 +562,8 @@ def profile():
     return render_template("mahasiswa/profile.html", profil=profil)
 
 
-# ---------------------------------------------------------------------
-# CV / Curriculum Vitae — generated dari data mahasiswa terbaru
-# ---------------------------------------------------------------------
-@bp.route("/cv")
-def cv():
-    """Generate CV dengan data mahasiswa terbaru:
-    nama, foto profil, NIM, prodi, angkatan, semester aktif, IPK,
-    riwayat nilai per semester, daftar matkul KRS aktif, portfolio,
-    organisasi, dan informasi kontak.
-
-    Halaman ini siap di-print/save sebagai PDF dari browser (Ctrl+P).
-    """
-    profil = current_user.profil_mahasiswa
-    if not profil:
-        abort(404)
-
-    # Rekap nilai per semester (data terbaru, urut semester naik)
-    nilai_rows = (
-        Nilai.query.filter_by(mahasiswa_id=current_user.id)
-        .order_by(Nilai.semester.asc()).all()
-    )
-    # Group per semester {sem: [Nilai...]}
-    nilai_per_sem: dict[int, list[Nilai]] = {}
-    total_bobot = 0.0
-    total_nilai = 0.0
-    for n in nilai_rows:
-        nilai_per_sem.setdefault(n.semester, []).append(n)
-        sks = (n.kelas.matkul.sks if n.kelas and n.kelas.matkul else 0) or 0
-        if (n.nilai_akhir or 0) > 0:
-            total_bobot += sks
-            total_nilai += sks * (n.nilai_akhir / 25.0)  # konversi 0-100 -> 0-4
-
-    ipk_calc = round(total_nilai / total_bobot, 2) if total_bobot else (profil.ipk or 0)
-
-    # KRS aktif (semester berjalan)
-    krs_aktif = (
-        KRS.query.filter_by(mahasiswa_id=current_user.id, status="aktif").all()
-    )
-
-    # Portfolio (prestasi / karya)
-    portfolio_list = (
-        Portfolio.query.filter_by(mahasiswa_id=current_user.id)
-        .order_by(Portfolio.tahun.desc().nullslast(), Portfolio.created_at.desc())
-        .all()
-    )
-
-    # Statistik kehadiran (total pertemuan & hadir)
-    abs_total = Absen.query.filter_by(mahasiswa_id=current_user.id).count()
-    abs_hadir = Absen.query.filter_by(
-        mahasiswa_id=current_user.id, status="hadir"
-    ).count()
-    persen_hadir = round((abs_hadir / abs_total) * 100, 1) if abs_total else 0
-
-    return render_template(
-        "mahasiswa/cv.html",
-        user=current_user,
-        profil=profil,
-        nilai_per_sem=nilai_per_sem,
-        ipk_calc=ipk_calc,
-        krs_aktif=krs_aktif,
-        portfolio_list=portfolio_list,
-        abs_total=abs_total,
-        abs_hadir=abs_hadir,
-        persen_hadir=persen_hadir,
-    )
+# NOTE: route /cv (preview HTML + PDF) hidup di app/mahasiswa/cv.py
+# (blueprint mahasiswa_cv) supaya generator CV + PDF tidak menumpuk di sini.
 
 
 # ---------------------------------------------------------------------

@@ -3,329 +3,417 @@
 
 {% block extra_css %}
 <style>
-/* =========================================================
-   CV — Universitas Yarsi Pratama
-   Tema oranye, layout 2-kolom modern, ramah print.
-   ========================================================= */
-.cv-toolbar{
-    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
-    justify-content:space-between; margin-bottom:14px;
-}
-.cv-toolbar .left{display:flex; gap:8px; align-items:center;}
-.cv-toolbar .right{display:flex; gap:8px;}
-.cv-paper{
-    background:#fff;
-    border-radius:14px;
-    box-shadow:0 18px 50px rgba(233,68,36,.10),0 4px 14px rgba(0,0,0,.05);
-    max-width:920px;
-    margin:0 auto 32px;
-    overflow:hidden;
-    font-family:'Segoe UI','Inter',system-ui,-apple-system,sans-serif;
-    color:#222;
-}
-.cv-head{
-    background:linear-gradient(135deg,#e94424 0%,#ff6a3d 60%,#ff8b4a 100%);
-    color:#fff;
-    padding:34px 38px;
-    display:grid;
-    grid-template-columns:140px 1fr;
-    gap:24px;
-    align-items:center;
-}
-.cv-photo{
-    width:140px; height:140px;
-    border-radius:16px;
-    overflow:hidden;
-    border:4px solid rgba(255,255,255,.55);
-    background:rgba(255,255,255,.15);
-    display:flex; align-items:center; justify-content:center;
-    font-size:54px; font-weight:800;
-}
-.cv-photo img{width:100%; height:100%; object-fit:cover;}
-.cv-head h1{
-    font-size:30px; margin:0 0 6px; font-weight:800; letter-spacing:.3px;
-}
-.cv-head .sub{font-size:15px; opacity:.95; margin-bottom:8px;}
-.cv-meta{
-    display:flex; flex-wrap:wrap; gap:14px 22px; font-size:13.5px;
-    margin-top:10px;
-}
-.cv-meta span{display:inline-flex; align-items:center; gap:6px;}
-.cv-body{
-    display:grid; grid-template-columns:1fr 2fr; gap:0;
-}
-.cv-side{
-    background:#fff8f5;
-    padding:28px 26px;
-    border-right:1px solid #ffe7dd;
-}
-.cv-main{padding:28px 32px;}
-.cv-block{margin-bottom:22px;}
-.cv-h{
-    text-transform:uppercase;
-    letter-spacing:1.2px;
-    font-size:11px;
-    font-weight:800;
-    color:#e94424;
-    display:flex; align-items:center; gap:8px;
-    margin:0 0 10px;
-}
-.cv-h::after{
-    content:""; flex:1; height:2px; background:#ffd9c8; border-radius:2px;
-}
-.cv-row{
-    display:grid; grid-template-columns:110px 1fr; gap:6px 10px;
-    font-size:13px; padding:6px 0;
-}
-.cv-row b{color:#555;}
-.cv-list{padding-left:18px; margin:0; font-size:13px;}
-.cv-list li{margin-bottom:5px;}
-.cv-tag{
-    display:inline-block; padding:3px 10px; border-radius:99px;
-    background:#ffe5d8; color:#a8330f; font-size:11.5px; font-weight:700;
-    margin:2px 4px 2px 0;
-}
-.cv-table{width:100%; border-collapse:collapse; font-size:12.5px;}
-.cv-table th,.cv-table td{
-    text-align:left; padding:6px 8px; border-bottom:1px solid #f1ddd2;
-}
-.cv-table th{background:#fff1ea; color:#a8330f; font-weight:700; font-size:11.5px;}
-.cv-table td.right,.cv-table th.right{text-align:right;}
-.cv-grade{
-    display:inline-block; min-width:22px; text-align:center;
-    padding:2px 8px; border-radius:6px; font-weight:800; color:#fff;
-    background:#888;
-}
-.cv-grade.A{background:#22a06b;}
-.cv-grade.B{background:#3b82f6;}
-.cv-grade.C{background:#f59e0b;}
-.cv-grade.D{background:#dc2626;}
-.cv-stats{
-    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;
-}
-.cv-stat{
-    background:#fff; border:1px solid #ffe1d2; border-radius:10px;
-    padding:10px 12px;
-}
-.cv-stat b{display:block; font-size:18px; color:#e94424; font-weight:800;}
-.cv-stat span{font-size:11.5px; color:#666;}
-.cv-foot{
-    background:#fff8f5; padding:12px 22px;
-    text-align:center; font-size:11.5px; color:#7a5247;
-    border-top:1px solid #ffe1d2;
-}
-.empty{color:#999; font-size:12.5px; font-style:italic;}
+    /* ── CV preview canvas ────────────────────────────────────────── */
+    :root {
+        --cv-primary: #e94424;
+        --cv-primary-d: #b8341a;
+        --cv-dark: #1a1a2e;
+        --cv-text: #2d2d3a;
+        --cv-muted: #6b7280;
+        --cv-light: #fff3ee;
+        --cv-side: #1a1a2e;
+        --cv-side-tx: #f3f4f6;
+        --cv-side-mt: #9ca3af;
+    }
 
-/* === Print === */
-@media print{
-    body, body.uyp-public, .uyp-app, .uyp-sidebar, .uyp-topbar,
-    .dashboard-wrap > aside, .dashboard-wrap > .topbar,
-    .sidebar, .topbar, .cv-toolbar, .footer, header, footer{display:none !important;}
-    main, .dashboard-content, .page-wrap, body{
-        background:#fff !important; margin:0 !important; padding:0 !important;
+    .cv-toolbar {
+        display: flex; flex-wrap: wrap; gap: 10px;
+        align-items: center; justify-content: space-between;
+        background: linear-gradient(135deg, #fff7f4, #fff);
+        border: 1px solid #fee2d4;
+        border-radius: 14px;
+        padding: 14px 18px;
+        margin-bottom: 18px;
     }
-    .cv-paper{
-        box-shadow:none !important; border-radius:0 !important;
-        max-width:100% !important; margin:0 !important;
+    .cv-toolbar h3 {
+        margin: 0; font-size: 17px; color: var(--cv-dark);
+        display: flex; align-items: center; gap: 10px;
     }
-    @page{margin:0; size:A4;}
-}
-@media (max-width:760px){
-    .cv-head{grid-template-columns:1fr; text-align:center;}
-    .cv-photo{margin:0 auto;}
-    .cv-body{grid-template-columns:1fr;}
-    .cv-side{border-right:none; border-bottom:1px solid #ffe7dd;}
-}
+    .cv-toolbar h3 .badge-score {
+        font-size: 12px; font-weight: 700;
+        padding: 4px 10px; border-radius: 999px;
+        background: linear-gradient(135deg, #ff7a3d, #e94424);
+        color: #fff; letter-spacing: .5px;
+    }
+    .cv-toolbar .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cv-toolbar .btn-pdf {
+        background: linear-gradient(135deg, #ff6a3d 0%, #e94424 55%, #b8341a 100%);
+        color: #fff; border: 0; padding: 10px 18px; border-radius: 999px;
+        font-weight: 700; font-size: 14px; cursor: pointer;
+        text-decoration: none; display: inline-flex; align-items: center; gap: 8px;
+        box-shadow: 0 10px 24px rgba(233,68,36,.30);
+        transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .cv-toolbar .btn-pdf:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(233,68,36,.40); color:#fff; }
+    .cv-toolbar .btn-print {
+        background: #fff; color: var(--cv-primary); border: 1.5px solid var(--cv-primary);
+        padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 14px;
+        cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .cv-toolbar .btn-print:hover { background: var(--cv-primary); color:#fff; }
+
+    /* CV paper */
+    .cv-paper {
+        width: 100%; max-width: 880px;
+        margin: 0 auto;
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 20px 50px rgba(20,20,30,.12);
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        min-height: 1100px;
+    }
+
+    .cv-sidebar {
+        background: var(--cv-side);
+        color: var(--cv-side-tx);
+        padding: 28px 22px;
+        position: relative;
+    }
+    .cv-sidebar::before {
+        content: ""; position: absolute; top: 0; left: 0; right: 0;
+        height: 6px; background: linear-gradient(90deg, #ff6a3d, #e94424, #b8341a);
+    }
+    .cv-photo {
+        width: 100%; aspect-ratio: 1 / 1; border-radius: 12px;
+        overflow: hidden;
+        background: linear-gradient(135deg, var(--cv-light), #ffd5c0);
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 14px;
+        box-shadow: 0 8px 20px rgba(0,0,0,.20);
+    }
+    .cv-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .cv-photo .initial {
+        font-size: 64px; font-weight: 900; color: var(--cv-primary);
+    }
+    .cv-name {
+        font-size: 19px; font-weight: 800; color: #fff;
+        line-height: 1.2; margin: 4px 0 2px;
+    }
+    .cv-role {
+        font-size: 12.5px; color: #ff7a3d; font-style: italic;
+        margin-bottom: 10px;
+    }
+    .cv-badge {
+        display: inline-block; padding: 4px 12px; border-radius: 999px;
+        background: linear-gradient(135deg, #ff7a3d, #e94424);
+        color: #fff; font-size: 11px; font-weight: 700;
+        letter-spacing: 1px; text-transform: uppercase;
+        margin-bottom: 14px;
+    }
+    .cv-sidebar h4 {
+        font-size: 11px; letter-spacing: 1.2px;
+        color: var(--cv-primary); margin: 18px 0 6px;
+        text-transform: uppercase; font-weight: 800;
+    }
+    .cv-sidebar p { color: var(--cv-side-tx); font-size: 12px; line-height: 1.45; margin: 0 0 5px; word-wrap: break-word; }
+    .cv-sidebar small { color: var(--cv-side-mt); font-size: 11px; }
+    .cv-sidebar ul { list-style: none; padding: 0; margin: 0; }
+    .cv-sidebar ul li {
+        font-size: 12px; padding: 3px 0;
+        color: var(--cv-side-tx);
+        border-bottom: 1px dashed rgba(255,255,255,.08);
+    }
+    .cv-sidebar ul li:last-child { border-bottom: 0; }
+
+    /* CV main */
+    .cv-main { padding: 32px 36px; color: var(--cv-text); }
+    .cv-main .hero-name {
+        font-size: 28px; font-weight: 800; color: var(--cv-dark);
+        margin: 0; line-height: 1.1; letter-spacing: -.5px;
+    }
+    .cv-main .tagline { color: var(--cv-primary); font-size: 13px; margin: 6px 0 14px; font-weight: 600; }
+    .cv-main .sep {
+        height: 2px; background: linear-gradient(90deg, #ff6a3d, #e94424, #b8341a);
+        border-radius: 999px; margin-bottom: 16px;
+    }
+    .cv-section { margin-bottom: 18px; }
+    .cv-section h3 {
+        margin: 14px 0 8px;
+        font-size: 13px; font-weight: 800;
+        color: var(--cv-primary); letter-spacing: 1px;
+        text-transform: uppercase; position: relative;
+        padding-left: 14px;
+    }
+    .cv-section h3::before {
+        content: ""; position: absolute; left: 0; top: 4px;
+        width: 6px; height: 12px; border-radius: 2px;
+        background: linear-gradient(180deg, #ff6a3d, #b8341a);
+    }
+    .cv-summary { font-size: 13px; line-height: 1.55; color: var(--cv-text); margin: 0 0 6px; }
+
+    .cv-row {
+        display: grid; grid-template-columns: 1fr auto;
+        gap: 6px; padding: 6px 0 4px;
+        border-bottom: 1px dashed #f1d8cc;
+    }
+    .cv-row:last-child { border-bottom: 0; }
+    .cv-row .title { font-weight: 700; color: var(--cv-dark); font-size: 13.5px; }
+    .cv-row .meta { font-size: 11.5px; color: var(--cv-muted); font-style: italic; }
+    .cv-row .right { font-weight: 700; color: var(--cv-primary); font-size: 12.5px; white-space: nowrap; }
+    .cv-row .desc { grid-column: 1 / -1; font-size: 12.5px; color: var(--cv-text); margin-top: 2px; line-height: 1.5; }
+
+    .cv-grade-table {
+        width: 100%; border-collapse: collapse; margin: 4px 0 8px;
+        font-size: 12px;
+    }
+    .cv-grade-table th {
+        background: var(--cv-light); color: var(--cv-primary);
+        padding: 7px 10px; text-align: left; font-weight: 800;
+        font-size: 11px; letter-spacing: .8px; text-transform: uppercase;
+        border-bottom: 2px solid var(--cv-primary);
+    }
+    .cv-grade-table td {
+        padding: 6px 10px; border-bottom: 1px solid #f1f1f5;
+    }
+    .cv-grade-table tr:nth-child(even) td { background: #fcfcfd; }
+
+    .cv-edu-card {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        gap: 12px;
+    }
+    .cv-edu-card .left b { font-size: 14px; color: var(--cv-dark); display: block; }
+    .cv-edu-card .left span { font-size: 12.5px; color: var(--cv-muted); }
+    .cv-edu-card .right { text-align: right; font-size: 12px; color: var(--cv-muted); font-style: italic; }
+    .cv-edu-extra { font-size: 12px; color: var(--cv-muted); margin-top: 4px; }
+    .cv-edu-extra b { color: var(--cv-dark); }
+
+    .cv-pill {
+        display: inline-block; padding: 3px 10px; border-radius: 999px;
+        background: var(--cv-light); color: var(--cv-primary);
+        font-size: 11px; font-weight: 700;
+        margin: 0 4px 4px 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 720px) {
+        .cv-paper { grid-template-columns: 1fr; }
+    }
+
+    /* Print-friendly */
+    @media print {
+        body { background: #fff !important; }
+        .sidebar, .topbar, .cv-toolbar, .welcome-banner, .stat-grid { display: none !important; }
+        .main, .main-inner, .content-wrap, .container { padding: 0 !important; margin: 0 !important; max-width: none !important; }
+        .cv-paper { box-shadow: none; border-radius: 0; border: 0; max-width: none; }
+        @page { size: A4; margin: 10mm; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="cv-toolbar">
-    <div class="left">
-        <h2 style="margin:0;">Curriculum Vitae</h2>
-        <span class="badge badge-orange">Data terbaru otomatis</span>
-    </div>
-    <div class="right">
-        <a href="{{ url_for('mahasiswa.profile') }}" class="btn btn-outline btn-sm">← Profil</a>
-        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+    <h3>
+        Curriculum Vitae
+        <span class="badge-score">{{ keaktifan_label }} · {{ keaktifan_score }}/100</span>
+    </h3>
+    <div class="actions">
+        <button class="btn-print" onclick="window.print();">
+            🖨️ Cetak Halaman
+        </button>
+        <a class="btn-pdf" href="{{ url_for('mahasiswa_cv.cv_pdf') }}">
+            ⬇ Download PDF
+        </a>
     </div>
 </div>
 
-<div class="cv-paper" id="cv-paper">
-    <!-- ============ HEAD ============ -->
-    <div class="cv-head">
+<div class="cv-paper">
+    <!-- ── Sidebar ─────────────────────────────────────────────── -->
+    <aside class="cv-sidebar">
         <div class="cv-photo">
-            {% if user.foto %}
-                <img src="{{ url_for('static', filename=user.foto) }}" alt="Foto">
+            {% if current_user.foto %}
+                <img src="{{ url_for('static', filename=current_user.foto) }}" alt="Foto">
             {% else %}
-                {{ user.nama[:1]|upper }}
+                <span class="initial">{{ current_user.nama[0]|upper }}</span>
             {% endif %}
         </div>
-        <div>
-            <h1>{{ user.nama }}</h1>
-            <div class="sub">
-                Mahasiswa {{ profil.prodi.nama }} —
-                {% if profil.jenis_kelas == 'nonreguler' %}Kelas Non-Reguler{% else %}Kelas Reguler{% endif %}
-            </div>
-            <div class="cv-meta">
-                <span>📧 {{ user.email }}</span>
-                {% if user.no_telp %}<span>📱 {{ user.no_telp }}</span>{% endif %}
-                <span>🎓 NIM {{ profil.nim }}</span>
-                <span>🏫 Universitas Yarsi Pratama</span>
-            </div>
+
+        <div class="cv-name">{{ current_user.nama }}</div>
+        <div class="cv-role">
+            {% if profil and profil.prodi %}
+                {{ profil.prodi.nama }} · {{ profil.prodi.fakultas }}
+            {% else %}
+                Mahasiswa Universitas Yarsi Pratama
+            {% endif %}
         </div>
-    </div>
+        <div class="cv-badge">{{ keaktifan_label }}</div>
 
-    <!-- ============ BODY ============ -->
-    <div class="cv-body">
-        <!-- ===== SIDE ===== -->
-        <aside class="cv-side">
-            <div class="cv-block">
-                <h3 class="cv-h">Data Akademik</h3>
-                <div class="cv-row"><b>Angkatan</b><span>{{ profil.angkatan }}</span></div>
-                <div class="cv-row"><b>Semester Aktif</b><span>Semester {{ profil.semester }}</span></div>
-                <div class="cv-row"><b>Program Studi</b><span>{{ profil.prodi.nama }}</span></div>
-                <div class="cv-row"><b>Fakultas</b><span>{{ profil.prodi.fakultas }}</span></div>
-                <div class="cv-row"><b>Jenis Kelas</b><span>{% if profil.jenis_kelas == 'nonreguler' %}Non-Reguler{% else %}Reguler{% endif %}</span></div>
-                <div class="cv-row"><b>Status</b><span>{{ user.status|capitalize }}</span></div>
-                <div class="cv-row"><b>Terdaftar Sejak</b><span>{{ user.created_at|tgl_id }}</span></div>
+        <h4>Contact</h4>
+        <p><b style="color:#fff;">Email</b><br>{{ current_user.email }}</p>
+        {% if current_user.no_telp %}
+        <p><b style="color:#fff;">Phone</b><br>{{ current_user.no_telp }}</p>
+        {% endif %}
+        {% if current_user.alamat %}
+        <p><b style="color:#fff;">Address</b><br>{{ current_user.alamat }}</p>
+        {% endif %}
+        {% if current_user.tanggal_lahir %}
+        <p><b style="color:#fff;">Date of Birth</b><br>{{ current_user.tanggal_lahir.strftime('%d %B %Y') }}</p>
+        {% endif %}
+
+        <h4>Education</h4>
+        {% if profil and profil.prodi %}
+            <p><b style="color:#fff;">{{ profil.prodi.nama }}</b><br>
+            <small>{{ profil.prodi.fakultas }}<br>Universitas Yarsi Pratama</small></p>
+            <p>NIM: {{ profil.nim }}<br>
+            Angkatan: {{ profil.angkatan }}<br>
+            Semester aktif: {{ profil.semester }}
+            {% if profil.ipk %}<br>GPA: <b style="color:#fff;">{{ "%.2f"|format(profil.ipk) }}</b> / 4.00{% endif %}
+            </p>
+        {% else %}
+            <small>Profil mahasiswa belum lengkap.</small>
+        {% endif %}
+
+        {% if skills %}
+        <h4>Skills</h4>
+        <ul>
+            {% for s in skills %}<li>• {{ s }}</li>{% endfor %}
+        </ul>
+        {% endif %}
+
+        <h4>Languages</h4>
+        <ul>
+            <li>• Bahasa Indonesia — Native</li>
+            <li>• English — {% set has_en = false %}{% for p in portfolio %}{% if 'TOEFL' in (p.judul or '')|upper or 'IELTS' in (p.judul or '')|upper %}{% set has_en = true %}{% endif %}{% endfor %}{% if has_en %}Professional{% else %}Intermediate{% endif %}</li>
+        </ul>
+    </aside>
+
+    <!-- ── Main ──────────────────────────────────────────────── -->
+    <main class="cv-main">
+        <h1 class="hero-name">{{ current_user.nama|upper }}</h1>
+        <div class="tagline">
+            {% if profil and profil.prodi %}{{ profil.prodi.nama }} &nbsp;|&nbsp; {% endif %}
+            Universitas Yarsi Pratama
+        </div>
+        <div class="sep"></div>
+
+        <!-- Profile / summary -->
+        <section class="cv-section">
+            <h3>Profile</h3>
+            <p class="cv-summary">
+                {% if profil and profil.prodi %}
+                Mahasiswa aktif Program Studi <b>{{ profil.prodi.nama }}</b>,
+                Fakultas {{ profil.prodi.fakultas }}, Universitas Yarsi Pratama,
+                angkatan {{ profil.angkatan }} (semester {{ profil.semester }}).
+                {% endif %}
+                {% if profil and profil.ipk %}
+                Indeks Prestasi Kumulatif (IPK) terkini <b>{{ "%.2f"|format(profil.ipk) }}</b> dari 4.00.
+                {% endif %}
+                Memiliki <b>{{ portfolio|length }}</b> portofolio (prestasi, karya, sertifikasi,
+                penghargaan), serta aktif di <b>{{ organisasi|length }}</b> organisasi /
+                peran kampus. Berdasarkan rekam keaktifan, dinilai sebagai mahasiswa
+                <b>{{ keaktifan_label }}</b> (skor {{ keaktifan_score }}/100).
+            </p>
+        </section>
+
+        <!-- Education -->
+        <section class="cv-section">
+            <h3>Education</h3>
+            {% if profil and profil.prodi %}
+            <div class="cv-edu-card">
+                <div class="left">
+                    <b>{{ profil.prodi.nama }}</b>
+                    <span>{{ profil.prodi.fakultas }} — Universitas Yarsi Pratama</span>
+                </div>
+                <div class="right">NIM {{ profil.nim }}<br>Angkatan {{ profil.angkatan }}</div>
             </div>
+            <div class="cv-edu-extra">
+                {% if profil.ipk %}<b>IPK:</b> {{ "%.2f"|format(profil.ipk) }} / 4.00 &nbsp;|&nbsp; {% endif %}
+                <b>Semester aktif:</b> {{ profil.semester }}
+                {% if sks_aktif %} &nbsp;|&nbsp; <b>SKS aktif:</b> {{ sks_aktif }}{% endif %}
+                &nbsp;|&nbsp; <b>Kelas:</b> {{ profil.jenis_kelas|title }}
+            </div>
+            {% else %}
+                <em>Data profil belum lengkap.</em>
+            {% endif %}
+        </section>
 
-            <div class="cv-block">
-                <h3 class="cv-h">Statistik Akademik</h3>
-                <div class="cv-stats">
-                    <div class="cv-stat"><b>{{ "%.2f"|format(ipk_calc) }}</b><span>IPK Terbaru</span></div>
-                    <div class="cv-stat"><b>{{ profil.semester }}</b><span>Semester Aktif</span></div>
-                    <div class="cv-stat"><b>{{ krs_aktif|length }}</b><span>Matkul KRS</span></div>
-                    <div class="cv-stat"><b>{{ persen_hadir }}%</b><span>Kehadiran</span></div>
+        <!-- GPA per semester -->
+        {% if semester_summary %}
+        <section class="cv-section">
+            <h3>Performance per Semester</h3>
+            <table class="cv-grade-table">
+                <thead>
+                    <tr>
+                        <th>Semester</th>
+                        <th>Jumlah MK</th>
+                        <th>Rata-rata Nilai</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in semester_summary %}
+                    <tr>
+                        <td>Semester {{ s.semester }}</td>
+                        <td>{{ s.jumlah_mk }}</td>
+                        <td>{{ "%.2f"|format(s.rata2) }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </section>
+        {% endif %}
+
+        <!-- Key courses -->
+        {% if nilai_unggulan %}
+        <section class="cv-section">
+            <h3>Key Courses</h3>
+            {% for n in nilai_unggulan %}
+            <div class="cv-row">
+                <div>
+                    <div class="title">{{ n.kelas.matkul.nama }}</div>
+                    <div class="meta">{{ n.kelas.matkul.kode }} · Semester {{ n.semester }}</div>
+                </div>
+                <div class="right">{{ n.grade }} · {{ "%.1f"|format(n.nilai_akhir) }}</div>
+            </div>
+            {% endfor %}
+        </section>
+        {% endif %}
+
+        <!-- Organisasi -->
+        {% if organisasi %}
+        <section class="cv-section">
+            <h3>Organizational Experience</h3>
+            {% for line in organisasi %}
+            <div class="cv-row">
+                <div>
+                    <div class="title">{{ line }}</div>
                 </div>
             </div>
+            {% endfor %}
+        </section>
+        {% endif %}
 
-            <div class="cv-block">
-                <h3 class="cv-h">Kontak</h3>
-                <div class="cv-row"><b>Email</b><span style="word-break:break-all;">{{ user.email }}</span></div>
-                {% if user.no_telp %}<div class="cv-row"><b>Telepon</b><span>{{ user.no_telp }}</span></div>{% endif %}
-                {% if user.alamat %}<div class="cv-row"><b>Alamat</b><span>{{ user.alamat }}</span></div>{% endif %}
-                {% if user.tanggal_lahir %}<div class="cv-row"><b>Tgl Lahir</b><span>{{ user.tanggal_lahir|tgl_id }}</span></div>{% endif %}
-                {% if user.jenis_kelamin %}<div class="cv-row"><b>Gender</b><span>{{ user.jenis_kelamin }}</span></div>{% endif %}
-            </div>
-
-            <div class="cv-block">
-                <h3 class="cv-h">Soft Skills</h3>
-                <span class="cv-tag">Komunikasi</span>
-                <span class="cv-tag">Kerja Tim</span>
-                <span class="cv-tag">Problem Solving</span>
-                <span class="cv-tag">Adaptasi</span>
-                <span class="cv-tag">Kepemimpinan</span>
-                <span class="cv-tag">Disiplin</span>
-            </div>
-        </aside>
-
-        <!-- ===== MAIN ===== -->
-        <main class="cv-main">
-            <div class="cv-block">
-                <h3 class="cv-h">Profil Singkat</h3>
-                <p style="margin:0; line-height:1.6; font-size:13.5px;">
-                    Mahasiswa aktif <b>{{ profil.prodi.nama }}</b> di <b>Universitas Yarsi Pratama</b>,
-                    angkatan <b>{{ profil.angkatan }}</b> yang kini menempuh
-                    <b>semester {{ profil.semester }}</b>.
-                    Memiliki ketertarikan kuat pada bidang
-                    {{ profil.prodi.nama.split()[-2] if profil.prodi.nama.split()|length > 1 else profil.prodi.nama }}
-                    dan terus aktif mengembangkan kompetensi melalui perkuliahan,
-                    kegiatan kampus, serta pengembangan proyek.
-                </p>
-            </div>
-
-            <div class="cv-block">
-                <h3 class="cv-h">Mata Kuliah Aktif (Semester {{ profil.semester }})</h3>
-                {% if krs_aktif %}
-                <table class="cv-table">
-                    <thead>
-                        <tr><th>Kode</th><th>Mata Kuliah</th><th class="right">SKS</th><th>Dosen</th></tr>
-                    </thead>
-                    <tbody>
-                    {% for k in krs_aktif %}
-                        <tr>
-                            <td>{{ k.kelas.matkul.kode }}</td>
-                            <td>{{ k.kelas.matkul.nama }}</td>
-                            <td class="right">{{ k.kelas.matkul.sks }}</td>
-                            <td>{{ k.kelas.dosen.nama if k.kelas.dosen else '-' }}</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="empty">Belum ada KRS aktif untuk semester berjalan.</div>
-                {% endif %}
-            </div>
-
-            <div class="cv-block">
-                <h3 class="cv-h">Riwayat Nilai per Semester</h3>
-                {% if nilai_per_sem %}
-                    {% for sem, rows in nilai_per_sem.items() %}
-                    <div style="margin-bottom:14px;">
-                        <div style="font-weight:700; color:#a8330f; font-size:13px; margin:6px 0;">
-                            Semester {{ sem }}
-                        </div>
-                        <table class="cv-table">
-                            <thead>
-                                <tr>
-                                    <th>Mata Kuliah</th>
-                                    <th class="right">SKS</th>
-                                    <th class="right">Nilai</th>
-                                    <th>Grade</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for n in rows %}
-                                <tr>
-                                    <td>{{ n.kelas.matkul.nama if n.kelas and n.kelas.matkul else '-' }}</td>
-                                    <td class="right">{{ n.kelas.matkul.sks if n.kelas and n.kelas.matkul else '-' }}</td>
-                                    <td class="right">{{ "%.1f"|format(n.nilai_akhir or 0) }}</td>
-                                    <td><span class="cv-grade {{ n.grade }}">{{ n.grade or '-' }}</span></td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+        <!-- Portfolio sections -->
+        {% set section_order = [
+            ('Prestasi', 'Achievements'),
+            ('Penghargaan', 'Awards'),
+            ('Sertifikasi', 'Certifications'),
+            ('Karya / Proyek', 'Projects'),
+            ('Pengalaman Lain', 'Other Experience'),
+        ] %}
+        {% for kat, label in section_order %}
+            {% set rows = portfolio_grouped.get(kat) %}
+            {% if rows %}
+            <section class="cv-section">
+                <h3>{{ label }}</h3>
+                {% for p in rows %}
+                <div class="cv-row">
+                    <div>
+                        <div class="title">{{ p.judul }}</div>
+                        {% if p.deskripsi %}<div class="desc">{{ p.deskripsi }}</div>{% endif %}
                     </div>
-                    {% endfor %}
-                {% else %}
-                <div class="empty">Riwayat nilai akan tampil setelah dosen menginput nilai akhir.</div>
-                {% endif %}
-            </div>
+                    <div class="right">{{ p.tahun or '-' }}</div>
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+        {% endfor %}
 
-            <div class="cv-block">
-                <h3 class="cv-h">Prestasi / Karya</h3>
-                {% if portfolio_list %}
-                <ul class="cv-list">
-                    {% for p in portfolio_list %}
-                    <li>
-                        <b>{{ p.judul }}</b>
-                        {% if p.tahun %}<span style="color:#999;"> · {{ p.tahun }}</span>{% endif %}
-                        {% if p.kategori %}<span class="cv-tag" style="margin-left:6px;">{{ p.kategori }}</span>{% endif %}
-                        {% if p.deskripsi %}<div style="font-size:12.5px; color:#555;">{{ p.deskripsi }}</div>{% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <div class="empty">Belum ada catatan prestasi / karya. Hubungi admin akademik untuk pencatatan.</div>
-                {% endif %}
-            </div>
-
-            <div class="cv-block">
-                <h3 class="cv-h">Organisasi &amp; Keaktifan</h3>
-                {% if profil.organisasi %}
-                <div style="white-space:pre-wrap; font-size:13px; line-height:1.55;">{{ profil.organisasi }}</div>
-                {% else %}
-                <div class="empty">Data organisasi belum diinput oleh admin akademik.</div>
-                {% endif %}
-            </div>
-        </main>
-    </div>
-
-    <div class="cv-foot">
-        Dokumen CV ini di-generate otomatis dari sistem LMS Universitas Yarsi Pratama
-        pada {{ now|tgl_id }}. Untuk verifikasi resmi, silakan menghubungi bagian akademik.
-    </div>
+        <p style="margin-top: 18px; font-size: 11px; color: var(--cv-muted); text-align: right;">
+            Dihasilkan otomatis oleh portal mahasiswa Universitas Yarsi Pratama —
+            {{ generated_at.strftime('%d %b %Y %H:%M UTC') }}
+        </p>
+    </main>
 </div>
 {% endblock %}

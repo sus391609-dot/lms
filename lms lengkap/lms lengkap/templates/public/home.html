@@ -171,39 +171,96 @@
     </div>
 </section>
 
-{# ─── Berita terbaru ──────────────────────────────────────────────── #}
-{% if berita_terbaru %}
-<section class="uyp-section">
+{# ─── Pengumuman Resmi ────────────────────────────────────────────── #}
+{% if pengumuman_terbaru %}
+<section class="uyp-section uyp-pengumuman-section">
     <div class="uyp-container">
         <div class="uyp-section-head split uyp-reveal">
             <div>
-                <span class="eyebrow">Berita Kampus</span>
+                <span class="eyebrow uyp-eyebrow-warn">📣 Pengumuman Resmi</span>
+                <h2>Info Penting <em>Civitas Akademika</em></h2>
+                <p>5 pengumuman resmi terbaru dari pihak kampus.</p>
+            </div>
+            <a href="{{ url_for('public.berita_list', kategori='Pengumuman') }}" class="uyp-btn uyp-btn-outline">Lihat Semua →</a>
+        </div>
+        <div class="uyp-pengumuman-list">
+            {% for p in pengumuman_terbaru %}
+            <a class="uyp-pengumuman-item uyp-reveal delay-{{ loop.index }}" href="{{ url_for('public.berita_detail', bid=p.id) }}">
+                <div class="uyp-pengumuman-date">
+                    <span class="day">{{ p.published_at.strftime('%d') }}</span>
+                    <span class="mon">{{ p.published_at.strftime('%b') }}</span>
+                </div>
+                <div class="uyp-pengumuman-body">
+                    <div class="uyp-pengumuman-meta">
+                        <span class="uyp-tag warn">PENGUMUMAN</span>
+                        <span class="uyp-pengumuman-time">{{ p.published_at.strftime('%d %B %Y') }}</span>
+                    </div>
+                    <h4>{{ p.judul }}</h4>
+                    <p>{{ p.ringkasan or p.isi[:160] }}</p>
+                </div>
+                <span class="uyp-pengumuman-arrow">→</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+{# ─── Berita terbaru ──────────────────────────────────────────────── #}
+{% if berita_terbaru %}
+<section class="uyp-section uyp-berita-section">
+    <div class="uyp-container">
+        <div class="uyp-section-head split uyp-reveal">
+            <div>
+                <span class="eyebrow">📰 Berita Kampus</span>
                 <h2>Info <em>Terbaru</em> dari Yarsi Pratama</h2>
+                <p>5 berita terhangat seputar kampus, prestasi, dan akademik.</p>
             </div>
             <a href="{{ url_for('public.berita_list') }}" class="uyp-btn uyp-btn-outline">Lihat Semua Berita →</a>
         </div>
-        <div class="uyp-card-grid">
-            {% for b in berita_terbaru %}
-            <article class="uyp-card uyp-reveal delay-{{ loop.index }}">
+
+        {% set hero = berita_terbaru[0] %}
+        {% set rest = berita_terbaru[1:] %}
+        <div class="uyp-berita-feature">
+            <article class="uyp-card uyp-card-hero uyp-reveal">
                 <div class="uyp-card-media">
-                    {% if b.gambar %}
-                        <img src="{{ url_for('static', filename=b.gambar) }}" alt="{{ b.judul }}">
+                    {% if hero.gambar %}
+                        <img src="{{ url_for('static', filename=hero.gambar) }}" alt="{{ hero.judul }}">
                     {% else %}
                         <div class="placeholder">📰</div>
                     {% endif %}
-                    {% if b.kategori %}<span class="badge">{{ b.kategori }}</span>{% endif %}
+                    {% if hero.kategori %}<span class="badge">{{ hero.kategori }}</span>{% endif %}
                 </div>
                 <div class="uyp-card-body">
                     <div class="uyp-card-meta">
-                        <span>📅 {{ b.published_at.strftime('%d %b %Y') }}</span>
-                        <span>👁 {{ b.views }} dilihat</span>
+                        <span>📅 {{ hero.published_at.strftime('%d %b %Y') }}</span>
+                        <span>👁 {{ hero.views }} dilihat</span>
                     </div>
-                    <h3>{{ b.judul }}</h3>
-                    <p>{{ b.ringkasan or b.isi[:140] }}</p>
-                    <a href="{{ url_for('public.berita_detail', bid=b.id) }}" class="uyp-card-link">Selengkapnya</a>
+                    <h3>{{ hero.judul }}</h3>
+                    <p>{{ hero.ringkasan or hero.isi[:200] }}</p>
+                    <a href="{{ url_for('public.berita_detail', bid=hero.id) }}" class="uyp-card-link">Baca Selengkapnya →</a>
                 </div>
             </article>
-            {% endfor %}
+            <div class="uyp-berita-mini-stack">
+                {% for b in rest %}
+                <a class="uyp-berita-mini uyp-reveal delay-{{ loop.index }}" href="{{ url_for('public.berita_detail', bid=b.id) }}">
+                    <div class="uyp-berita-mini-img">
+                        {% if b.gambar %}
+                            <img src="{{ url_for('static', filename=b.gambar) }}" alt="{{ b.judul }}">
+                        {% else %}
+                            <span>📰</span>
+                        {% endif %}
+                    </div>
+                    <div class="uyp-berita-mini-body">
+                        <div class="uyp-berita-mini-meta">
+                            {% if b.kategori %}<span class="uyp-tag">{{ b.kategori }}</span>{% endif %}
+                            <span>{{ b.published_at.strftime('%d %b %Y') }}</span>
+                        </div>
+                        <h5>{{ b.judul }}</h5>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </section>
@@ -211,34 +268,40 @@
 
 {# ─── Kegiatan ────────────────────────────────────────────────────── #}
 {% if kegiatan_terbaru %}
-<section class="uyp-section" style="background: var(--uyp-grey-50);">
+<section class="uyp-section uyp-kegiatan-section">
     <div class="uyp-container">
         <div class="uyp-section-head split uyp-reveal">
             <div>
-                <span class="eyebrow">Kegiatan Kampus</span>
+                <span class="eyebrow">🎉 Kegiatan Kampus</span>
                 <h2><em>Event</em> &amp; Kegiatan Mahasiswa</h2>
+                <p>5 acara, seminar, dan workshop terbaru di Yarsi Pratama.</p>
             </div>
             <a href="{{ url_for('public.kegiatan_list') }}" class="uyp-btn uyp-btn-outline">Lihat Semua Kegiatan →</a>
         </div>
-        <div class="uyp-card-grid">
+        <div class="uyp-kegiatan-grid">
             {% for k in kegiatan_terbaru %}
-            <article class="uyp-card uyp-reveal delay-{{ loop.index }}">
-                <div class="uyp-card-media">
+            <article class="uyp-kegiatan-card uyp-reveal delay-{{ loop.index }}">
+                <div class="uyp-kegiatan-media">
                     {% if k.gambar %}
                         <img src="{{ url_for('static', filename=k.gambar) }}" alt="{{ k.judul }}">
                     {% else %}
                         <div class="placeholder">🎉</div>
                     {% endif %}
-                    <span class="badge">Kegiatan</span>
+                    {% if k.tanggal_mulai %}
+                    <div class="uyp-kegiatan-date">
+                        <span class="d">{{ k.tanggal_mulai.strftime('%d') }}</span>
+                        <span class="m">{{ k.tanggal_mulai.strftime('%b') }}</span>
+                    </div>
+                    {% endif %}
                 </div>
-                <div class="uyp-card-body">
-                    <div class="uyp-card-meta">
-                        {% if k.tanggal_mulai %}<span>📅 {{ k.tanggal_mulai.strftime('%d %b %Y') }}</span>{% endif %}
+                <div class="uyp-kegiatan-body">
+                    <div class="uyp-kegiatan-meta">
                         {% if k.lokasi %}<span>📍 {{ k.lokasi }}</span>{% endif %}
+                        {% if k.penyelenggara %}<span>🏛️ {{ k.penyelenggara }}</span>{% endif %}
                     </div>
                     <h3>{{ k.judul }}</h3>
-                    <p>{{ k.ringkasan or k.isi[:140] }}</p>
-                    <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" class="uyp-card-link">Selengkapnya</a>
+                    <p>{{ k.ringkasan or k.isi[:130] }}</p>
+                    <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" class="uyp-card-link">Detail Kegiatan →</a>
                 </div>
             </article>
             {% endfor %}

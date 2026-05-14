@@ -60,6 +60,10 @@ def create_app(config_class=Config):
     from app.mahasiswa.routes import bp as mahasiswa_bp
     app.register_blueprint(mahasiswa_bp, url_prefix="/mahasiswa")
 
+    # CV generator (HTML preview + PDF download) – sub-blueprint mahasiswa
+    from app.mahasiswa.cv import bp as mahasiswa_cv_bp
+    app.register_blueprint(mahasiswa_cv_bp, url_prefix="/mahasiswa")
+
     from app.superadmin.routes import bp as superadmin_bp
     app.register_blueprint(superadmin_bp, url_prefix="/superadmin")
 
@@ -100,40 +104,41 @@ def create_app(config_class=Config):
             "now": datetime.utcnow(),
         }
 
-    # ── Jinja filters ──────────────────────────────────────────────────
-    from datetime import date, datetime as _dt
-
+    # ── Jinja filters (rupiah, tgl_id, tgl_id_full) ──────────────────────
     BULAN_ID = [
-        "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
         "Juli", "Agustus", "September", "Oktober", "November", "Desember",
     ]
 
-    @app.template_filter("tgl_id")
-    def _tgl_id(value):
-        """Format date / datetime ke Bahasa Indonesia.
-
-        - ``date``        → "12 Mei 2025"
-        - ``datetime``    → "12 Mei 2025, 14:30"
-        - lainnya / None  → "-"
-        """
-        if value is None:
-            return "-"
-        if isinstance(value, _dt):
-            return f"{value.day} {BULAN_ID[value.month]} {value.year}, {value.strftime('%H:%M')}"
-        if isinstance(value, date):
-            return f"{value.day} {BULAN_ID[value.month]} {value.year}"
-        return str(value)
-
     @app.template_filter("rupiah")
     def _rupiah(value):
-        """Format angka jadi 'Rp 1.234.567'."""
         try:
             n = int(round(float(value or 0)))
         except (TypeError, ValueError):
-            return "Rp 0"
+            return value
         sign = "-" if n < 0 else ""
-        s = f"{abs(n):,}".replace(",", ".")
-        return f"{sign}Rp {s}"
+        return f"{sign}Rp " + f"{abs(n):,.0f}".replace(",", ".")
+
+    @app.template_filter("tgl_id")
+    def _tgl_id(value):
+        if not value:
+            return "-"
+        try:
+            return f"{value.day} {BULAN_ID[value.month - 1]} {value.year}"
+        except Exception:
+            return str(value)
+
+    @app.template_filter("tgl_id_full")
+    def _tgl_id_full(value):
+        if not value:
+            return "-"
+        try:
+            return (
+                f"{value.day} {BULAN_ID[value.month - 1]} {value.year} "
+                f"{value.strftime('%H:%M')}"
+            )
+        except Exception:
+            return str(value)
 
     # ── Error handlers ─────────────────────────────────────────────────
     @app.errorhandler(400)

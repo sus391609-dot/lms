@@ -40,13 +40,21 @@ def _stats() -> dict:
 # =====================================================================
 @bp.route("/")
 def home():
+    # Pengumuman: berita kategori "Pengumuman" (5 terbaru).
+    pengumuman_terbaru = (
+        Berita.query.filter_by(status="published", kategori="Pengumuman")
+        .order_by(Berita.published_at.desc()).limit(5).all()
+    )
+    # Berita umum: semua kategori KECUALI Pengumuman (5 terbaru),
+    # supaya tidak duplikat dengan section pengumuman.
     berita_terbaru = (
         Berita.query.filter_by(status="published")
-        .order_by(Berita.published_at.desc()).limit(3).all()
+        .filter(Berita.kategori != "Pengumuman")
+        .order_by(Berita.published_at.desc()).limit(5).all()
     )
     kegiatan_terbaru = (
         Kegiatan.query.filter_by(status="published")
-        .order_by(Kegiatan.created_at.desc()).limit(3).all()
+        .order_by(Kegiatan.created_at.desc()).limit(5).all()
     )
     kerjasama_unggulan = (
         KerjaSama.query.filter_by(status="published")
@@ -59,6 +67,7 @@ def home():
     return render_template(
         "public/home.html",
         stats=_stats(),
+        pengumuman_terbaru=pengumuman_terbaru,
         berita_terbaru=berita_terbaru,
         kegiatan_terbaru=kegiatan_terbaru,
         kerjasama_unggulan=kerjasama_unggulan,

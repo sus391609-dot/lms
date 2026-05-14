@@ -46,7 +46,8 @@
         </div>
         <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="btn btn-primary" type="submit">💾 Simpan</button>
-            <a class="btn btn-outline" href="{{ url_for('mahasiswa.cv') }}" target="_blank">📄 Generate CV (Data Terbaru)</a>
+            <a class="btn btn-outline" href="{{ url_for('mahasiswa_cv.cv_preview') }}" target="_blank">📄 Preview CV</a>
+            <a class="btn btn-outline" href="{{ url_for('mahasiswa_cv.cv_pdf') }}">⬇️ Download CV (PDF)</a>
         </div>
     </form>
 </div>
