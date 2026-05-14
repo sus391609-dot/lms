@@ -10,9 +10,14 @@
             IPK {{ "%.2f"|format(profil.ipk) if profil and profil.ipk else '-' }}
         </div>
     </div>
-    <a href="{{ url_for('mahasiswa.chatbot') }}" class="btn btn-secondary btn-sm welcome-cta">
-        &#129302; Tanya Chatbot
-    </a>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+        <a href="{{ url_for('mahasiswa.cv') }}" class="btn btn-secondary btn-sm welcome-cta" target="_blank">
+            &#128196; Generate CV
+        </a>
+        <a href="{{ url_for('mahasiswa.chatbot') }}" class="btn btn-secondary btn-sm welcome-cta">
+            &#129302; Tanya Chatbot
+        </a>
+    </div>
 </div>
 
 <div class="stat-grid">

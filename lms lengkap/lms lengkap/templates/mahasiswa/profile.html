@@ -44,7 +44,10 @@
             <div class="field"><label>Alamat</label><input type="text" name="alamat" value="{{ current_user.alamat or '' }}"></div>
             <div class="field"><label>Password Baru (opsional)</label><input type="password" name="password" placeholder="Kosongkan jika tidak ganti"></div>
         </div>
-        <button class="btn btn-primary" type="submit">Simpan</button>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="btn btn-primary" type="submit">💾 Simpan</button>
+            <a class="btn btn-outline" href="{{ url_for('mahasiswa.cv') }}" target="_blank">📄 Generate CV (Data Terbaru)</a>
+        </div>
     </form>
 </div>
 

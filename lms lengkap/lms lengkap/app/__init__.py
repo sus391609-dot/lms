@@ -100,6 +100,41 @@ def create_app(config_class=Config):
             "now": datetime.utcnow(),
         }
 
+    # ── Jinja filters ──────────────────────────────────────────────────
+    from datetime import date, datetime as _dt
+
+    BULAN_ID = [
+        "", "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+        "Juli", "Agustus", "September", "Oktober", "November", "Desember",
+    ]
+
+    @app.template_filter("tgl_id")
+    def _tgl_id(value):
+        """Format date / datetime ke Bahasa Indonesia.
+
+        - ``date``        → "12 Mei 2025"
+        - ``datetime``    → "12 Mei 2025, 14:30"
+        - lainnya / None  → "-"
+        """
+        if value is None:
+            return "-"
+        if isinstance(value, _dt):
+            return f"{value.day} {BULAN_ID[value.month]} {value.year}, {value.strftime('%H:%M')}"
+        if isinstance(value, date):
+            return f"{value.day} {BULAN_ID[value.month]} {value.year}"
+        return str(value)
+
+    @app.template_filter("rupiah")
+    def _rupiah(value):
+        """Format angka jadi 'Rp 1.234.567'."""
+        try:
+            n = int(round(float(value or 0)))
+        except (TypeError, ValueError):
+            return "Rp 0"
+        sign = "-" if n < 0 else ""
+        s = f"{abs(n):,}".replace(",", ".")
+        return f"{sign}Rp {s}"
+
     # ── Error handlers ─────────────────────────────────────────────────
     @app.errorhandler(400)
     def bad_request(e):

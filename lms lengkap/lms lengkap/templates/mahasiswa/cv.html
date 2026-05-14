@@ -1,0 +1,331 @@
+{% extends "_dashboard_base.html" %}
+{% block page_title %}Curriculum Vitae{% endblock %}
+
+{% block extra_css %}
+<style>
+/* =========================================================
+   CV — Universitas Yarsi Pratama
+   Tema oranye, layout 2-kolom modern, ramah print.
+   ========================================================= */
+.cv-toolbar{
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+    justify-content:space-between; margin-bottom:14px;
+}
+.cv-toolbar .left{display:flex; gap:8px; align-items:center;}
+.cv-toolbar .right{display:flex; gap:8px;}
+.cv-paper{
+    background:#fff;
+    border-radius:14px;
+    box-shadow:0 18px 50px rgba(233,68,36,.10),0 4px 14px rgba(0,0,0,.05);
+    max-width:920px;
+    margin:0 auto 32px;
+    overflow:hidden;
+    font-family:'Segoe UI','Inter',system-ui,-apple-system,sans-serif;
+    color:#222;
+}
+.cv-head{
+    background:linear-gradient(135deg,#e94424 0%,#ff6a3d 60%,#ff8b4a 100%);
+    color:#fff;
+    padding:34px 38px;
+    display:grid;
+    grid-template-columns:140px 1fr;
+    gap:24px;
+    align-items:center;
+}
+.cv-photo{
+    width:140px; height:140px;
+    border-radius:16px;
+    overflow:hidden;
+    border:4px solid rgba(255,255,255,.55);
+    background:rgba(255,255,255,.15);
+    display:flex; align-items:center; justify-content:center;
+    font-size:54px; font-weight:800;
+}
+.cv-photo img{width:100%; height:100%; object-fit:cover;}
+.cv-head h1{
+    font-size:30px; margin:0 0 6px; font-weight:800; letter-spacing:.3px;
+}
+.cv-head .sub{font-size:15px; opacity:.95; margin-bottom:8px;}
+.cv-meta{
+    display:flex; flex-wrap:wrap; gap:14px 22px; font-size:13.5px;
+    margin-top:10px;
+}
+.cv-meta span{display:inline-flex; align-items:center; gap:6px;}
+.cv-body{
+    display:grid; grid-template-columns:1fr 2fr; gap:0;
+}
+.cv-side{
+    background:#fff8f5;
+    padding:28px 26px;
+    border-right:1px solid #ffe7dd;
+}
+.cv-main{padding:28px 32px;}
+.cv-block{margin-bottom:22px;}
+.cv-h{
+    text-transform:uppercase;
+    letter-spacing:1.2px;
+    font-size:11px;
+    font-weight:800;
+    color:#e94424;
+    display:flex; align-items:center; gap:8px;
+    margin:0 0 10px;
+}
+.cv-h::after{
+    content:""; flex:1; height:2px; background:#ffd9c8; border-radius:2px;
+}
+.cv-row{
+    display:grid; grid-template-columns:110px 1fr; gap:6px 10px;
+    font-size:13px; padding:6px 0;
+}
+.cv-row b{color:#555;}
+.cv-list{padding-left:18px; margin:0; font-size:13px;}
+.cv-list li{margin-bottom:5px;}
+.cv-tag{
+    display:inline-block; padding:3px 10px; border-radius:99px;
+    background:#ffe5d8; color:#a8330f; font-size:11.5px; font-weight:700;
+    margin:2px 4px 2px 0;
+}
+.cv-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+.cv-table th,.cv-table td{
+    text-align:left; padding:6px 8px; border-bottom:1px solid #f1ddd2;
+}
+.cv-table th{background:#fff1ea; color:#a8330f; font-weight:700; font-size:11.5px;}
+.cv-table td.right,.cv-table th.right{text-align:right;}
+.cv-grade{
+    display:inline-block; min-width:22px; text-align:center;
+    padding:2px 8px; border-radius:6px; font-weight:800; color:#fff;
+    background:#888;
+}
+.cv-grade.A{background:#22a06b;}
+.cv-grade.B{background:#3b82f6;}
+.cv-grade.C{background:#f59e0b;}
+.cv-grade.D{background:#dc2626;}
+.cv-stats{
+    display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:6px;
+}
+.cv-stat{
+    background:#fff; border:1px solid #ffe1d2; border-radius:10px;
+    padding:10px 12px;
+}
+.cv-stat b{display:block; font-size:18px; color:#e94424; font-weight:800;}
+.cv-stat span{font-size:11.5px; color:#666;}
+.cv-foot{
+    background:#fff8f5; padding:12px 22px;
+    text-align:center; font-size:11.5px; color:#7a5247;
+    border-top:1px solid #ffe1d2;
+}
+.empty{color:#999; font-size:12.5px; font-style:italic;}
+
+/* === Print === */
+@media print{
+    body, body.uyp-public, .uyp-app, .uyp-sidebar, .uyp-topbar,
+    .dashboard-wrap > aside, .dashboard-wrap > .topbar,
+    .sidebar, .topbar, .cv-toolbar, .footer, header, footer{display:none !important;}
+    main, .dashboard-content, .page-wrap, body{
+        background:#fff !important; margin:0 !important; padding:0 !important;
+    }
+    .cv-paper{
+        box-shadow:none !important; border-radius:0 !important;
+        max-width:100% !important; margin:0 !important;
+    }
+    @page{margin:0; size:A4;}
+}
+@media (max-width:760px){
+    .cv-head{grid-template-columns:1fr; text-align:center;}
+    .cv-photo{margin:0 auto;}
+    .cv-body{grid-template-columns:1fr;}
+    .cv-side{border-right:none; border-bottom:1px solid #ffe7dd;}
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cv-toolbar">
+    <div class="left">
+        <h2 style="margin:0;">Curriculum Vitae</h2>
+        <span class="badge badge-orange">Data terbaru otomatis</span>
+    </div>
+    <div class="right">
+        <a href="{{ url_for('mahasiswa.profile') }}" class="btn btn-outline btn-sm">← Profil</a>
+        <button class="btn btn-primary btn-sm" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+    </div>
+</div>
+
+<div class="cv-paper" id="cv-paper">
+    <!-- ============ HEAD ============ -->
+    <div class="cv-head">
+        <div class="cv-photo">
+            {% if user.foto %}
+                <img src="{{ url_for('static', filename=user.foto) }}" alt="Foto">
+            {% else %}
+                {{ user.nama[:1]|upper }}
+            {% endif %}
+        </div>
+        <div>
+            <h1>{{ user.nama }}</h1>
+            <div class="sub">
+                Mahasiswa {{ profil.prodi.nama }} —
+                {% if profil.jenis_kelas == 'nonreguler' %}Kelas Non-Reguler{% else %}Kelas Reguler{% endif %}
+            </div>
+            <div class="cv-meta">
+                <span>📧 {{ user.email }}</span>
+                {% if user.no_telp %}<span>📱 {{ user.no_telp }}</span>{% endif %}
+                <span>🎓 NIM {{ profil.nim }}</span>
+                <span>🏫 Universitas Yarsi Pratama</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ BODY ============ -->
+    <div class="cv-body">
+        <!-- ===== SIDE ===== -->
+        <aside class="cv-side">
+            <div class="cv-block">
+                <h3 class="cv-h">Data Akademik</h3>
+                <div class="cv-row"><b>Angkatan</b><span>{{ profil.angkatan }}</span></div>
+                <div class="cv-row"><b>Semester Aktif</b><span>Semester {{ profil.semester }}</span></div>
+                <div class="cv-row"><b>Program Studi</b><span>{{ profil.prodi.nama }}</span></div>
+                <div class="cv-row"><b>Fakultas</b><span>{{ profil.prodi.fakultas }}</span></div>
+                <div class="cv-row"><b>Jenis Kelas</b><span>{% if profil.jenis_kelas == 'nonreguler' %}Non-Reguler{% else %}Reguler{% endif %}</span></div>
+                <div class="cv-row"><b>Status</b><span>{{ user.status|capitalize }}</span></div>
+                <div class="cv-row"><b>Terdaftar Sejak</b><span>{{ user.created_at|tgl_id }}</span></div>
+            </div>
+
+            <div class="cv-block">
+                <h3 class="cv-h">Statistik Akademik</h3>
+                <div class="cv-stats">
+                    <div class="cv-stat"><b>{{ "%.2f"|format(ipk_calc) }}</b><span>IPK Terbaru</span></div>
+                    <div class="cv-stat"><b>{{ profil.semester }}</b><span>Semester Aktif</span></div>
+                    <div class="cv-stat"><b>{{ krs_aktif|length }}</b><span>Matkul KRS</span></div>
+                    <div class="cv-stat"><b>{{ persen_hadir }}%</b><span>Kehadiran</span></div>
+                </div>
+            </div>
+
+            <div class="cv-block">
+                <h3 class="cv-h">Kontak</h3>
+                <div class="cv-row"><b>Email</b><span style="word-break:break-all;">{{ user.email }}</span></div>
+                {% if user.no_telp %}<div class="cv-row"><b>Telepon</b><span>{{ user.no_telp }}</span></div>{% endif %}
+                {% if user.alamat %}<div class="cv-row"><b>Alamat</b><span>{{ user.alamat }}</span></div>{% endif %}
+                {% if user.tanggal_lahir %}<div class="cv-row"><b>Tgl Lahir</b><span>{{ user.tanggal_lahir|tgl_id }}</span></div>{% endif %}
+                {% if user.jenis_kelamin %}<div class="cv-row"><b>Gender</b><span>{{ user.jenis_kelamin }}</span></div>{% endif %}
+            </div>
+
+            <div class="cv-block">
+                <h3 class="cv-h">Soft Skills</h3>
+                <span class="cv-tag">Komunikasi</span>
+                <span class="cv-tag">Kerja Tim</span>
+                <span class="cv-tag">Problem Solving</span>
+                <span class="cv-tag">Adaptasi</span>
+                <span class="cv-tag">Kepemimpinan</span>
+                <span class="cv-tag">Disiplin</span>
+            </div>
+        </aside>
+
+        <!-- ===== MAIN ===== -->
+        <main class="cv-main">
+            <div class="cv-block">
+                <h3 class="cv-h">Profil Singkat</h3>
+                <p style="margin:0; line-height:1.6; font-size:13.5px;">
+                    Mahasiswa aktif <b>{{ profil.prodi.nama }}</b> di <b>Universitas Yarsi Pratama</b>,
+                    angkatan <b>{{ profil.angkatan }}</b> yang kini menempuh
+                    <b>semester {{ profil.semester }}</b>.
+                    Memiliki ketertarikan kuat pada bidang
+                    {{ profil.prodi.nama.split()[-2] if profil.prodi.nama.split()|length > 1 else profil.prodi.nama }}
+                    dan terus aktif mengembangkan kompetensi melalui perkuliahan,
+                    kegiatan kampus, serta pengembangan proyek.
+                </p>
+            </div>
+
+            <div class="cv-block">
+                <h3 class="cv-h">Mata Kuliah Aktif (Semester {{ profil.semester }})</h3>
+                {% if krs_aktif %}
+                <table class="cv-table">
+                    <thead>
+                        <tr><th>Kode</th><th>Mata Kuliah</th><th class="right">SKS</th><th>Dosen</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for k in krs_aktif %}
+                        <tr>
+                            <td>{{ k.kelas.matkul.kode }}</td>
+                            <td>{{ k.kelas.matkul.nama }}</td>
+                            <td class="right">{{ k.kelas.matkul.sks }}</td>
+                            <td>{{ k.kelas.dosen.nama if k.kelas.dosen else '-' }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">Belum ada KRS aktif untuk semester berjalan.</div>
+                {% endif %}
+            </div>
+
+            <div class="cv-block">
+                <h3 class="cv-h">Riwayat Nilai per Semester</h3>
+                {% if nilai_per_sem %}
+                    {% for sem, rows in nilai_per_sem.items() %}
+                    <div style="margin-bottom:14px;">
+                        <div style="font-weight:700; color:#a8330f; font-size:13px; margin:6px 0;">
+                            Semester {{ sem }}
+                        </div>
+                        <table class="cv-table">
+                            <thead>
+                                <tr>
+                                    <th>Mata Kuliah</th>
+                                    <th class="right">SKS</th>
+                                    <th class="right">Nilai</th>
+                                    <th>Grade</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for n in rows %}
+                                <tr>
+                                    <td>{{ n.kelas.matkul.nama if n.kelas and n.kelas.matkul else '-' }}</td>
+                                    <td class="right">{{ n.kelas.matkul.sks if n.kelas and n.kelas.matkul else '-' }}</td>
+                                    <td class="right">{{ "%.1f"|format(n.nilai_akhir or 0) }}</td>
+                                    <td><span class="cv-grade {{ n.grade }}">{{ n.grade or '-' }}</span></td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="empty">Riwayat nilai akan tampil setelah dosen menginput nilai akhir.</div>
+                {% endif %}
+            </div>
+
+            <div class="cv-block">
+                <h3 class="cv-h">Prestasi / Karya</h3>
+                {% if portfolio_list %}
+                <ul class="cv-list">
+                    {% for p in portfolio_list %}
+                    <li>
+                        <b>{{ p.judul }}</b>
+                        {% if p.tahun %}<span style="color:#999;"> · {{ p.tahun }}</span>{% endif %}
+                        {% if p.kategori %}<span class="cv-tag" style="margin-left:6px;">{{ p.kategori }}</span>{% endif %}
+                        {% if p.deskripsi %}<div style="font-size:12.5px; color:#555;">{{ p.deskripsi }}</div>{% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <div class="empty">Belum ada catatan prestasi / karya. Hubungi admin akademik untuk pencatatan.</div>
+                {% endif %}
+            </div>
+
+            <div class="cv-block">
+                <h3 class="cv-h">Organisasi &amp; Keaktifan</h3>
+                {% if profil.organisasi %}
+                <div style="white-space:pre-wrap; font-size:13px; line-height:1.55;">{{ profil.organisasi }}</div>
+                {% else %}
+                <div class="empty">Data organisasi belum diinput oleh admin akademik.</div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+
+    <div class="cv-foot">
+        Dokumen CV ini di-generate otomatis dari sistem LMS Universitas Yarsi Pratama
+        pada {{ now|tgl_id }}. Untuk verifikasi resmi, silakan menghubungi bagian akademik.
+    </div>
+</div>
+{% endblock %}

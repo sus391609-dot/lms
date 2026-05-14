@@ -33,9 +33,15 @@
         <a href="{{ url_for('admin.leaderboard') }}" {% if request.endpoint=='admin.leaderboard' %}class="active"{% endif %}>&#127941; Top 10 Mahasiswa</a>
         <a href="{{ url_for('admin.poin_dosen') }}" {% if request.endpoint and 'poin' in request.endpoint %}class="active"{% endif %}>&#11088; Poin Dosen</a>
         <a href="{{ url_for('admin.pembayaran') }}" {% if request.endpoint=='admin.pembayaran' %}class="active"{% endif %}>&#128181; Pembayaran</a>
+        <div class="group-title">Konten Publik</div>
+        <a href="{{ url_for('admin_sosmed.berita_list') }}" {% if request.endpoint and 'admin_sosmed.berita' in request.endpoint %}class="active"{% endif %}>&#128240; Kelola Berita</a>
+        <a href="{{ url_for('admin_sosmed.kegiatan_list') }}" {% if request.endpoint and 'admin_sosmed.kegiatan' in request.endpoint %}class="active"{% endif %}>&#127881; Kelola Kegiatan</a>
+        <a href="{{ url_for('admin_sosmed.kerjasama_list') }}" {% if request.endpoint and 'admin_sosmed.kerjasama' in request.endpoint %}class="active"{% endif %}>&#129309; Kelola Kerja Sama</a>
+        <a href="{{ url_for('admin_sosmed.pmb_pendaftar') }}" {% if request.endpoint and 'pmb_pendaftar' in request.endpoint %}class="active"{% endif %}>&#127891; Pendaftar PMB</a>
         <div class="group-title">Sistem</div>
         <a href="{{ url_for('admin.settings') }}" {% if request.endpoint=='admin.settings' %}class="active"{% endif %}>&#9881;&#65039; Pengaturan</a>
         <a href="{{ url_for('admin.audit') }}" {% if request.endpoint=='admin.audit' %}class="active"{% endif %}>&#128221; Audit Log</a>
+        <a href="{{ url_for('public.home') }}" target="_blank">&#127760; Buka Website Publik</a>
 
     {# ── ADMIN SOSMED ───────────────────────────────────────────────── #}
     {% elif current_user.role == 'admin_sosmed' %}
@@ -80,6 +86,7 @@
         <a href="{{ url_for('mahasiswa.poin') }}" {% if request.endpoint=='mahasiswa.poin' %}class="active"{% endif %}>&#11088; Poin Dosen</a>
         <a href="{{ url_for('mahasiswa.pembayaran') }}" {% if request.endpoint and 'pembayaran' in request.endpoint %}class="active"{% endif %}>&#128181; Pembayaran</a>
         <a href="{{ url_for('mahasiswa.organisasi') }}" {% if request.endpoint=='mahasiswa.organisasi' %}class="active"{% endif %}>&#127942; Organisasi</a>
+        <a href="{{ url_for('mahasiswa.cv') }}" {% if request.endpoint=='mahasiswa.cv' %}class="active"{% endif %}>&#128196; Curriculum Vitae</a>
         <a href="{{ url_for('mahasiswa.profile') }}" {% if request.endpoint=='mahasiswa.profile' %}class="active"{% endif %}>&#128100; Profil</a>
 
     {# ── SUPERADMIN ─────────────────────────────────────────────────── #}
