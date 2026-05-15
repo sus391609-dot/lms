@@ -1,187 +1,454 @@
 {% extends "_dashboard_base.html" %}
 {% block page_title %}Ujian Online{% endblock %}
 {% block content %}
+<style>
+/* ── Ujian Online Dosen Styles ─────────────────────────────────── */
+.ujian-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.ujian-header h2 {
+    font-size: 22px; font-weight: 800; color: var(--black);
+    display: flex; align-items: center; gap: 10px;
+}
+.ujian-header h2 .icon-title {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #ff7a3d, var(--orange));
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; box-shadow: 0 4px 12px rgba(255,95,26,.25);
+}
+.ujian-stats {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+}
+.ujian-stat {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 14px;
+    padding: 18px; display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04); transition: transform .2s, box-shadow .2s;
+}
+.ujian-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.08); }
+.ujian-stat .stat-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    flex-shrink: 0;
+}
+.ujian-stat .stat-icon.orange { background: var(--orange-l); color: var(--orange); }
+.ujian-stat .stat-icon.green { background: var(--green-l); color: var(--green); }
+.ujian-stat .stat-icon.blue { background: var(--blue-l); color: #2563eb; }
+.ujian-stat .stat-val { font-size: 22px; font-weight: 800; color: var(--black); }
+.ujian-stat .stat-lbl { font-size: 12px; color: var(--grey-600); text-transform: uppercase; letter-spacing: .04em; }
+
+/* Exam Cards Grid */
+.exam-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px; margin-bottom: 24px;
+}
+.exam-card {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 16px;
+    overflow: hidden; transition: all .25s; position: relative;
+}
+.exam-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,.10);
+    border-color: transparent;
+}
+.exam-card-top {
+    padding: 20px 20px 14px; display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 12px;
+}
+.exam-card-info h3 {
+    font-size: 16px; font-weight: 700; color: var(--black);
+    margin-bottom: 6px; line-height: 1.3;
+}
+.exam-card-info .sub {
+    font-size: 13px; color: var(--grey-600); line-height: 1.5;
+}
+.exam-status {
+    flex-shrink: 0; padding: 5px 12px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+}
+.exam-status.active { background: var(--green-l); color: #166534; }
+.exam-status.inactive { background: var(--grey-100); color: var(--grey-600); }
+
+.exam-card-meta {
+    display: flex; gap: 16px; flex-wrap: wrap; padding: 0 20px;
+    font-size: 13px; color: var(--grey-600);
+}
+.exam-card-meta span {
+    display: inline-flex; align-items: center; gap: 5px;
+}
+.exam-card-token {
+    margin: 14px 20px 0; padding: 10px 14px;
+    background: var(--grey-50); border: 1px dashed var(--grey-200);
+    border-radius: 10px; display: flex; align-items: center;
+    justify-content: space-between; gap: 8px;
+}
+.exam-card-token .token-label {
+    font-size: 11px; color: var(--grey-600); text-transform: uppercase;
+    letter-spacing: .06em; font-weight: 600;
+}
+.exam-card-token .token-value {
+    font-family: 'Courier New', monospace; font-size: 16px;
+    font-weight: 800; color: var(--orange); letter-spacing: 3px;
+    background: var(--orange-l); padding: 4px 12px; border-radius: 8px;
+}
+.exam-card-actions {
+    display: flex; gap: 8px; padding: 16px 20px; border-top: 1px solid var(--grey-100);
+    margin-top: 14px; flex-wrap: wrap;
+}
+.exam-card-actions .btn { flex: 1; min-width: 0; justify-content: center; font-size: 12.5px; }
+
+/* Empty State */
+.empty-state {
+    text-align: center; padding: 60px 20px;
+    background: #fff; border: 2px dashed var(--grey-200); border-radius: 20px;
+}
+.empty-state .empty-icon {
+    width: 80px; height: 80px; margin: 0 auto 20px;
+    background: var(--orange-l); border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 36px;
+}
+.empty-state h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.empty-state p { color: var(--grey-600); font-size: 14px; margin-bottom: 20px; }
+
+/* Form Create */
+.form-card {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 16px;
+    padding: 28px; box-shadow: 0 4px 16px rgba(0,0,0,.05);
+}
+.form-card .form-section {
+    margin-bottom: 20px; padding-bottom: 20px;
+    border-bottom: 1px solid var(--grey-100);
+}
+.form-card .form-section:last-child { border-bottom: 0; margin-bottom: 0; padding-bottom: 0; }
+.form-card .form-section-title {
+    font-size: 14px; font-weight: 700; color: var(--orange);
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.form-group { margin-bottom: 16px; }
+.form-group label {
+    display: block; font-weight: 600; font-size: 13px;
+    color: var(--grey-800); margin-bottom: 5px;
+}
+.form-control {
+    width: 100%; padding: 10px 14px; border: 1px solid var(--grey-200);
+    border-radius: 10px; font-size: 14px; font-family: var(--font);
+    transition: .2s; background: #fff;
+}
+.form-control:focus {
+    outline: none; border-color: var(--orange);
+    box-shadow: 0 0 0 3px var(--orange-l);
+}
+
+/* Soal List */
+.soal-item {
+    border: 1px solid var(--grey-200); border-radius: 14px; padding: 18px;
+    margin-bottom: 14px; transition: all .2s; position: relative;
+    background: #fff;
+}
+.soal-item:hover {
+    border-color: var(--orange-m);
+    box-shadow: 0 4px 16px rgba(255,95,26,.08);
+}
+.soal-item-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; gap: 10px;
+}
+.soal-number {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-weight: 700; font-size: 14px;
+}
+.soal-number .num {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, #ff7a3d, var(--orange));
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+}
+.soal-body { font-size: 14px; line-height: 1.6; color: var(--grey-800); margin-bottom: 10px; }
+.pilihan-item {
+    padding: 6px 12px; margin: 4px 0; border-radius: 8px; font-size: 13.5px;
+    display: flex; align-items: center; gap: 8px;
+}
+.pilihan-item.correct {
+    background: var(--green-l); color: #166534; font-weight: 600;
+    border: 1px solid rgba(22,163,74,.2);
+}
+.pilihan-item .check-icon { font-size: 14px; }
+
+/* Hasil Table */
+.hasil-card {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 16px;
+    overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,.05);
+}
+.hasil-card .tbl th {
+    background: linear-gradient(135deg, var(--orange-l), #fff3ee);
+    color: var(--orange); font-size: 11.5px;
+}
+.hasil-card .tbl td { font-size: 13px; }
+.skor-badge {
+    display: inline-flex; padding: 4px 10px; border-radius: 8px;
+    font-weight: 700; font-size: 13px;
+}
+.skor-badge.high { background: var(--green-l); color: #166534; }
+.skor-badge.mid { background: #fef9c3; color: #854d0e; }
+.skor-badge.low { background: var(--red-l); color: var(--red); }
+.tab-warn { color: var(--red); font-weight: 700; }
+.tab-ok { color: var(--green); }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .exam-grid { grid-template-columns: 1fr; }
+    .ujian-stats { grid-template-columns: 1fr 1fr; }
+    .ujian-header { flex-direction: column; align-items: flex-start; }
+    .exam-card-actions { flex-direction: column; }
+    .exam-card-actions .btn { flex: none; width: 100%; }
+}
+@media (max-width: 480px) {
+    .ujian-stats { grid-template-columns: 1fr; }
+    .form-card { padding: 18px; }
+}
+</style>
 
 {# ── LIST BANK SOAL ─────────────────────────────────────────────── #}
 {% if view == 'list' %}
-<div class="flex-between" style="margin-bottom:16px;">
-    <div style="font-weight:700; font-size:17px;">Bank Soal Ujian</div>
-    <a href="{{ url_for('dosen.ujian_baru') }}" class="btn btn-primary btn-sm">+ Buat Ujian Baru</a>
+<div class="ujian-header">
+    <h2>
+        <span class="icon-title">&#128221;</span>
+        Bank Soal Ujian
+    </h2>
+    <a href="{{ url_for('dosen.ujian_baru') }}" class="btn btn-primary">
+        <span>+</span> Buat Ujian Baru
+    </a>
 </div>
 
 {% if bank_list %}
-<div class="table-wrap">
-<table class="tbl">
-    <thead>
-        <tr>
-            <th>Judul</th><th>Kelas</th><th>Jenis</th><th>Durasi</th>
-            <th>Soal</th><th>Token</th><th>Status</th><th>Aksi</th>
-        </tr>
-    </thead>
-    <tbody>
+<div class="ujian-stats">
+    <div class="ujian-stat">
+        <div class="stat-icon orange">&#128218;</div>
+        <div>
+            <div class="stat-val">{{ bank_list|length }}</div>
+            <div class="stat-lbl">Total Ujian</div>
+        </div>
+    </div>
+    <div class="ujian-stat">
+        <div class="stat-icon green">&#9989;</div>
+        <div>
+            <div class="stat-val">{{ bank_list|selectattr('is_active')|list|length }}</div>
+            <div class="stat-lbl">Aktif</div>
+        </div>
+    </div>
+    <div class="ujian-stat">
+        <div class="stat-icon blue">&#128196;</div>
+        <div>
+            <div class="stat-val">{{ bank_list|sum(attribute='soal_list')|length if bank_list|length == 1 else '—' }}</div>
+            <div class="stat-lbl">Total Soal</div>
+        </div>
+    </div>
+</div>
+
+<div class="exam-grid">
     {% for b in bank_list %}
-    <tr>
-        <td><b>{{ b.judul }}</b></td>
-        <td>{{ b.kelas.matkul.nama }} ({{ b.kelas.kode_kelas }})</td>
-        <td><span class="badge {% if b.jenis_ujian == 'uts' %}badge-blue{% else %}badge-orange{% endif %}">{{ b.jenis_ujian|upper }}</span></td>
-        <td>{{ b.durasi_menit }} menit</td>
-        <td>{{ b.soal_list|length }}</td>
-        <td><code style="background:#f0f0f0; padding:2px 8px; border-radius:4px; font-weight:700;">{{ b.token }}</code></td>
-        <td>
-            {% if b.is_active %}
-                <span class="badge badge-green">Aktif</span>
-            {% else %}
-                <span class="badge badge-grey">Nonaktif</span>
-            {% endif %}
-        </td>
-        <td style="white-space:nowrap;">
-            <a href="{{ url_for('dosen.ujian_soal', bid=b.id) }}" class="btn btn-outline btn-sm">Soal</a>
-            <a href="{{ url_for('dosen.ujian_hasil', bid=b.id) }}" class="btn btn-outline btn-sm">Hasil</a>
-            <form method="post" action="{{ url_for('dosen.ujian_toggle', bid=b.id) }}" style="display:inline;">
+    <div class="exam-card">
+        <div class="exam-card-top">
+            <div class="exam-card-info">
+                <h3>{{ b.judul }}</h3>
+                <div class="sub">{{ b.kelas.matkul.nama }} — {{ b.kelas.kode_kelas }}</div>
+            </div>
+            <span class="exam-status {% if b.is_active %}active{% else %}inactive{% endif %}">
+                {% if b.is_active %}Aktif{% else %}Nonaktif{% endif %}
+            </span>
+        </div>
+        <div class="exam-card-meta">
+            <span>&#128203; {{ b.jenis_ujian|upper }}</span>
+            <span>&#9200; {{ b.durasi_menit }} menit</span>
+            <span>&#128196; {{ b.soal_list|length }} soal</span>
+        </div>
+        <div class="exam-card-token">
+            <div class="token-label">Token Akses</div>
+            <div class="token-value">{{ b.token }}</div>
+        </div>
+        <div class="exam-card-actions">
+            <a href="{{ url_for('dosen.ujian_soal', bid=b.id) }}" class="btn btn-outline btn-sm">&#128196; Kelola Soal</a>
+            <a href="{{ url_for('dosen.ujian_hasil', bid=b.id) }}" class="btn btn-outline btn-sm">&#128202; Hasil</a>
+            <form method="post" action="{{ url_for('dosen.ujian_toggle', bid=b.id) }}" style="display:contents;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button class="btn btn-sm {% if b.is_active %}btn-danger{% else %}btn-success{% endif %}">
-                    {% if b.is_active %}Nonaktifkan{% else %}Aktifkan{% endif %}
+                    {% if b.is_active %}&#10060; Nonaktifkan{% else %}&#9989; Aktifkan{% endif %}
                 </button>
             </form>
-            <form method="post" action="{{ url_for('dosen.ujian_hapus', bid=b.id) }}" style="display:inline;"
+            <form method="post" action="{{ url_for('dosen.ujian_hapus', bid=b.id) }}" style="display:contents;"
                   onsubmit="return confirm('Hapus ujian ini beserta semua soal dan hasil?');">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-sm btn-danger">Hapus</button>
+                <button class="btn btn-sm btn-danger">&#128465; Hapus</button>
             </form>
-        </td>
-    </tr>
+        </div>
+    </div>
     {% endfor %}
-    </tbody>
-</table>
 </div>
 {% else %}
-<div class="card" style="text-align:center; padding:40px; color:var(--grey-600);">
-    <p style="font-size:48px; margin:0;">&#128221;</p>
-    <p>Belum ada bank soal ujian. Klik <b>Buat Ujian Baru</b> untuk mulai.</p>
+<div class="empty-state">
+    <div class="empty-icon">&#128221;</div>
+    <h3>Belum Ada Bank Soal</h3>
+    <p>Mulai buat ujian pertama untuk kelas Anda. Soal dapat berupa Pilihan Ganda atau Esai.</p>
+    <a href="{{ url_for('dosen.ujian_baru') }}" class="btn btn-primary">+ Buat Ujian Baru</a>
 </div>
 {% endif %}
 
 {# ── FORM BUAT UJIAN BARU ───────────────────────────────────────── #}
 {% elif view == 'form' %}
-<div class="flex-between" style="margin-bottom:12px;">
-    <div style="font-weight:700; font-size:17px;">Buat Ujian Baru</div>
+<div class="ujian-header">
+    <h2>
+        <span class="icon-title">&#10133;</span>
+        Buat Ujian Baru
+    </h2>
     <a href="{{ url_for('dosen.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
 </div>
-<div class="card">
+
+<div class="form-card">
     <form method="post">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="form-group">
-            <label>Kelas</label>
-            <select name="kelas_id" class="form-control" required>
-                <option value="">-- Pilih Kelas --</option>
-                {% for k in kelas_list %}
-                <option value="{{ k.id }}">{{ k.matkul.nama }} — {{ k.label }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="form-group">
-            <label>Judul Ujian</label>
-            <input type="text" name="judul" class="form-control" placeholder="Mis: UTS Algoritma 2024" required>
-        </div>
-        <div class="form-row" style="display:flex; gap:16px; flex-wrap:wrap;">
-            <div class="form-group" style="flex:1; min-width:180px;">
-                <label>Jenis Ujian</label>
-                <select name="jenis_ujian" class="form-control">
-                    <option value="uts">UTS (Ujian Tengah Semester)</option>
-                    <option value="uas">UAS (Ujian Akhir Semester)</option>
+
+        <div class="form-section">
+            <div class="form-section-title">&#128218; Informasi Ujian</div>
+            <div class="form-group">
+                <label>Kelas / Mata Kuliah</label>
+                <select name="kelas_id" class="form-control" required>
+                    <option value="">— Pilih Kelas —</option>
+                    {% for k in kelas_list %}
+                    <option value="{{ k.id }}">{{ k.matkul.nama }} — {{ k.label }}</option>
+                    {% endfor %}
                 </select>
             </div>
-            <div class="form-group" style="flex:1; min-width:180px;">
-                <label>Durasi (menit)</label>
-                <input type="number" name="durasi_menit" class="form-control" value="90" min="10" max="300">
+            <div class="form-group">
+                <label>Judul Ujian</label>
+                <input type="text" name="judul" class="form-control" placeholder="Contoh: UTS Algoritma & Pemrograman 2024" required>
             </div>
         </div>
-        <div class="form-group">
-            <label style="display:flex; align-items:center; gap:8px;">
-                <input type="checkbox" name="acak_soal" value="1"> Acak urutan soal untuk setiap mahasiswa
-            </label>
+
+        <div class="form-section">
+            <div class="form-section-title">&#9881; Pengaturan</div>
+            <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                <div class="form-group" style="flex:1; min-width:200px;">
+                    <label>Jenis Ujian</label>
+                    <select name="jenis_ujian" class="form-control">
+                        <option value="uts">UTS (Ujian Tengah Semester)</option>
+                        <option value="uas">UAS (Ujian Akhir Semester)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:1; min-width:200px;">
+                    <label>Durasi (menit)</label>
+                    <input type="number" name="durasi_menit" class="form-control" value="90" min="10" max="300">
+                </div>
+            </div>
+            <div class="form-group">
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer; padding:10px 14px; background:var(--grey-50); border-radius:10px; border:1px solid var(--grey-200);">
+                    <input type="checkbox" name="acak_soal" value="1" style="width:18px; height:18px; accent-color:var(--orange);">
+                    <span>Acak urutan soal untuk setiap mahasiswa</span>
+                </label>
+            </div>
         </div>
-        <button type="submit" class="btn btn-primary" style="margin-top:8px;">Buat Ujian &amp; Tambah Soal</button>
+
+        <button type="submit" class="btn btn-primary btn-block" style="margin-top:4px; padding:14px;">
+            Buat Ujian & Tambah Soal &#8594;
+        </button>
     </form>
 </div>
 
 {# ── KELOLA SOAL ────────────────────────────────────────────────── #}
 {% elif view == 'soal' %}
-<div class="flex-between" style="margin-bottom:12px;">
+<div class="ujian-header">
     <div>
-        <div style="font-weight:700; font-size:17px;">{{ bs.judul }}</div>
-        <div style="color:var(--grey-600); font-size:13px;">
-            {{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }} &middot; {{ bs.durasi_menit }} menit &middot;
-            Token: <code style="background:#f0f0f0; padding:2px 8px; border-radius:4px; font-weight:700;">{{ bs.token }}</code>
+        <h2>
+            <span class="icon-title">&#128196;</span>
+            {{ bs.judul }}
+        </h2>
+        <div style="color:var(--grey-600); font-size:13px; margin-top:4px; padding-left:50px;">
+            {{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }} &middot; {{ bs.durasi_menit }} menit
         </div>
     </div>
-    <a href="{{ url_for('dosen.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <div class="exam-card-token" style="margin:0;">
+            <div class="token-label">Token</div>
+            <div class="token-value">{{ bs.token }}</div>
+        </div>
+        <a href="{{ url_for('dosen.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
+    </div>
 </div>
 
-<!-- Soal yang sudah ada -->
 {% if bs.soal_list %}
-<div class="card" style="margin-bottom:16px;">
-    <div class="card-title">Daftar Soal ({{ bs.soal_list|length }})</div>
+<div class="card" style="border-radius:16px; margin-bottom:20px;">
+    <div class="card-title" style="display:flex; align-items:center; gap:8px;">
+        &#128203; Daftar Soal
+        <span class="badge badge-orange" style="font-size:12px;">{{ bs.soal_list|length }} soal</span>
+    </div>
     {% for soal in bs.soal_list %}
-    <div style="border:1px solid var(--grey-200); border-radius:8px; padding:14px; margin-bottom:10px;">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-            <div>
-                <span class="badge {% if soal.tipe == 'pg' %}badge-blue{% else %}badge-orange{% endif %}" style="margin-right:6px;">
+    <div class="soal-item">
+        <div class="soal-item-header">
+            <div class="soal-number">
+                <span class="num">{{ soal.nomor }}</span>
+                <span class="badge {% if soal.tipe == 'pg' %}badge-blue{% else %}badge-orange{% endif %}">
                     {% if soal.tipe == 'pg' %}Pilihan Ganda{% else %}Esai{% endif %}
                 </span>
-                <b>Soal #{{ soal.nomor }}</b> (Bobot: {{ soal.bobot }})
+                <span style="color:var(--grey-400); font-size:12px;">Bobot: {{ soal.bobot }}</span>
             </div>
             <form method="post" action="{{ url_for('dosen.ujian_hapus_soal', bid=bs.id, sid=soal.id) }}"
                   onsubmit="return confirm('Hapus soal ini?');" style="display:inline;">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button class="btn btn-sm btn-danger">Hapus</button>
+                <button class="btn btn-sm btn-danger">&#128465;</button>
             </form>
         </div>
-        <p style="margin:8px 0 4px;">{{ soal.pertanyaan }}</p>
+        <div class="soal-body">{{ soal.pertanyaan }}</div>
         {% if soal.tipe == 'pg' %}
             {% for p in soal.pilihan_list %}
-            <div style="padding:2px 0; {% if p.is_correct %}color:green; font-weight:700;{% endif %}">
-                {{ p.label }}. {{ p.teks }} {% if p.is_correct %}&#10004; (Benar){% endif %}
+            <div class="pilihan-item {% if p.is_correct %}correct{% endif %}">
+                <span style="font-weight:700; min-width:20px;">{{ p.label }}.</span>
+                {{ p.teks }}
+                {% if p.is_correct %}<span class="check-icon">&#10004;</span>{% endif %}
             </div>
             {% endfor %}
         {% else %}
-            <div style="color:var(--grey-600); font-style:italic;">Kunci: {{ soal.kunci_esai or '(tidak ada kunci)' }}</div>
+            <div style="padding:8px 12px; background:var(--green-l); border-radius:8px; font-size:13px; color:#166534;">
+                <b>Kunci:</b> {{ soal.kunci_esai or '(tidak ada kunci)' }}
+            </div>
         {% endif %}
     </div>
     {% endfor %}
 </div>
 {% endif %}
 
-<!-- Form tambah soal -->
-<div class="card">
-    <div class="card-title">Tambah Soal Baru</div>
+<div class="form-card">
+    <div class="card-title" style="display:flex; align-items:center; gap:8px; margin-bottom:18px;">
+        &#10133; Tambah Soal Baru
+    </div>
     <form method="post" id="formTambahSoal">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="form-group">
-            <label>Tipe Soal</label>
-            <select name="tipe" id="tipeSoal" class="form-control" onchange="toggleTipeSoal()">
-                <option value="pg">Pilihan Ganda</option>
-                <option value="esai">Esai</option>
-            </select>
+
+        <div style="display:flex; gap:16px; flex-wrap:wrap;">
+            <div class="form-group" style="flex:2; min-width:200px;">
+                <label>Tipe Soal</label>
+                <select name="tipe" id="tipeSoal" class="form-control" onchange="toggleTipeSoal()">
+                    <option value="pg">Pilihan Ganda</option>
+                    <option value="esai">Esai</option>
+                </select>
+            </div>
+            <div class="form-group" style="flex:1; min-width:120px;">
+                <label>Bobot</label>
+                <input type="number" name="bobot" class="form-control" value="1" min="1" max="100">
+            </div>
         </div>
+
         <div class="form-group">
             <label>Pertanyaan</label>
             <textarea name="pertanyaan" class="form-control" rows="3" required placeholder="Tulis pertanyaan di sini..."></textarea>
         </div>
-        <div class="form-group">
-            <label>Bobot</label>
-            <input type="number" name="bobot" class="form-control" value="1" min="1" max="100">
-        </div>
 
-        <!-- Pilihan Ganda -->
         <div id="pgSection">
             <div class="form-group">
                 <label>Jawaban Benar</label>
                 <select name="jawaban_benar" class="form-control">
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                    <option value="C">C</option>
-                    <option value="D">D</option>
+                    <option value="A">A</option><option value="B">B</option>
+                    <option value="C">C</option><option value="D">D</option>
                     <option value="E">E</option>
                 </select>
             </div>
@@ -193,15 +460,16 @@
             {% endfor %}
         </div>
 
-        <!-- Esai -->
         <div id="esaiSection" style="display:none;">
             <div class="form-group">
                 <label>Kunci Jawaban Esai</label>
-                <textarea name="kunci_esai" class="form-control" rows="2" placeholder="Kata kunci atau jawaban lengkap untuk auto-koreksi..."></textarea>
+                <textarea name="kunci_esai" class="form-control" rows="2" placeholder="Kata kunci / jawaban lengkap untuk auto-koreksi..."></textarea>
             </div>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="margin-top:8px;">Tambah Soal</button>
+        <button type="submit" class="btn btn-primary" style="margin-top:8px; padding:12px 28px;">
+            &#10133; Tambah Soal
+        </button>
     </form>
 </div>
 
@@ -215,10 +483,13 @@ function toggleTipeSoal() {
 
 {# ── HASIL UJIAN ────────────────────────────────────────────────── #}
 {% elif view == 'hasil' %}
-<div class="flex-between" style="margin-bottom:12px;">
+<div class="ujian-header">
     <div>
-        <div style="font-weight:700; font-size:17px;">Hasil: {{ bs.judul }}</div>
-        <div style="color:var(--grey-600); font-size:13px;">
+        <h2>
+            <span class="icon-title">&#128202;</span>
+            Hasil: {{ bs.judul }}
+        </h2>
+        <div style="color:var(--grey-600); font-size:13px; margin-top:4px; padding-left:50px;">
             {{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }} &middot;
             {{ sesi_list|length }} mahasiswa mengikuti
         </div>
@@ -227,7 +498,32 @@ function toggleTipeSoal() {
 </div>
 
 {% if sesi_list %}
-<div class="card">
+<div class="ujian-stats">
+    <div class="ujian-stat">
+        <div class="stat-icon blue">&#128101;</div>
+        <div>
+            <div class="stat-val">{{ sesi_list|length }}</div>
+            <div class="stat-lbl">Peserta</div>
+        </div>
+    </div>
+    <div class="ujian-stat">
+        <div class="stat-icon green">&#127942;</div>
+        <div>
+            {% set avg_skor = (sesi_list|selectattr('skor')|map(attribute='skor')|list|sum / sesi_list|length) if sesi_list|length > 0 else 0 %}
+            <div class="stat-val">{{ '%.1f'|format(avg_skor) }}</div>
+            <div class="stat-lbl">Rata-rata</div>
+        </div>
+    </div>
+    <div class="ujian-stat">
+        <div class="stat-icon orange">&#9888;</div>
+        <div>
+            <div class="stat-val">{{ sesi_list|selectattr('tab_leave_count', 'gt', 0)|list|length }}</div>
+            <div class="stat-lbl">Keluar Tab</div>
+        </div>
+    </div>
+</div>
+
+<div class="hasil-card">
 <div class="table-wrap">
 <table class="tbl">
     <thead>
@@ -241,21 +537,21 @@ function toggleTipeSoal() {
     {% for s in sesi_list %}
     <tr>
         <td>{{ loop.index }}</td>
-        <td>{{ s.mahasiswa.nama }}</td>
+        <td style="font-weight:600;">{{ s.mahasiswa.nama }}</td>
         <td>{{ s.mahasiswa.profil_mahasiswa.nim if s.mahasiswa.profil_mahasiswa else '-' }}</td>
         <td>
-            <b style="color:{% if s.skor and s.skor >= 75 %}green{% elif s.skor and s.skor >= 55 %}orange{% else %}red{% endif %};">
+            <span class="skor-badge {% if s.skor and s.skor >= 75 %}high{% elif s.skor and s.skor >= 55 %}mid{% else %}low{% endif %}">
                 {{ '%.1f'|format(s.skor) if s.skor is not none else '-' }}
-            </b>
+            </span>
         </td>
         <td>{{ s.total_benar }}</td>
         <td>{{ s.total_salah }}</td>
         <td>{{ s.total_ragu }}</td>
         <td>
             {% if s.tab_leave_count > 0 %}
-                <span style="color:red; font-weight:700;">{{ s.tab_leave_count }}x</span>
+                <span class="tab-warn">{{ s.tab_leave_count }}x &#9888;</span>
             {% else %}
-                <span style="color:green;">0</span>
+                <span class="tab-ok">0 &#10004;</span>
             {% endif %}
         </td>
         <td>
@@ -265,7 +561,7 @@ function toggleTipeSoal() {
                 <span class="badge badge-orange">Belum Submit</span>
             {% endif %}
         </td>
-        <td>{{ s.finished_at|tgl_id_full if s.finished_at else '-' }}</td>
+        <td style="font-size:12px;">{{ s.finished_at|tgl_id_full if s.finished_at else '-' }}</td>
     </tr>
     {% endfor %}
     </tbody>
@@ -273,8 +569,10 @@ function toggleTipeSoal() {
 </div>
 </div>
 {% else %}
-<div class="card" style="text-align:center; padding:40px; color:var(--grey-600);">
-    <p>Belum ada mahasiswa yang mengikuti ujian ini.</p>
+<div class="empty-state">
+    <div class="empty-icon">&#128101;</div>
+    <h3>Belum Ada Peserta</h3>
+    <p>Belum ada mahasiswa yang mengikuti ujian ini. Bagikan token kepada mahasiswa untuk memulai.</p>
 </div>
 {% endif %}
 

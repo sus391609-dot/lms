@@ -1,110 +1,410 @@
 {% extends "_dashboard_base.html" %}
 {% block page_title %}Ujian Online{% endblock %}
 {% block content %}
+<style>
+/* ── Ujian Online Mahasiswa Styles ─────────────────────────────── */
+.mhs-ujian-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.mhs-ujian-header h2 {
+    font-size: 22px; font-weight: 800; color: var(--black);
+    display: flex; align-items: center; gap: 10px;
+}
+.mhs-ujian-header h2 .icon-title {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, #ff7a3d, var(--orange));
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; box-shadow: 0 4px 12px rgba(255,95,26,.25);
+}
+
+/* Token Entry Card */
+.token-entry-card {
+    background: linear-gradient(135deg, #ff7a3d 0%, var(--orange) 55%, #e85a1a 100%);
+    border-radius: 20px; padding: 32px; margin-bottom: 24px;
+    color: #fff; position: relative; overflow: hidden;
+    box-shadow: 0 12px 32px rgba(255,95,26,.25);
+}
+.token-entry-card::before {
+    content: ""; position: absolute;
+    width: 300px; height: 300px; right: -80px; top: -80px;
+    background: rgba(255,255,255,.08); border-radius: 50%;
+}
+.token-entry-card::after {
+    content: ""; position: absolute;
+    width: 180px; height: 180px; left: -50px; bottom: -50px;
+    background: rgba(255,255,255,.06); border-radius: 50%;
+}
+.token-entry-card h3 {
+    font-size: 20px; font-weight: 800; margin-bottom: 6px;
+    position: relative; z-index: 1;
+}
+.token-entry-card .desc {
+    font-size: 14px; opacity: .9; margin-bottom: 18px;
+    position: relative; z-index: 1;
+}
+.token-form {
+    display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-end;
+    position: relative; z-index: 1;
+}
+.token-form .token-input-wrap {
+    flex: 1; min-width: 260px;
+}
+.token-form .token-input-wrap label {
+    display: block; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em;
+    margin-bottom: 6px; opacity: .85;
+}
+.token-form input[type="text"] {
+    width: 100%; padding: 14px 18px; border: 2px solid rgba(255,255,255,.35);
+    border-radius: 14px; font-size: 18px; font-weight: 800;
+    letter-spacing: 4px; text-transform: uppercase;
+    background: rgba(255,255,255,.15); color: #fff;
+    backdrop-filter: blur(8px); transition: .2s;
+    font-family: 'Courier New', monospace;
+}
+.token-form input[type="text"]::placeholder {
+    color: rgba(255,255,255,.5); letter-spacing: 2px; font-size: 14px;
+    font-weight: 400; font-family: var(--font);
+}
+.token-form input[type="text"]:focus {
+    outline: none; border-color: rgba(255,255,255,.7);
+    background: rgba(255,255,255,.22);
+    box-shadow: 0 0 0 4px rgba(255,255,255,.15);
+}
+.token-form .token-submit {
+    padding: 14px 28px; border: 0; border-radius: 14px;
+    background: #fff; color: var(--orange); font-weight: 700;
+    font-size: 15px; cursor: pointer; transition: .2s;
+    box-shadow: 0 6px 16px rgba(0,0,0,.15);
+    white-space: nowrap;
+}
+.token-form .token-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0,0,0,.2);
+}
+
+/* Exam Available Cards */
+.mhs-section-title {
+    font-size: 16px; font-weight: 700; color: var(--black);
+    margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+}
+.mhs-section-title .count {
+    background: var(--orange-l); color: var(--orange); font-size: 12px;
+    font-weight: 700; padding: 3px 10px; border-radius: 999px;
+}
+
+.matkul-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px; margin-bottom: 28px;
+}
+.matkul-card {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 16px;
+    padding: 20px; transition: all .25s; position: relative;
+    display: flex; flex-direction: column; gap: 12px;
+}
+.matkul-card:hover {
+    transform: translateY(-3px); border-color: transparent;
+    box-shadow: 0 12px 32px rgba(0,0,0,.10);
+}
+.matkul-card-top {
+    display: flex; align-items: flex-start; gap: 14px;
+}
+.matkul-icon {
+    width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 800;
+}
+.matkul-icon.uts { background: var(--blue-l); color: #1e40af; }
+.matkul-icon.uas { background: var(--orange-l); color: var(--orange); }
+.matkul-info h4 {
+    font-size: 15px; font-weight: 700; color: var(--black);
+    margin-bottom: 4px; line-height: 1.3;
+}
+.matkul-info .matkul-sub {
+    font-size: 13px; color: var(--grey-600);
+}
+.matkul-meta {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 12.5px; color: var(--grey-600);
+    padding-top: 10px; border-top: 1px solid var(--grey-100);
+}
+.matkul-meta span {
+    display: inline-flex; align-items: center; gap: 4px;
+}
+.matkul-status {
+    margin-top: auto; padding: 8px 14px; border-radius: 10px;
+    text-align: center; font-size: 13px; font-weight: 600;
+}
+.matkul-status.selesai {
+    background: var(--green-l); color: #166534;
+    border: 1px solid rgba(22,163,74,.15);
+}
+.matkul-status.sedang {
+    background: #fef9c3; color: #854d0e;
+    border: 1px solid rgba(202,138,4,.15);
+}
+.matkul-status.belum {
+    background: var(--grey-50); color: var(--grey-600);
+    border: 1px solid var(--grey-200);
+}
+
+/* Riwayat Cards */
+.riwayat-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+.riwayat-card {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 16px;
+    overflow: hidden; transition: all .25s;
+}
+.riwayat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,.08);
+}
+.riwayat-card-header {
+    padding: 18px 20px 12px;
+    display: flex; align-items: center; justify-content: space-between;
+}
+.riwayat-card-header h4 {
+    font-size: 15px; font-weight: 700; color: var(--black);
+}
+.riwayat-skor {
+    font-size: 22px; font-weight: 800; padding: 4px 14px;
+    border-radius: 10px; line-height: 1;
+}
+.riwayat-skor.high { background: var(--green-l); color: #166534; }
+.riwayat-skor.mid { background: #fef9c3; color: #854d0e; }
+.riwayat-skor.low { background: var(--red-l); color: var(--red); }
+.riwayat-card-body {
+    padding: 0 20px 8px; font-size: 13px; color: var(--grey-600);
+}
+.riwayat-stats {
+    display: flex; gap: 0; padding: 0 20px;
+}
+.riwayat-stat {
+    flex: 1; text-align: center; padding: 12px 8px;
+    border-top: 1px solid var(--grey-100);
+}
+.riwayat-stat .rv { font-size: 18px; font-weight: 800; }
+.riwayat-stat .rv.g { color: var(--green); }
+.riwayat-stat .rv.r { color: var(--red); }
+.riwayat-stat .rv.o { color: #ca8a04; }
+.riwayat-stat .rl { font-size: 11px; color: var(--grey-400); text-transform: uppercase; letter-spacing: .04em; }
+.riwayat-card-footer {
+    padding: 12px 20px; border-top: 1px solid var(--grey-100);
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; color: var(--grey-400);
+}
+
+/* Hasil Section */
+.hasil-header {
+    margin-bottom: 24px;
+}
+.hasil-header h2 {
+    font-size: 20px; font-weight: 800; color: var(--black); margin-bottom: 4px;
+}
+.hasil-header .sub { font-size: 13px; color: var(--grey-600); }
+.hasil-stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 14px; margin-bottom: 24px;
+}
+.hasil-stat {
+    background: #fff; border: 1px solid var(--grey-200); border-radius: 14px;
+    padding: 18px; text-align: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,.04);
+}
+.hasil-stat .hs-icon { font-size: 24px; margin-bottom: 6px; }
+.hasil-stat .hs-val { font-size: 26px; font-weight: 800; }
+.hasil-stat .hs-lbl { font-size: 11px; color: var(--grey-600); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+
+.hasil-soal {
+    border: 1px solid var(--grey-200); border-radius: 14px;
+    padding: 18px; margin-bottom: 14px; transition: .2s;
+    background: #fff;
+}
+.hasil-soal:hover { box-shadow: 0 4px 16px rgba(0,0,0,.06); }
+.hasil-soal.correct { border-left: 4px solid var(--green); }
+.hasil-soal.wrong { border-left: 4px solid var(--red); }
+.hasil-soal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+}
+.hasil-soal-header b { font-size: 14px; }
+.pilihan-hasil {
+    padding: 6px 12px; margin: 3px 0; border-radius: 8px; font-size: 13.5px;
+    display: flex; align-items: center; gap: 8px;
+}
+.pilihan-hasil.correct-answer {
+    background: var(--green-l); color: #166534; font-weight: 600;
+    border: 1px solid rgba(22,163,74,.2);
+}
+.pilihan-hasil.wrong-answer {
+    background: var(--red-l); color: var(--red);
+    text-decoration: line-through; border: 1px solid rgba(220,38,38,.15);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .matkul-grid, .riwayat-grid { grid-template-columns: 1fr; }
+    .token-form { flex-direction: column; }
+    .token-form .token-input-wrap { min-width: 100%; }
+    .token-entry-card { padding: 24px 20px; }
+    .hasil-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+    .hasil-stats { grid-template-columns: 1fr; }
+    .riwayat-stats { flex-wrap: wrap; }
+    .riwayat-stat { min-width: 33.33%; }
+}
+</style>
 
 {# ── DAFTAR UJIAN ────────────────────────────────────────────────── #}
 {% if view == 'list' %}
-<div style="font-weight:700; font-size:17px; margin-bottom:16px;">Ujian Online</div>
+<div class="mhs-ujian-header">
+    <h2>
+        <span class="icon-title">&#128221;</span>
+        Ujian Online
+    </h2>
+</div>
 
-<!-- Form masuk ujian -->
-<div class="card" style="margin-bottom:20px;">
-    <div class="card-title">Masuk Ujian</div>
-    <form method="post" action="{{ url_for('mahasiswa.ujian_masuk') }}" style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end;">
+<!-- Token Entry -->
+<div class="token-entry-card">
+    <h3>&#128272; Masuk Ujian</h3>
+    <div class="desc">Masukkan token yang diberikan dosen untuk memulai ujian.</div>
+    <form method="post" action="{{ url_for('mahasiswa.ujian_masuk') }}" class="token-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <div class="form-group" style="flex:1; min-width:240px; margin-bottom:0;">
+        <div class="token-input-wrap">
             <label>Token Ujian</label>
-            <input type="text" name="token" class="form-control" placeholder="Masukkan token dari dosen..." required
-                   style="text-transform:uppercase; letter-spacing:2px; font-weight:700;">
+            <input type="text" name="token" placeholder="Masukkan token dari dosen..." required autocomplete="off">
         </div>
-        <button type="submit" class="btn btn-primary">Mulai Ujian</button>
+        <button type="submit" class="token-submit">Mulai Ujian &#8594;</button>
     </form>
 </div>
 
-<!-- Ujian tersedia -->
+<!-- Ujian Tersedia -->
 {% if ujian_aktif %}
-<div class="card" style="margin-bottom:20px;">
-    <div class="card-title">Ujian yang Tersedia</div>
-    <div class="table-wrap">
-    <table class="tbl">
-        <thead>
-            <tr><th>Mata Kuliah</th><th>Judul</th><th>Jenis</th><th>Durasi</th><th>Status</th></tr>
-        </thead>
-        <tbody>
-        {% for u in ujian_aktif %}
-        <tr>
-            <td>{{ u.kelas.matkul.nama }}</td>
-            <td><b>{{ u.judul }}</b></td>
-            <td><span class="badge {% if u.jenis_ujian == 'uts' %}badge-blue{% else %}badge-orange{% endif %}">{{ u.jenis_ujian|upper }}</span></td>
-            <td>{{ u.durasi_menit }} menit</td>
-            <td>
-                {% if sesi_map.get(u.id) and sesi_map[u.id].is_submitted %}
-                    <span class="badge badge-green">Selesai — {{ '%.1f'|format(sesi_map[u.id].skor) }}</span>
-                {% elif sesi_map.get(u.id) %}
-                    <span class="badge badge-orange">Sedang Dikerjakan</span>
-                {% else %}
-                    <span class="badge badge-grey">Belum Dikerjakan</span>
-                {% endif %}
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="mhs-section-title">
+    &#128218; Ujian yang Tersedia
+    <span class="count">{{ ujian_aktif|length }}</span>
+</div>
+<div class="matkul-grid">
+    {% for u in ujian_aktif %}
+    <div class="matkul-card">
+        <div class="matkul-card-top">
+            <div class="matkul-icon {% if u.jenis_ujian == 'uts' %}uts{% else %}uas{% endif %}">
+                {% if u.jenis_ujian == 'uts' %}U1{% else %}U2{% endif %}
+            </div>
+            <div class="matkul-info">
+                <h4>{{ u.judul }}</h4>
+                <div class="matkul-sub">{{ u.kelas.matkul.nama }}</div>
+            </div>
+        </div>
+        <div class="matkul-meta">
+            <span>&#128203; {{ u.jenis_ujian|upper }}</span>
+            <span>&#9200; {{ u.durasi_menit }} menit</span>
+            <span>&#128196; {{ u.soal_list|length }} soal</span>
+        </div>
+        {% if sesi_map.get(u.id) and sesi_map[u.id].is_submitted %}
+            <div class="matkul-status selesai">
+                &#10004; Selesai — Skor: {{ '%.1f'|format(sesi_map[u.id].skor) }}
+            </div>
+        {% elif sesi_map.get(u.id) %}
+            <div class="matkul-status sedang">
+                &#9888; Sedang Dikerjakan
+            </div>
+        {% else %}
+            <div class="matkul-status belum">
+                Belum Dikerjakan
+            </div>
+        {% endif %}
     </div>
+    {% endfor %}
 </div>
 {% endif %}
 
 <!-- Riwayat -->
 {% if riwayat %}
-<div class="card">
-    <div class="card-title">Riwayat Ujian</div>
-    <div class="table-wrap">
-    <table class="tbl">
-        <thead>
-            <tr><th>Ujian</th><th>Mata Kuliah</th><th>Skor</th><th>Benar</th><th>Salah</th><th>Ragu</th><th>Waktu</th><th>Aksi</th></tr>
-        </thead>
-        <tbody>
-        {% for s in riwayat %}
-        <tr>
-            <td>{{ s.bank_soal.judul }}</td>
-            <td>{{ s.bank_soal.kelas.matkul.nama }}</td>
-            <td><b style="color:{% if s.skor >= 75 %}green{% elif s.skor >= 55 %}orange{% else %}red{% endif %};">{{ '%.1f'|format(s.skor) }}</b></td>
-            <td>{{ s.total_benar }}</td>
-            <td>{{ s.total_salah }}</td>
-            <td>{{ s.total_ragu }}</td>
-            <td>{{ s.finished_at|tgl_id_full }}</td>
-            <td><a href="{{ url_for('mahasiswa.ujian_hasil', sesi_id=s.id) }}" class="btn btn-outline btn-sm">Lihat Hasil</a></td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+<div class="mhs-section-title">
+    &#128203; Riwayat Ujian
+    <span class="count">{{ riwayat|length }}</span>
+</div>
+<div class="riwayat-grid">
+    {% for s in riwayat %}
+    <div class="riwayat-card">
+        <div class="riwayat-card-header">
+            <h4>{{ s.bank_soal.judul }}</h4>
+            <div class="riwayat-skor {% if s.skor >= 75 %}high{% elif s.skor >= 55 %}mid{% else %}low{% endif %}">
+                {{ '%.1f'|format(s.skor) }}
+            </div>
+        </div>
+        <div class="riwayat-card-body">
+            {{ s.bank_soal.kelas.matkul.nama }}
+        </div>
+        <div class="riwayat-stats">
+            <div class="riwayat-stat">
+                <div class="rv g">{{ s.total_benar }}</div>
+                <div class="rl">Benar</div>
+            </div>
+            <div class="riwayat-stat">
+                <div class="rv r">{{ s.total_salah }}</div>
+                <div class="rl">Salah</div>
+            </div>
+            <div class="riwayat-stat">
+                <div class="rv o">{{ s.total_ragu }}</div>
+                <div class="rl">Ragu</div>
+            </div>
+        </div>
+        <div class="riwayat-card-footer">
+            <span>{{ s.finished_at|tgl_id_full }}</span>
+            <a href="{{ url_for('mahasiswa.ujian_hasil', sesi_id=s.id) }}" class="btn btn-outline btn-sm">Lihat Hasil</a>
+        </div>
     </div>
+    {% endfor %}
 </div>
 {% endif %}
 
 {# ── HASIL UJIAN ────────────────────────────────────────────────── #}
 {% elif view == 'hasil' %}
-<div class="flex-between" style="margin-bottom:16px;">
-    <div>
-        <div style="font-weight:700; font-size:17px;">Hasil Ujian: {{ bs.judul }}</div>
-        <div style="color:var(--grey-600);">{{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }}</div>
+<div class="mhs-ujian-header">
+    <div class="hasil-header">
+        <h2>&#127942; Hasil Ujian: {{ bs.judul }}</h2>
+        <div class="sub">{{ bs.kelas.matkul.nama }} &middot; {{ bs.jenis_ujian|upper }}</div>
     </div>
     <a href="{{ url_for('mahasiswa.ujian_list') }}" class="btn btn-outline btn-sm">&#8592; Kembali</a>
 </div>
 
-<div class="stat-grid">
-    <div class="stat-card"><div class="icon">&#127942;</div><div><div class="v" style="color:{% if sesi.skor >= 75 %}green{% elif sesi.skor >= 55 %}orange{% else %}red{% endif %};">{{ '%.1f'|format(sesi.skor) }}</div><div class="l">Skor</div></div></div>
-    <div class="stat-card"><div class="icon">&#10004;</div><div><div class="v" style="color:green;">{{ sesi.total_benar }}</div><div class="l">Benar</div></div></div>
-    <div class="stat-card"><div class="icon">&#10008;</div><div><div class="v" style="color:red;">{{ sesi.total_salah }}</div><div class="l">Salah</div></div></div>
-    <div class="stat-card"><div class="icon">&#10067;</div><div><div class="v" style="color:orange;">{{ sesi.total_ragu }}</div><div class="l">Ragu-Ragu</div></div></div>
+<div class="hasil-stats">
+    <div class="hasil-stat">
+        <div class="hs-icon">&#127942;</div>
+        <div class="hs-val" style="color:{% if sesi.skor >= 75 %}var(--green){% elif sesi.skor >= 55 %}#ca8a04{% else %}var(--red){% endif %};">{{ '%.1f'|format(sesi.skor) }}</div>
+        <div class="hs-lbl">Skor</div>
+    </div>
+    <div class="hasil-stat">
+        <div class="hs-icon">&#10004;</div>
+        <div class="hs-val" style="color:var(--green);">{{ sesi.total_benar }}</div>
+        <div class="hs-lbl">Benar</div>
+    </div>
+    <div class="hasil-stat">
+        <div class="hs-icon">&#10008;</div>
+        <div class="hs-val" style="color:var(--red);">{{ sesi.total_salah }}</div>
+        <div class="hs-lbl">Salah</div>
+    </div>
+    <div class="hasil-stat">
+        <div class="hs-icon">&#10067;</div>
+        <div class="hs-val" style="color:#ca8a04;">{{ sesi.total_ragu }}</div>
+        <div class="hs-lbl">Ragu-Ragu</div>
+    </div>
 </div>
 
-<div class="card">
-    <div class="card-title">Detail Jawaban</div>
+<div class="card" style="border-radius:16px;">
+    <div class="card-title" style="display:flex; align-items:center; gap:8px;">
+        &#128203; Detail Jawaban
+    </div>
     {% for soal in bs.soal_list %}
     {% set jwb = jawaban_map.get(soal.id) %}
-    <div style="border:1px solid var(--grey-200); border-radius:8px; padding:14px; margin-bottom:10px;
-                {% if jwb and jwb.is_correct %}border-left:4px solid green;{% else %}border-left:4px solid red;{% endif %}">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+    <div class="hasil-soal {% if jwb and jwb.is_correct %}correct{% else %}wrong{% endif %}">
+        <div class="hasil-soal-header">
             <b>Soal #{{ soal.nomor }}</b>
             {% if jwb %}
                 {% if jwb.is_ragu %}
@@ -116,21 +416,24 @@
                 {% endif %}
             {% endif %}
         </div>
-        <p style="margin:8px 0;">{{ soal.pertanyaan }}</p>
+        <p style="margin:8px 0 10px; font-size:14px; line-height:1.6; color:var(--grey-800);">{{ soal.pertanyaan }}</p>
         {% if soal.tipe == 'pg' %}
             {% for p in soal.pilihan_list %}
-            <div style="padding:2px 0;
-                        {% if p.is_correct %}color:green; font-weight:700;{% endif %}
-                        {% if jwb and jwb.jawaban_pg == p.label and not p.is_correct %}color:red; text-decoration:line-through;{% endif %}">
-                {{ p.label }}. {{ p.teks }}
-                {% if p.is_correct %}&#10004;{% endif %}
-                {% if jwb and jwb.jawaban_pg == p.label %} &#8592; Jawaban Anda{% endif %}
+            <div class="pilihan-hasil {% if p.is_correct %}correct-answer{% elif jwb and jwb.jawaban_pg == p.label and not p.is_correct %}wrong-answer{% endif %}">
+                <span style="font-weight:700; min-width:20px;">{{ p.label }}.</span>
+                {{ p.teks }}
+                {% if p.is_correct %}<span>&#10004;</span>{% endif %}
+                {% if jwb and jwb.jawaban_pg == p.label %} <span style="font-size:12px; opacity:.7;">&#8592; Jawaban Anda</span>{% endif %}
             </div>
             {% endfor %}
         {% else %}
-            <div style="color:var(--grey-600);">Jawaban Anda: {{ jwb.jawaban_esai if jwb and jwb.jawaban_esai else '(tidak dijawab)' }}</div>
+            <div style="padding:8px 12px; background:var(--grey-50); border-radius:8px; font-size:13px; color:var(--grey-600); margin-bottom:6px;">
+                <b>Jawaban Anda:</b> {{ jwb.jawaban_esai if jwb and jwb.jawaban_esai else '(tidak dijawab)' }}
+            </div>
             {% if soal.kunci_esai %}
-            <div style="color:green; font-style:italic;">Kunci: {{ soal.kunci_esai }}</div>
+            <div style="padding:8px 12px; background:var(--green-l); border-radius:8px; font-size:13px; color:#166534;">
+                <b>Kunci:</b> {{ soal.kunci_esai }}
+            </div>
             {% endif %}
         {% endif %}
     </div>
