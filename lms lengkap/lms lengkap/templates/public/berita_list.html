@@ -2,76 +2,526 @@
 {% block title %}Berita — Universitas Yarsi Pratama{% endblock %}
 
 {% block content %}
-<section class="uyp-pmb-hero" style="padding: 80px 0;">
+<!-- Hero Section -->
+<section class="uyp-pmb-hero" style="padding: 70px 0 50px;">
     <div class="uyp-container" style="text-align:center; position:relative;">
-        <h1 class="uyp-reveal">Berita <span>Kampus</span></h1>
-        <p class="uyp-reveal delay-1">Kabar terkini, prestasi, dan informasi penting seputar Universitas Yarsi Pratama.</p>
+        <span class="eyebrow uyp-reveal" style="color:rgba(255,255,255,.85);">Portal Informasi</span>
+        <h1 class="uyp-reveal" style="margin-top:8px;">Berita <span>Kampus</span></h1>
+        <p class="uyp-reveal delay-1" style="max-width:600px; margin:0 auto;">Kabar terkini, prestasi, dan informasi penting seputar Universitas Yarsi Pratama.</p>
+
+        <!-- Search Bar in Hero -->
+        <form class="berita-search-bar uyp-reveal delay-2" method="get" action="{{ url_for('public.berita_list') }}">
+            <div class="berita-search-inner">
+                <svg class="berita-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" name="q" placeholder="Cari berita berdasarkan judul atau isi..." value="{{ q }}" autocomplete="off">
+                {% if kategori_list %}
+                <select name="kategori" class="berita-search-select">
+                    <option value="">Semua Kategori</option>
+                    {% for k in kategori_list %}
+                    <option value="{{ k }}" {% if k == kategori %}selected{% endif %}>{{ k }}</option>
+                    {% endfor %}
+                </select>
+                {% endif %}
+                <button type="submit" class="berita-search-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Cari
+                </button>
+            </div>
+        </form>
     </div>
 </section>
 
-<section class="uyp-section">
+<!-- Results Info -->
+<section class="uyp-section" style="padding-top: 36px;">
     <div class="uyp-container">
-        <form class="uyp-filter uyp-reveal" method="get">
-            <input type="text" name="q" placeholder="Cari berita…" value="{{ q }}">
-            <select name="kategori">
-                <option value="">Semua kategori</option>
-                {% for k in kategori_list %}
-                <option value="{{ k }}" {% if k == kategori %}selected{% endif %}>{{ k }}</option>
-                {% endfor %}
-            </select>
-            <button type="submit">Cari</button>
-        </form>
+        {% if q or kategori %}
+        <div class="berita-result-info uyp-reveal">
+            <p>
+                Menampilkan <strong>{{ total }}</strong> berita
+                {% if q %}untuk "<em>{{ q }}</em>"{% endif %}
+                {% if kategori %}dalam kategori <span class="berita-tag-active">{{ kategori }}</span>{% endif %}
+            </p>
+            <a href="{{ url_for('public.berita_list') }}" class="berita-clear-filter">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Hapus Filter
+            </a>
+        </div>
+        {% endif %}
 
         {% if berita_list %}
-        <div class="uyp-card-grid">
+        <div class="berita-grid">
             {% for b in berita_list %}
-            <article class="uyp-card uyp-reveal">
-                <div class="uyp-card-media">
+            <article class="berita-card uyp-reveal" data-card-id="{{ b.id }}">
+                <div class="berita-card-img">
                     {% if b.gambar %}
-                        <img src="{{ url_for('static', filename=b.gambar) }}" alt="{{ b.judul }}">
+                        <img src="{{ url_for('static', filename=b.gambar) }}" alt="{{ b.judul }}" loading="lazy">
                     {% else %}
-                        <div class="placeholder">📰</div>
+                        <div class="berita-card-placeholder">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                        </div>
                     {% endif %}
-                    {% if b.kategori %}<span class="badge">{{ b.kategori }}</span>{% endif %}
+                    {% if b.kategori %}
+                    <span class="berita-card-badge">{{ b.kategori }}</span>
+                    {% endif %}
                 </div>
-                <div class="uyp-card-body">
-                    <div class="uyp-card-meta">
-                        <span>📅 {{ b.published_at.strftime('%d %b %Y') }}</span>
-                        <span>👁 {{ b.views }}</span>
+                <div class="berita-card-content">
+                    <div class="berita-card-meta">
+                        <span class="berita-meta-date">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            {{ b.published_at.strftime('%d %b %Y') }}
+                        </span>
+                        <span class="berita-meta-views">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            {{ b.views }}
+                        </span>
                     </div>
-                    <h3>{{ b.judul }}</h3>
-                    <p>{{ b.ringkasan or b.isi[:140] }}</p>
-                    <a href="{{ url_for('public.berita_detail', bid=b.id) }}" class="uyp-card-link">Selengkapnya</a>
+                    <h3 class="berita-card-title">{{ b.judul }}</h3>
+                    <p class="berita-card-summary">{{ b.ringkasan or b.isi[:160] }}</p>
+
+                    <!-- Expandable Full Content -->
+                    <div class="berita-card-full" id="full-{{ b.id }}" style="display:none;">
+                        <div class="berita-card-full-inner">
+                            {% for paragraph in b.isi.split('\n\n') %}
+                                {% if paragraph.strip() %}
+                                <p>{{ paragraph|replace('\n', '<br>')|safe }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="berita-card-actions">
+                        <button type="button" class="berita-toggle-btn" onclick="toggleSelengkapnya({{ b.id }}, this)" aria-expanded="false">
+                            <span class="toggle-text">Selengkapnya</span>
+                            <svg class="toggle-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <a href="{{ url_for('public.berita_detail', bid=b.id) }}" class="berita-detail-link">
+                            Baca Detail
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        </a>
+                    </div>
                 </div>
             </article>
             {% endfor %}
         </div>
 
         {% if pages > 1 %}
-        <nav class="uyp-pagination">
+        <nav class="uyp-pagination" style="margin-top: 48px;">
             {% if page > 1 %}
-                <a href="{{ url_for('public.berita_list', page=page-1, q=q, kategori=kategori) }}">‹ Sebelumnya</a>
+                <a href="{{ url_for('public.berita_list', page=page-1, q=q, kategori=kategori) }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Sebelumnya
+                </a>
             {% else %}
-                <span class="disabled">‹ Sebelumnya</span>
+                <span class="disabled">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Sebelumnya
+                </span>
             {% endif %}
             {% for p in range(1, pages + 1) %}
                 {% if p == page %}<span class="active">{{ p }}</span>
                 {% else %}<a href="{{ url_for('public.berita_list', page=p, q=q, kategori=kategori) }}">{{ p }}</a>{% endif %}
             {% endfor %}
             {% if page < pages %}
-                <a href="{{ url_for('public.berita_list', page=page+1, q=q, kategori=kategori) }}">Berikutnya ›</a>
+                <a href="{{ url_for('public.berita_list', page=page+1, q=q, kategori=kategori) }}">
+                    Berikutnya
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
             {% else %}
-                <span class="disabled">Berikutnya ›</span>
+                <span class="disabled">
+                    Berikutnya
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </span>
             {% endif %}
         </nav>
         {% endif %}
+
         {% else %}
-        <div style="text-align:center; padding: 80px 24px; color: var(--uyp-muted);">
-            <div style="font-size:64px; margin-bottom:14px;">📭</div>
-            <h3 style="font-size:20px;">Belum ada berita yang cocok</h3>
-            <p style="margin-top:8px;">Coba ubah kata kunci atau kategori pencarian.</p>
+        <div class="berita-empty uyp-reveal">
+            <div class="berita-empty-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/>
+                </svg>
+            </div>
+            <h3>Belum ada berita yang cocok</h3>
+            <p>Coba ubah kata kunci atau kategori pencarian.</p>
+            <a href="{{ url_for('public.berita_list') }}" class="uyp-btn uyp-btn-outline" style="margin-top:16px;">Lihat Semua Berita</a>
         </div>
         {% endif %}
     </div>
 </section>
+
+<style>
+/* ── Berita Search Bar ──────────────────────────────────────────── */
+.berita-search-bar {
+    max-width: 700px;
+    margin: 32px auto 0;
+}
+.berita-search-inner {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 16px;
+    padding: 6px;
+    gap: 4px;
+    transition: all .3s ease;
+}
+.berita-search-inner:focus-within {
+    background: rgba(255,255,255,.25);
+    border-color: rgba(255,255,255,.4);
+    box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+.berita-search-icon {
+    margin-left: 16px;
+    color: rgba(255,255,255,.7);
+    flex-shrink: 0;
+}
+.berita-search-inner input[type=text] {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: white;
+    font-size: 15px;
+    padding: 12px 12px;
+    font-family: inherit;
+}
+.berita-search-inner input::placeholder {
+    color: rgba(255,255,255,.6);
+}
+.berita-search-select {
+    border: 0;
+    outline: 0;
+    background: rgba(255,255,255,.2);
+    color: white;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.berita-search-select option {
+    background: #333;
+    color: white;
+}
+.berita-search-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    cursor: pointer;
+    background: white;
+    color: var(--uyp-primary);
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: inherit;
+    flex-shrink: 0;
+    transition: all .2s ease;
+}
+.berita-search-btn:hover {
+    background: var(--uyp-dark);
+    color: white;
+    transform: scale(1.03);
+}
+
+/* ── Result Info ────────────────────────────────────────────────── */
+.berita-result-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--uyp-grey-50);
+    border: 1px solid var(--uyp-grey-200);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.berita-result-info p {
+    font-size: 14px;
+    color: var(--uyp-muted);
+    margin: 0;
+}
+.berita-tag-active {
+    display: inline-block;
+    background: var(--uyp-gradient);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.berita-clear-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--uyp-muted);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid var(--uyp-grey-200);
+    transition: all .2s ease;
+}
+.berita-clear-filter:hover {
+    color: #e53e3e;
+    border-color: #e53e3e;
+}
+
+/* ── Card Grid ──────────────────────────────────────────────────── */
+.berita-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+}
+.berita-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--uyp-grey-200);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all .3s ease;
+}
+.berita-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.08);
+    border-color: transparent;
+}
+
+/* Card Image */
+.berita-card-img {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+.berita-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s ease;
+}
+.berita-card:hover .berita-card-img img {
+    transform: scale(1.06);
+}
+.berita-card-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--uyp-grey-100), var(--uyp-grey-200));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--uyp-grey-300);
+}
+.berita-card-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: var(--uyp-gradient);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    box-shadow: 0 4px 12px rgba(233,68,36,.3);
+}
+
+/* Card Content */
+.berita-card-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.berita-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+}
+.berita-meta-date, .berita-meta-views {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--uyp-muted);
+    font-weight: 500;
+}
+.berita-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--uyp-dark);
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+.berita-card-summary {
+    font-size: 14px;
+    color: var(--uyp-muted);
+    line-height: 1.65;
+    margin-bottom: 16px;
+}
+
+/* ── Expandable Full Content ────────────────────────────────────── */
+.berita-card-full {
+    overflow: hidden;
+    transition: max-height .4s ease, opacity .3s ease;
+}
+.berita-card-full-inner {
+    padding: 16px 0;
+    border-top: 1px solid var(--uyp-grey-200);
+}
+.berita-card-full-inner p {
+    font-size: 14px;
+    color: var(--uyp-text);
+    line-height: 1.75;
+    margin-bottom: 12px;
+}
+.berita-card-full-inner p:last-child {
+    margin-bottom: 0;
+}
+
+/* ── Card Actions ───────────────────────────────────────────────── */
+.berita-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--uyp-grey-100);
+}
+.berita-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--uyp-grey-50);
+    border: 1px solid var(--uyp-grey-200);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--uyp-primary);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .2s ease;
+}
+.berita-toggle-btn:hover {
+    background: var(--uyp-primary);
+    color: white;
+    border-color: var(--uyp-primary);
+}
+.berita-toggle-btn .toggle-chevron {
+    transition: transform .3s ease;
+}
+.berita-toggle-btn[aria-expanded="true"] .toggle-chevron {
+    transform: rotate(180deg);
+}
+.berita-toggle-btn[aria-expanded="true"] {
+    background: var(--uyp-primary);
+    color: white;
+    border-color: var(--uyp-primary);
+}
+.berita-detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--uyp-muted);
+    text-decoration: none;
+    transition: color .2s ease;
+}
+.berita-detail-link:hover {
+    color: var(--uyp-primary);
+}
+
+/* ── Empty State ────────────────────────────────────────────────── */
+.berita-empty {
+    text-align: center;
+    padding: 80px 24px;
+}
+.berita-empty-icon {
+    color: var(--uyp-grey-300);
+    margin-bottom: 18px;
+}
+.berita-empty h3 {
+    font-size: 20px;
+    color: var(--uyp-dark);
+    margin-bottom: 8px;
+}
+.berita-empty p {
+    color: var(--uyp-muted);
+    font-size: 14px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .berita-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    .berita-search-inner {
+        flex-wrap: wrap;
+        border-radius: 14px;
+    }
+    .berita-search-inner input[type=text] {
+        width: 100%;
+        min-width: unset;
+    }
+    .berita-search-select {
+        flex: 1;
+    }
+    .berita-search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .berita-card-img {
+        height: 180px;
+    }
+    .berita-result-info {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+function toggleSelengkapnya(id, btn) {
+    const el = document.getElementById('full-' + id);
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+
+    if (expanded) {
+        el.style.maxHeight = '0px';
+        el.style.opacity = '0';
+        setTimeout(function() { el.style.display = 'none'; }, 350);
+        btn.setAttribute('aria-expanded', 'false');
+        btn.querySelector('.toggle-text').textContent = 'Selengkapnya';
+    } else {
+        el.style.display = 'block';
+        el.style.opacity = '0';
+        el.style.maxHeight = '0px';
+        requestAnimationFrame(function() {
+            el.style.maxHeight = el.scrollHeight + 'px';
+            el.style.opacity = '1';
+        });
+        btn.setAttribute('aria-expanded', 'true');
+        btn.querySelector('.toggle-text').textContent = 'Tutup';
+    }
+}
+</script>
 {% endblock %}

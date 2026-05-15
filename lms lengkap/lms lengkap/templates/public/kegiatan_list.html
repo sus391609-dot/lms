@@ -2,64 +2,498 @@
 {% block title %}Kegiatan — Universitas Yarsi Pratama{% endblock %}
 
 {% block content %}
-<section class="uyp-pmb-hero" style="padding: 80px 0;">
+<!-- Hero Section -->
+<section class="uyp-pmb-hero" style="padding: 70px 0 50px;">
     <div class="uyp-container" style="text-align:center; position:relative;">
-        <h1 class="uyp-reveal">Kegiatan <span>Kampus</span></h1>
-        <p class="uyp-reveal delay-1">Event, seminar, workshop, dan kegiatan mahasiswa terbaru di Yarsi Pratama.</p>
+        <span class="eyebrow uyp-reveal" style="color:rgba(255,255,255,.85);">Agenda Kampus</span>
+        <h1 class="uyp-reveal" style="margin-top:8px;">Kegiatan <span>Kampus</span></h1>
+        <p class="uyp-reveal delay-1" style="max-width:600px; margin:0 auto;">Event, seminar, workshop, dan kegiatan mahasiswa terbaru di Universitas Yarsi Pratama.</p>
+
+        <!-- Search Bar in Hero -->
+        <form class="berita-search-bar uyp-reveal delay-2" method="get" action="{{ url_for('public.kegiatan_list') }}">
+            <div class="berita-search-inner">
+                <svg class="berita-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" name="q" placeholder="Cari kegiatan berdasarkan judul atau isi..." value="{{ q }}" autocomplete="off">
+                <button type="submit" class="berita-search-btn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Cari
+                </button>
+            </div>
+        </form>
     </div>
 </section>
 
-<section class="uyp-section">
+<!-- Results Info -->
+<section class="uyp-section" style="padding-top: 36px;">
     <div class="uyp-container">
-        <form class="uyp-filter uyp-reveal" method="get">
-            <input type="text" name="q" placeholder="Cari kegiatan…" value="{{ q }}">
-            <button type="submit">Cari</button>
-        </form>
+        {% if q %}
+        <div class="berita-result-info uyp-reveal">
+            <p>
+                Menampilkan <strong>{{ total }}</strong> kegiatan
+                untuk "<em>{{ q }}</em>"
+            </p>
+            <a href="{{ url_for('public.kegiatan_list') }}" class="berita-clear-filter">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                Hapus Filter
+            </a>
+        </div>
+        {% endif %}
 
         {% if kegiatan_list %}
-        <div class="uyp-card-grid">
+        <div class="berita-grid">
             {% for k in kegiatan_list %}
-            <article class="uyp-card uyp-reveal">
-                <div class="uyp-card-media">
+            <article class="berita-card uyp-reveal" data-card-id="keg-{{ k.id }}">
+                <div class="berita-card-img">
                     {% if k.gambar %}
-                        <img src="{{ url_for('static', filename=k.gambar) }}" alt="{{ k.judul }}">
+                        <img src="{{ url_for('static', filename=k.gambar) }}" alt="{{ k.judul }}" loading="lazy">
                     {% else %}
-                        <div class="placeholder">🎉</div>
+                        <div class="berita-card-placeholder" style="background: linear-gradient(135deg, #fff3e0, #ffe0b2);">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#FF8F00" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                            </svg>
+                        </div>
                     {% endif %}
-                    <span class="badge">Kegiatan</span>
+                    <span class="berita-card-badge" style="background: linear-gradient(135deg, #FF8F00, #F57C00);">Kegiatan</span>
                 </div>
-                <div class="uyp-card-body">
-                    <div class="uyp-card-meta">
-                        {% if k.tanggal_mulai %}<span>📅 {{ k.tanggal_mulai.strftime('%d %b %Y') }}</span>{% endif %}
-                        {% if k.lokasi %}<span>📍 {{ k.lokasi }}</span>{% endif %}
+                <div class="berita-card-content">
+                    <div class="berita-card-meta">
+                        {% if k.tanggal_mulai %}
+                        <span class="berita-meta-date">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            {{ k.tanggal_mulai.strftime('%d %b %Y') }}
+                            {% if k.tanggal_selesai and k.tanggal_selesai != k.tanggal_mulai %} – {{ k.tanggal_selesai.strftime('%d %b %Y') }}{% endif %}
+                        </span>
+                        {% endif %}
+                        {% if k.lokasi %}
+                        <span class="berita-meta-views">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            {{ k.lokasi }}
+                        </span>
+                        {% endif %}
                     </div>
-                    <h3>{{ k.judul }}</h3>
-                    <p>{{ k.ringkasan or k.isi[:140] }}</p>
-                    <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" class="uyp-card-link">Selengkapnya</a>
+                    <h3 class="berita-card-title">{{ k.judul }}</h3>
+
+                    {% if k.penyelenggara %}
+                    <div style="margin-bottom: 10px;">
+                        <span style="display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--uyp-muted); background:var(--uyp-grey-50); padding:4px 10px; border-radius:6px; font-weight:500;">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            {{ k.penyelenggara }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <p class="berita-card-summary">{{ k.ringkasan or k.isi[:160] }}</p>
+
+                    <!-- Expandable Full Content -->
+                    <div class="berita-card-full" id="full-keg-{{ k.id }}" style="display:none;">
+                        <div class="berita-card-full-inner">
+                            {% for paragraph in k.isi.split('\n\n') %}
+                                {% if paragraph.strip() %}
+                                <p>{{ paragraph|replace('\n', '<br>')|safe }}</p>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="berita-card-actions">
+                        <button type="button" class="berita-toggle-btn" onclick="toggleSelengkapnya('keg-{{ k.id }}', this)" aria-expanded="false">
+                            <span class="toggle-text">Selengkapnya</span>
+                            <svg class="toggle-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        </button>
+                        <a href="{{ url_for('public.kegiatan_detail', kid=k.id) }}" class="berita-detail-link">
+                            Baca Detail
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                        </a>
+                    </div>
                 </div>
             </article>
             {% endfor %}
         </div>
 
         {% if pages > 1 %}
-        <nav class="uyp-pagination">
-            {% if page > 1 %}<a href="{{ url_for('public.kegiatan_list', page=page-1, q=q) }}">‹ Sebelumnya</a>
-            {% else %}<span class="disabled">‹ Sebelumnya</span>{% endif %}
+        <nav class="uyp-pagination" style="margin-top: 48px;">
+            {% if page > 1 %}
+                <a href="{{ url_for('public.kegiatan_list', page=page-1, q=q) }}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Sebelumnya
+                </a>
+            {% else %}
+                <span class="disabled">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                    Sebelumnya
+                </span>
+            {% endif %}
             {% for p in range(1, pages + 1) %}
                 {% if p == page %}<span class="active">{{ p }}</span>
                 {% else %}<a href="{{ url_for('public.kegiatan_list', page=p, q=q) }}">{{ p }}</a>{% endif %}
             {% endfor %}
-            {% if page < pages %}<a href="{{ url_for('public.kegiatan_list', page=page+1, q=q) }}">Berikutnya ›</a>
-            {% else %}<span class="disabled">Berikutnya ›</span>{% endif %}
+            {% if page < pages %}
+                <a href="{{ url_for('public.kegiatan_list', page=page+1, q=q) }}">
+                    Berikutnya
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </a>
+            {% else %}
+                <span class="disabled">
+                    Berikutnya
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </span>
+            {% endif %}
         </nav>
         {% endif %}
+
         {% else %}
-        <div style="text-align:center; padding: 80px 24px; color: var(--uyp-muted);">
-            <div style="font-size:64px; margin-bottom:14px;">📅</div>
-            <h3 style="font-size:20px;">Belum ada kegiatan</h3>
-            <p style="margin-top:8px;">Pantau terus halaman ini untuk informasi kegiatan terbaru.</p>
+        <div class="berita-empty uyp-reveal">
+            <div class="berita-empty-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+            </div>
+            <h3>Belum ada kegiatan yang cocok</h3>
+            <p>Pantau terus halaman ini untuk informasi kegiatan terbaru.</p>
+            <a href="{{ url_for('public.kegiatan_list') }}" class="uyp-btn uyp-btn-outline" style="margin-top:16px;">Lihat Semua Kegiatan</a>
         </div>
         {% endif %}
     </div>
 </section>
+
+<style>
+/* ── Reuse berita styles (shared search, card, toggle) ──────────── */
+.berita-search-bar {
+    max-width: 700px;
+    margin: 32px auto 0;
+}
+.berita-search-inner {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,.15);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 16px;
+    padding: 6px;
+    gap: 4px;
+    transition: all .3s ease;
+}
+.berita-search-inner:focus-within {
+    background: rgba(255,255,255,.25);
+    border-color: rgba(255,255,255,.4);
+    box-shadow: 0 8px 32px rgba(0,0,0,.15);
+}
+.berita-search-icon {
+    margin-left: 16px;
+    color: rgba(255,255,255,.7);
+    flex-shrink: 0;
+}
+.berita-search-inner input[type=text] {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: white;
+    font-size: 15px;
+    padding: 12px 12px;
+    font-family: inherit;
+}
+.berita-search-inner input::placeholder {
+    color: rgba(255,255,255,.6);
+}
+.berita-search-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 0;
+    cursor: pointer;
+    background: white;
+    color: var(--uyp-primary);
+    padding: 12px 22px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    font-family: inherit;
+    flex-shrink: 0;
+    transition: all .2s ease;
+}
+.berita-search-btn:hover {
+    background: var(--uyp-dark);
+    color: white;
+    transform: scale(1.03);
+}
+
+/* ── Result Info ────────────────────────────────────────────────── */
+.berita-result-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--uyp-grey-50);
+    border: 1px solid var(--uyp-grey-200);
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.berita-result-info p {
+    font-size: 14px;
+    color: var(--uyp-muted);
+    margin: 0;
+}
+.berita-clear-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--uyp-muted);
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: white;
+    border: 1px solid var(--uyp-grey-200);
+    transition: all .2s ease;
+}
+.berita-clear-filter:hover {
+    color: #e53e3e;
+    border-color: #e53e3e;
+}
+
+/* ── Card Grid ──────────────────────────────────────────────────── */
+.berita-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+}
+.berita-card {
+    background: white;
+    border-radius: 16px;
+    border: 1px solid var(--uyp-grey-200);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: all .3s ease;
+}
+.berita-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.08);
+    border-color: transparent;
+}
+.berita-card-img {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
+.berita-card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s ease;
+}
+.berita-card:hover .berita-card-img img {
+    transform: scale(1.06);
+}
+.berita-card-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--uyp-grey-100), var(--uyp-grey-200));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--uyp-grey-300);
+}
+.berita-card-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: var(--uyp-gradient);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .8px;
+    box-shadow: 0 4px 12px rgba(233,68,36,.3);
+}
+.berita-card-content {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+.berita-card-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.berita-meta-date, .berita-meta-views {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--uyp-muted);
+    font-weight: 500;
+}
+.berita-card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--uyp-dark);
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+.berita-card-summary {
+    font-size: 14px;
+    color: var(--uyp-muted);
+    line-height: 1.65;
+    margin-bottom: 16px;
+}
+
+/* ── Expandable Full Content ────────────────────────────────────── */
+.berita-card-full {
+    overflow: hidden;
+    transition: max-height .4s ease, opacity .3s ease;
+}
+.berita-card-full-inner {
+    padding: 16px 0;
+    border-top: 1px solid var(--uyp-grey-200);
+}
+.berita-card-full-inner p {
+    font-size: 14px;
+    color: var(--uyp-text);
+    line-height: 1.75;
+    margin-bottom: 12px;
+}
+.berita-card-full-inner p:last-child {
+    margin-bottom: 0;
+}
+
+/* ── Card Actions ───────────────────────────────────────────────── */
+.berita-card-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--uyp-grey-100);
+}
+.berita-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--uyp-grey-50);
+    border: 1px solid var(--uyp-grey-200);
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--uyp-primary);
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .2s ease;
+}
+.berita-toggle-btn:hover {
+    background: var(--uyp-primary);
+    color: white;
+    border-color: var(--uyp-primary);
+}
+.berita-toggle-btn .toggle-chevron {
+    transition: transform .3s ease;
+}
+.berita-toggle-btn[aria-expanded="true"] .toggle-chevron {
+    transform: rotate(180deg);
+}
+.berita-toggle-btn[aria-expanded="true"] {
+    background: var(--uyp-primary);
+    color: white;
+    border-color: var(--uyp-primary);
+}
+.berita-detail-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--uyp-muted);
+    text-decoration: none;
+    transition: color .2s ease;
+}
+.berita-detail-link:hover {
+    color: var(--uyp-primary);
+}
+
+/* ── Empty State ────────────────────────────────────────────────── */
+.berita-empty {
+    text-align: center;
+    padding: 80px 24px;
+}
+.berita-empty-icon {
+    color: var(--uyp-grey-300);
+    margin-bottom: 18px;
+}
+.berita-empty h3 {
+    font-size: 20px;
+    color: var(--uyp-dark);
+    margin-bottom: 8px;
+}
+.berita-empty p {
+    color: var(--uyp-muted);
+    font-size: 14px;
+}
+
+/* ── Responsive ─────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+    .berita-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    .berita-search-inner {
+        flex-wrap: wrap;
+        border-radius: 14px;
+    }
+    .berita-search-inner input[type=text] {
+        width: 100%;
+        min-width: unset;
+    }
+    .berita-search-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .berita-card-img {
+        height: 180px;
+    }
+    .berita-result-info {
+        flex-direction: column;
+        text-align: center;
+    }
+}
+</style>
+
+<script>
+function toggleSelengkapnya(id, btn) {
+    const el = document.getElementById('full-' + id);
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+
+    if (expanded) {
+        el.style.maxHeight = '0px';
+        el.style.opacity = '0';
+        setTimeout(function() { el.style.display = 'none'; }, 350);
+        btn.setAttribute('aria-expanded', 'false');
+        btn.querySelector('.toggle-text').textContent = 'Selengkapnya';
+    } else {
+        el.style.display = 'block';
+        el.style.opacity = '0';
+        el.style.maxHeight = '0px';
+        requestAnimationFrame(function() {
+            el.style.maxHeight = el.scrollHeight + 'px';
+            el.style.opacity = '1';
+        });
+        btn.setAttribute('aria-expanded', 'true');
+        btn.querySelector('.toggle-text').textContent = 'Tutup';
+    }
+}
+</script>
 {% endblock %}
