@@ -241,7 +241,7 @@
     <div class="ujian-stat">
         <div class="stat-icon blue">&#128196;</div>
         <div>
-            <div class="stat-val">{{ bank_list|sum(attribute='soal_list')|length if bank_list|length == 1 else '—' }}</div>
+            <div class="stat-val">{{ bank_list|map(attribute='soal_list')|map('length')|sum }}</div>
             <div class="stat-lbl">Total Soal</div>
         </div>
     </div>
